@@ -8,7 +8,7 @@ find_package(GTest CONFIG REQUIRED)
 
 add_executable(PhysicsEngine main.cpp)
 
-file(GLOB_RECURSE SRC_FILES include/*.h)
+file(GLOB_RECURSE SRC_FILES include/*.h src/*.cpp)
 add_library(Common ${SRC_FILES})
 set_target_properties(Common PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(Common PUBLIC include/)
@@ -22,10 +22,9 @@ SET(TEST_DIR ${CMAKE_SOURCE_DIR}/tests)
 file(GLOB TEST_FILES ${TEST_DIR}/*.cpp )
 
 foreach(test_file ${TEST_FILES} )
-    # I used a simple string replace, to cut off .cpp.
     get_filename_component(test_name ${test_file} NAME_WE)
     add_executable(${test_name} ${test_file})
-    # Make sure YourLib is linked to each app
+
     target_link_libraries(${test_name} PUBLIC Common)
     target_link_libraries(${test_name} PRIVATE GTest::gtest GTest::gtest_main)
 
