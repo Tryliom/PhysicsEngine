@@ -9,13 +9,16 @@ find_package(GTest CONFIG REQUIRED)
 add_executable(PhysicsEngine main.cpp)
 
 file(GLOB_RECURSE SRC_FILES include/*.h src/*.cpp)
-add_library(Common ${SRC_FILES})
-set_target_properties(Common PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(Common PUBLIC include/)
+add_library(PhysicsCommon ${SRC_FILES})
+set_target_properties(PhysicsCommon PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(PhysicsCommon PUBLIC include/)
 target_link_libraries(PhysicsEngine PRIVATE SDL2::SDL2)
 
 # Disable SDL main
 add_definitions(-DSDL_MAIN_HANDLED)
+
+# Lib Math922
+add_subdirectory(libs/Math922)
 
 # Tests
 SET(TEST_DIR ${CMAKE_SOURCE_DIR}/tests)
@@ -25,7 +28,7 @@ foreach(test_file ${TEST_FILES} )
     get_filename_component(test_name ${test_file} NAME_WE)
     add_executable(${test_name} ${test_file})
 
-    target_link_libraries(${test_name} PUBLIC Common)
+    target_link_libraries(${test_name} PUBLIC PhysicsCommon)
     target_link_libraries(${test_name} PRIVATE GTest::gtest GTest::gtest_main)
 
     IF(MSVC)
