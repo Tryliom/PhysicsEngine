@@ -25,6 +25,7 @@ Vec2F Center = Vec2F(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 float AttractionPower = 900.f;
 float BaseVelocity = 400.f;
 float MaxVelocity = 700.f;
+const float R = 100;
 
 int Time = 0;
 
@@ -64,21 +65,12 @@ bool init()
 
 			for (std::size_t i = 0; i < planetsToCreate; i++)
 			{
-				Planets[i].Position = Vec2F(Random::Range<float>(0.f, 200.f), Random::Range<float>(0.f, 200.f));
+				Planets[i].Position = Vec2F(MathUtility::Cos(Radian(Degree(Random::Range<float>(0.f, 360.f)))), MathUtility::Sin(Radian(Degree(Random::Range<float>(0.f, 360.f))))) * R + Center;
 				Planets[i].Acceleration = Vec2F(0, 0);
 
-				if (Random::Range<int>(0, 1) == 0)
-				{
-					Planets[i].Velocity = Vec2F(0, Random::Range<float>(1.f, 2.f));
-					Planets[i].Mass = 1;
-				}
-				else
-				{
-					Planets[i].Velocity = Vec2F(Random::Range<float>(1.f, 2.f), 0);
-					Planets[i].Mass = 2;
-				}
-
-				Planets[i].Velocity *= BaseVelocity;
+				// Make the planet velocity perpendicular to the vector from the center of the screen to the planet.
+				Vec2F centerToPlanet = Center - Planets[i].Position;
+				Planets[i].Velocity = Vec2F(-centerToPlanet.Y, centerToPlanet.X).Normalized() * BaseVelocity;
 			}
 
 			Time = SDL_GetTicks64();
@@ -144,7 +136,7 @@ void Update()
 		}
 		else
 		{
-			// MCU orbit = v^2 / r = Planets[i].Velocity^2 / centerToPlanet.Length()
+			// MCU orbit = v^2 / r
 			Planets[i].Acceleration = centerToPlanet.Normalized() * (Planets[i].Velocity.Length() * Planets[i].Velocity.Length() / centerToPlanet.Length());
 		}
 	}
@@ -183,6 +175,11 @@ int main(int argc, char* args[])
         while(!quit)
         {
 			Update();
+
+			// Set center as mouse position
+	        /*int x, y;
+	        SDL_GetMouseState(&x, &y);
+	        Center = Vec2F(x, y);*/
 
 			// Clear screen
 			SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
