@@ -25,7 +25,7 @@ Vec2F Center = Vec2F(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 float AttractionPower = 900.f;
 float BaseVelocity = 400.f;
 float MaxVelocity = 700.f;
-const float R = 100;
+const float R = 200;
 
 int Time = 0;
 
@@ -65,7 +65,10 @@ bool init()
 
 			for (std::size_t i = 0; i < planetsToCreate; i++)
 			{
-				Planets[i].Position = Vec2F(MathUtility::Cos(Radian(Degree(Random::Range<float>(0.f, 360.f)))), MathUtility::Sin(Radian(Degree(Random::Range<float>(0.f, 360.f))))) * R + Center;
+				auto randomAngle = Radian(Degree(Random::Range<float>(0.f, 360.f)));
+				auto randomR = Random::Range<float>(R / 2.f, R);
+
+				Planets[i].Position = Vec2F(MathUtility::Cos(randomAngle), MathUtility::Sin(randomAngle)) * randomR + Center;
 				Planets[i].Acceleration = Vec2F(0, 0);
 
 				// Make the planet velocity perpendicular to the vector from the center of the screen to the planet.
@@ -170,9 +173,9 @@ int main(int argc, char* args[])
 			Update();
 
 			// Set center as mouse position
-	        /*int x, y;
+	        int x, y;
 	        SDL_GetMouseState(&x, &y);
-	        Center = Vec2F(x, y);*/
+	        Center = Vec2F(x, y);
 
 			// Clear screen
 			SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
