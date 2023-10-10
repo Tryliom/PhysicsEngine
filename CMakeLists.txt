@@ -17,11 +17,8 @@ target_link_libraries(PhysicsEngine PRIVATE SDL2::SDL2)
 # Disable SDL main
 add_definitions(-DSDL_MAIN_HANDLED)
 
-# Lib Math922
-add_subdirectory(libs/Math922)
-
 # Tests
-SET(TEST_DIR ${CMAKE_SOURCE_DIR}/tests)
+SET(TEST_DIR ${CMAKE_SOURCE_DIR}/physics_tests)
 file(GLOB TEST_FILES ${TEST_DIR}/*.cpp )
 
 foreach(test_file ${TEST_FILES} )
@@ -39,3 +36,6 @@ foreach(test_file ${TEST_FILES} )
 
     set_target_properties (${test_name} PROPERTIES FOLDER Courses)
 endforeach()
+
+# Lib Math922
+add_subdirectory(libs/Math922)

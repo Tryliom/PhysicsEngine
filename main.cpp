@@ -146,14 +146,7 @@ void Render()
 {
 	for (std::size_t i = 0; i < PlanetsCount; i++)
 	{
-		if (Planets[i].Mass == 1)
-		{
-			SDL_SetRenderDrawColor(gRenderer, 100, 100, 200, 255);
-		}
-		else
-		{
-			SDL_SetRenderDrawColor(gRenderer, 200, 100, 100, 255);
-		}
+		SDL_SetRenderDrawColor(gRenderer, 200, 100, 100, 255);
 
 		DrawCircle(Planets[i].Position.X, Planets[i].Position.Y);
 	}
