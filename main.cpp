@@ -1,8 +1,8 @@
 #include "SDL.h"
 #include "include/Body.h"
 
-#include "libs/Math922/include/Random.h"
-#include "libs/Math922/include/Vec2.h"
+#include "libs/Math/include/Random.h"
+#include "libs/Math/include/Vec2.h"
 
 bool init();
 void close();
@@ -173,9 +173,9 @@ int main(int argc, char* args[])
 			Update();
 
 			// Set center as mouse position
-	        int x, y;
+	        /*int x, y;
 	        SDL_GetMouseState(&x, &y);
-	        Center = Vec2F(x, y);
+	        Center = Vec2F(x, y);*/
 
 			// Clear screen
 			SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);

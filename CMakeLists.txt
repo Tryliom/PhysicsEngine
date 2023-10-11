@@ -12,7 +12,11 @@ file(GLOB_RECURSE SRC_FILES include/*.h src/*.cpp)
 add_library(PhysicsCommon ${SRC_FILES})
 set_target_properties(PhysicsCommon PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(PhysicsCommon PUBLIC include/)
+target_include_directories(PhysicsCommon PUBLIC libs/Math/include/)
 target_link_libraries(PhysicsEngine PRIVATE SDL2::SDL2)
+
+# Make that the include direction in libs/Math/ is directly accessible
+add_subdirectory(libs/Math)
 
 # Disable SDL main
 add_definitions(-DSDL_MAIN_HANDLED)
@@ -36,6 +40,3 @@ foreach(test_file ${TEST_FILES} )
 
     set_target_properties (${test_name} PROPERTIES FOLDER Courses)
 endforeach()
-
-# Lib Math922
-add_subdirectory(libs/Math922)
