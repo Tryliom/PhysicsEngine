@@ -1,8 +1,8 @@
 #include "SDL.h"
 #include "include/Body.h"
 
-#include "libs/Math/include/Random.h"
-#include "libs/Math/include/Vec2.h"
+#include "Random.h"
+#include "Vec2.h"
 
 bool init();
 void close();

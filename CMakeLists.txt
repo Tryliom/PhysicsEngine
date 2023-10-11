@@ -13,7 +13,7 @@ add_library(PhysicsCommon ${SRC_FILES})
 set_target_properties(PhysicsCommon PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(PhysicsCommon PUBLIC include/)
 target_include_directories(PhysicsCommon PUBLIC libs/Math/include/)
-target_link_libraries(PhysicsEngine PRIVATE SDL2::SDL2)
+target_link_libraries(PhysicsEngine PRIVATE PhysicsCommon SDL2::SDL2)
 
 # Make that the include direction in libs/Math/ is directly accessible
 add_subdirectory(libs/Math)
