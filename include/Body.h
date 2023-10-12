@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../libs/Math922/include/Vec2.h"
+#include "Vec2.h"
 
 class Body
 {

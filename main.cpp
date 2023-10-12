@@ -1,8 +1,8 @@
 #include "SDL.h"
 #include "include/Body.h"
 
-#include "libs/Math922/include/Random.h"
-#include "libs/Math922/include/Vec2.h"
+#include "Random.h"
+#include "Vec2.h"
 
 bool init();
 void close();
@@ -18,8 +18,7 @@ constexpr int SCREEN_WIDTH = 1550;
 constexpr int SCREEN_HEIGHT = 900;
 
 int PlanetRadius = 5;
-Body* Planets = nullptr;
-std::size_t PlanetsCount = 0;
+std::vector<Body> Planets;
 
 Vec2F Center = Vec2F(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 float AttractionPower = 900.f;
@@ -58,10 +57,9 @@ bool init()
 	        gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
 
 			// Create planets
-			int planetsToCreate = 1000;
-			PlanetsCount = planetsToCreate;
+			constexpr int planetsToCreate = 1000;
 
-			Planets = new Body[planetsToCreate];
+            Planets.resize(planetsToCreate);
 
 			for (std::size_t i = 0; i < planetsToCreate; i++)
 			{
@@ -118,40 +116,35 @@ void Update()
 
 	Time = SDL_GetTicks64();
 
-	for (std::size_t i = 0; i < PlanetsCount; i++)
+	for (auto& planet : Planets)
 	{
-		Planets[i].Update(deltaTime);
+        planet.Update(deltaTime);
 
 		// Calculate the vector from the center of the screen to the planet.
-		Vec2F centerToPlanet = Center - Planets[i].Position;
+		Vec2F centerToPlanet = Center - planet.Position;
 
 		bool customOrbit = false;
 
 		if (customOrbit)
 		{
 			// Make them orbit around the center of the screen.
-			Planets[i].Acceleration = centerToPlanet.Normalized() * AttractionPower;
-
-			if (Planets[i].Velocity.Length() > MaxVelocity)
-			{
-				Planets[i].Velocity = Planets[i].Velocity.Normalized() * MaxVelocity;
-			}
+            planet.Acceleration = centerToPlanet.Normalized() * AttractionPower;
 		}
 		else
 		{
 			// MCU orbit = v^2 / r
-			Planets[i].Acceleration = centerToPlanet.Normalized() * (Planets[i].Velocity.Length() * Planets[i].Velocity.Length() / centerToPlanet.Length());
+            planet.Acceleration = centerToPlanet.Normalized() * (planet.Velocity.Length() * planet.Velocity.Length() / centerToPlanet.Length());
 		}
 	}
 }
 
 void Render()
 {
-	for (std::size_t i = 0; i < PlanetsCount; i++)
+    for (const auto& planet : Planets)
 	{
 		SDL_SetRenderDrawColor(gRenderer, 200, 100, 100, 255);
 
-		DrawCircle(Planets[i].Position.X, Planets[i].Position.Y);
+		DrawCircle(planet.Position.X, planet.Position.Y);
 	}
 }
 
@@ -173,9 +166,9 @@ int main(int argc, char* args[])
 			Update();
 
 			// Set center as mouse position
-	        int x, y;
+	        /*int x, y;
 	        SDL_GetMouseState(&x, &y);
-	        Center = Vec2F(x, y);
+	        Center = Vec2F(x, y);*/
 
 			// Clear screen
 			SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);

@@ -1,7 +1,8 @@
 #include "gtest/gtest.h"
-#include "../libs/Math922/include/Vec2.h"
-#include "array"
+#include "Vec2.h"
 #include "Body.h"
+
+#include <array>
 
 struct TestBodyFixtureConstructor : public ::testing::TestWithParam<std::array<Vec2F, 3>> {};
 struct TestBodyFixtureWithTime : public ::testing::TestWithParam<std::pair<std::array<Vec2F, 3>, float>> {};
