@@ -1,5 +1,5 @@
 #include "SDL.h"
-#include "include/Body.h"
+#include "Body.h"
 
 #include "Random.h"
 #include "Vec2.h"

@@ -6,14 +6,12 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(SDL2 REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 
-add_executable(PhysicsEngine main.cpp)
-
-file(GLOB_RECURSE SRC_FILES include/*.h src/*.cpp)
-add_library(PhysicsCommon ${SRC_FILES})
-set_target_properties(PhysicsCommon PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(PhysicsCommon PUBLIC include/)
-target_include_directories(PhysicsCommon PUBLIC libs/Math/include/)
-target_link_libraries(PhysicsEngine PRIVATE PhysicsCommon SDL2::SDL2)
+file(GLOB_RECURSE SRC_FILES common/include/*.h common/src/*.cpp)
+add_library(PhysicsEngineLib ${SRC_FILES})
+set_target_properties(PhysicsEngineLib PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(PhysicsEngineLib PUBLIC common/include/)
+target_include_directories(PhysicsEngineLib PUBLIC libs/Math/include/)
+target_link_libraries(PhysicsEngineLib PRIVATE SDL2::SDL2)
 
 # Make that the include direction in libs/Math/ is directly accessible
 add_subdirectory(libs/Math)
@@ -29,7 +27,7 @@ foreach(test_file ${TEST_FILES} )
     get_filename_component(test_name ${test_file} NAME_WE)
     add_executable(${test_name} ${test_file})
 
-    target_link_libraries(${test_name} PUBLIC PhysicsCommon)
+    target_link_libraries(${test_name} PUBLIC PhysicsEngineLib)
     target_link_libraries(${test_name} PRIVATE GTest::gtest GTest::gtest_main)
 
     IF(MSVC)
@@ -37,6 +35,32 @@ foreach(test_file ${TEST_FILES} )
     else()
         set_target_properties(${test_name} PROPERTIES COMPILE_FLAGS "-save-temps -march=haswell -ffast-math -fno-omit-frame-pointer")
     ENDIF()
+endforeach()
 
-    set_target_properties (${test_name} PROPERTIES FOLDER Courses)
+# Samples
+SET(SAMPLE_DIR ${CMAKE_SOURCE_DIR}/samples)
+file(GLOB SAMPLES ${SAMPLE_DIR}/*)
+
+foreach(sample ${SAMPLES})
+    get_filename_component(sample_name ${sample} NAME_WE)
+    file(GLOB_RECURSE ${sample_name}_FILES ${sample}/src/*.cpp ${sample}/include/*.h)
+
+    if (EXISTS ${sample_name}_FILES)
+        add_library(${sample_name}_LIB ${sample_name}_FILES)
+    endif ()
+
+    add_executable(${sample_name} ${sample}/main.cpp)
+
+    target_include_directories(${sample_name} PUBLIC ${sample}/include/)
+    target_link_libraries(${sample_name} PUBLIC PhysicsEngineLib SDL2::SDL2)
+
+    if (EXISTS ${sample_name}_LIB)
+        target_link_libraries(${sample_name} PUBLIC ${sample_name}_LIB)
+    endif ()
+
+    IF(MSVC)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2 /Oi /Oy-")
+    else()
+        set_target_properties(${sample_name} PROPERTIES COMPILE_FLAGS "-save-temps -march=haswell -ffast-math -fno-omit-frame-pointer")
+    ENDIF()
 endforeach()

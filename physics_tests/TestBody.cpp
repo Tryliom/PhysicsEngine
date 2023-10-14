@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include "Vec2.h"
-#include "Body.h"
+#include "../common/include/Body.h"
 
 #include <array>
 
