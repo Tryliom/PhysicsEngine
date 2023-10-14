@@ -45,17 +45,15 @@ foreach(sample ${SAMPLES})
     get_filename_component(sample_name ${sample} NAME_WE)
     file(GLOB_RECURSE ${sample_name}_FILES ${sample}/src/*.cpp ${sample}/include/*.h)
 
-    if (EXISTS ${sample_name}_FILES)
-        add_library(${sample_name}_LIB ${sample_name}_FILES)
-    endif ()
-
     add_executable(${sample_name} ${sample}/main.cpp)
 
-    target_include_directories(${sample_name} PUBLIC ${sample}/include/)
-    target_link_libraries(${sample_name} PUBLIC PhysicsEngineLib SDL2::SDL2)
-
-    if (EXISTS ${sample_name}_LIB)
+    if (DEFINED ${sample_name}_FILES)
+        add_library(${sample_name}_LIB ${${sample_name}_FILES})
+        target_include_directories(${sample_name}_LIB PUBLIC ${sample}/include/)
+        target_link_libraries(${sample_name}_LIB PUBLIC PhysicsEngineLib SDL2::SDL2)
         target_link_libraries(${sample_name} PUBLIC ${sample_name}_LIB)
+    elseif ()
+        target_link_libraries(${sample_name} PUBLIC PhysicsEngineLib SDL2::SDL2)
     endif ()
 
     IF(MSVC)
