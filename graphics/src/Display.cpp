@@ -1,4 +1,5 @@
 #include "Display.h"
+#include "Input.h"
 
 #include "Timer.h"
 
@@ -45,14 +46,14 @@ namespace Display
 
 		while (true)
 		{
+			Input::Update();
+
 			SDL_Event e;
 			while (SDL_PollEvent(&e) != 0)
 			{
-				if (e.type == SDL_QUIT)
-				{
-					Shutdown();
-					return;
-				}
+				if (e.type == SDL_QUIT) return;
+
+				Input::OnInput(e);
 			}
 
 			Timer::Update();
@@ -81,6 +82,11 @@ namespace Display
 	size_t GetHeight() noexcept
 	{
 		return _height;
+	}
+
+	void PushColor(Color color) noexcept
+	{
+		SDL_SetRenderDrawColor(_renderer, color.R, color.G, color.B, color.A);
 	}
 
 	void DrawCircle(int x, int y, int radius) noexcept
