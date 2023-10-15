@@ -16,11 +16,25 @@ std::vector<std::pair<BodyRef, Color>> Planets;
 Vec2F Center = Vec2F(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 float AttractionPower = 900.f;
 float BaseVelocity = 400.f;
-const float R = 200;
+const float R = 400;
 
 Color GenerateRandomColor()
 {
 	return Color(Random::Range<int>(0, 255), Random::Range<int>(0, 255), Random::Range<int>(0, 255));
+}
+
+void CreatePlanet(Vec2F position)
+{
+	auto planetRef = World::CreateBody();
+	auto& planet = World::GetBody(planetRef);
+	Planets.emplace_back(planetRef, GenerateRandomColor());
+
+	planet.Position = position;
+	planet.Acceleration = Vec2F(0, 0);
+
+	// Make the planet velocity perpendicular to the vector from the center of the screen to the planet.
+	Vec2F centerToPlanet = Center - planet.Position;
+	planet.Velocity = Vec2F(-centerToPlanet.Y, centerToPlanet.X).Normalized() * BaseVelocity;
 }
 
 int main(int argc, char* args[])
@@ -35,19 +49,10 @@ int main(int argc, char* args[])
 
 	for (std::size_t i = 0; i < planetsToCreate; i++)
 	{
-		auto planetRef = World::CreateBody();
-		auto& planet = World::GetBody(planetRef);
-		Planets[i] = std::make_pair(planetRef, GenerateRandomColor());
-
 		auto randomAngle = Radian(Degree(Random::Range<float>(0.f, 360.f)));
 		auto randomR = Random::Range<float>(R / 2.f, R);
 
-		planet.Position = Vec2F(MathUtility::Cos(randomAngle), MathUtility::Sin(randomAngle)) * randomR + Center;
-		planet.Acceleration = Vec2F(0, 0);
-
-		// Make the planet velocity perpendicular to the vector from the center of the screen to the planet.
-		Vec2F centerToPlanet = Center - planet.Position;
-		planet.Velocity = Vec2F(-centerToPlanet.Y, centerToPlanet.X).Normalized() * BaseVelocity;
+		CreatePlanet(Vec2F(MathUtility::Cos(randomAngle), MathUtility::Sin(randomAngle)) * randomR + Center);
 	}
 
     Display::Run();
@@ -62,16 +67,7 @@ void Update(float deltaTime)
 	// If mouse clicked keep pressing, create a new planet.
 	if (Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
 	{
-		auto planetRef = World::CreateBody();
-		auto& planet = World::GetBody(planetRef);
-		Planets.emplace_back(planetRef, GenerateRandomColor());
-
-		planet.Position = Vec2F{ Input::GetMousePosition() } + Vec2F(Random::Range<float>(-MouseRandomRadius, MouseRandomRadius), Random::Range<float>(-MouseRandomRadius, MouseRandomRadius));
-		planet.Acceleration = Vec2F(0, 0);
-
-		// Make the planet velocity perpendicular to the vector from the center of the screen to the planet.
-		Vec2F centerToPlanet = Center - planet.Position;
-		planet.Velocity = Vec2F(-centerToPlanet.Y, centerToPlanet.X).Normalized() * BaseVelocity;
+		CreatePlanet(Vec2F{ Input::GetMousePosition() } + Vec2F(Random::Range<float>(-MouseRandomRadius, MouseRandomRadius), Random::Range<float>(-MouseRandomRadius, MouseRandomRadius)));
 	}
 
 	for (auto& pair : Planets)
