@@ -2,7 +2,7 @@
 
 #include "Vec2.h"
 
-typedef union SDL_Event;
+typedef union SDL_Event SDL_Event;
 
 namespace Input
 {

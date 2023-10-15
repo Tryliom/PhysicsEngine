@@ -34,8 +34,10 @@ namespace World
 		{
 			if (!body.IsEnabled()) continue;
 
-			body.Velocity += body.Acceleration * deltaTime;
-			body.Position += body.Velocity * deltaTime;
+			body.SetAcceleration(body.Force() / body.Mass());
+			body.SetVelocity(body.Velocity() + body.Acceleration() * deltaTime);
+			body.SetPosition(body.Position() + body.Velocity() * deltaTime);
+			body.SetForce(Vec2F(0, 0));
 		}
 	}
 

@@ -8,17 +8,57 @@ public:
 	Body() noexcept = default;
 
 	Body(Vec2F position, Vec2F velocity, Vec2F acceleration) noexcept
-	: Position(position), Velocity(velocity), Acceleration(acceleration) {}
-
-	Vec2F Position = Vec2F(0, 0);
-	Vec2F Velocity = Vec2F(0, 0);
-	Vec2F Acceleration = Vec2F(0, 0);
+	: _position(position), _velocity(velocity), _acceleration(acceleration) {}
 
 private:
+	Vec2F _position = Vec2F(0, 0);
+	Vec2F _velocity = Vec2F(0, 0);
+	Vec2F _acceleration = Vec2F(0, 0);
+	Vec2F _force = Vec2F(0, 0);
 	float _mass = -1.f;
 
 public:
-	[[nodiscard]] constexpr float GetMass() const noexcept
+	[[nodiscard]] constexpr Vec2F Position() const noexcept
+	{
+		return _position;
+	}
+
+	void SetPosition(Vec2F position) noexcept
+	{
+		_position = position;
+	}
+
+	[[nodiscard]] constexpr Vec2F Velocity() const noexcept
+	{
+		return _velocity;
+	}
+
+	void SetVelocity(Vec2F velocity) noexcept
+	{
+		_velocity = velocity;
+	}
+
+	[[nodiscard]] constexpr Vec2F Acceleration() const noexcept
+	{
+		return _acceleration;
+	}
+
+	void SetAcceleration(Vec2F acceleration) noexcept
+	{
+		_acceleration = acceleration;
+	}
+
+	[[nodiscard]] constexpr Vec2F Force() const noexcept
+	{
+		return _force;
+	}
+
+	void SetForce(Vec2F force) noexcept
+	{
+		_force = force;
+	}
+
+	[[nodiscard]] constexpr float Mass() const noexcept
 	{
 		return _mass;
 	}
@@ -30,13 +70,18 @@ public:
 		_mass = mass;
 	}
 
+	void ApplyForce(Vec2F force) noexcept
+	{
+		_force += force * _mass;
+	}
+
 	void Disable() noexcept
 	{
 		_mass = -1.f;
 
-		Position = Vec2F(0, 0);
-		Velocity = Vec2F(0, 0);
-		Acceleration = Vec2F(0, 0);
+		_position = Vec2F(0, 0);
+		_velocity = Vec2F(0, 0);
+		_acceleration = Vec2F(0, 0);
 	}
 
 	void Enable() noexcept

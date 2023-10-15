@@ -14,9 +14,9 @@ float MouseRandomRadius = 15.f;
 std::vector<std::pair<BodyRef, Color>> Planets;
 
 Vec2F Center = Vec2F(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-float AttractionPower = 900.f;
 float BaseVelocity = 400.f;
-const float R = 400;
+float CenterMass = 100000.f;
+const float R = 700;
 
 Color GenerateRandomColor()
 {
@@ -29,12 +29,12 @@ void CreatePlanet(Vec2F position)
 	auto& planet = World::GetBody(planetRef);
 	Planets.emplace_back(planetRef, GenerateRandomColor());
 
-	planet.Position = position;
-	planet.Acceleration = Vec2F(0, 0);
+	planet.SetPosition(position);
+	planet.SetMass(Random::Range<float>(900.f, 1100.f));
 
 	// Make the planet velocity perpendicular to the vector from the center of the screen to the planet.
-	Vec2F centerToPlanet = Center - planet.Position;
-	planet.Velocity = Vec2F(-centerToPlanet.Y, centerToPlanet.X).Normalized() * BaseVelocity;
+	Vec2F centerToPlanet = Center - planet.Position();
+	planet.SetVelocity(Vec2F(-centerToPlanet.Y, centerToPlanet.X).Normalized() * BaseVelocity);
 }
 
 int main(int argc, char* args[])
@@ -43,7 +43,7 @@ int main(int argc, char* args[])
 	World::Init(1000);
 
 	// Create planets
-	constexpr int planetsToCreate = 1000;
+	constexpr int planetsToCreate = 100;
 
 	Planets.resize(planetsToCreate);
 
@@ -75,13 +75,12 @@ void Update(float deltaTime)
 		auto& planet = World::GetBody(pair.first);
 		auto& color = pair.second;
 
-		// Calculate the vector from the center of the screen to the planet.
-		Vec2F centerToPlanet = Center - planet.Position;
+		// Apply force to planet to make it orbit around the center of the screen.
+		Vec2F centerToPlanet = Center - planet.Position();
 
-		// Make them orbit around the center of the screen.
-		planet.Acceleration = centerToPlanet.Normalized() * AttractionPower;
+		planet.ApplyForce(centerToPlanet.Normalized() * (CenterMass * planet.Mass() / (centerToPlanet.Length() * centerToPlanet.Length())));
 
 		Display::PushColor(color);
-		Display::DrawCircle(planet.Position.X, planet.Position.Y, PlanetRadius);
+		Display::DrawCircle(planet.Position().X, planet.Position().Y, PlanetRadius);
 	}
 }
