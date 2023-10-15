@@ -34,7 +34,7 @@ void CreatePlanet(Vec2F position)
 	Planets.emplace_back(planetRef, GenerateRandomColor());
 
 	planet.SetPosition(position);
-	planet.SetMass(Random::Range<float>(900.f, 1100.f));
+	planet.SetMass(Random::Range<float>(800.f, 1400.f));
 
 	// Make the planet velocity perpendicular to the vector from the center of the screen to the planet.
 	Vec2F centerToPlanet = Sun - planet.Position();
@@ -47,7 +47,7 @@ int main(int argc, char* args[])
 	World::Init(1000);
 
 	// Create planets
-	constexpr int planetsToCreate = 5;
+	constexpr int planetsToCreate = PlanetsInteract ? 5 : 100;
 
 	Planets.resize(planetsToCreate);
 
@@ -102,7 +102,7 @@ void Update(float deltaTime)
 		if (centerToPlanet.Length() < Vec2F(SCREEN_WIDTH, SCREEN_HEIGHT).Length() / 2.f)
 		{
 			Display::PushColor(color);
-			Display::DrawCircle(planet.Position().X, planet.Position().Y, PlanetRadius);
+			Display::DrawCircle(planet.Position().X, planet.Position().Y, planet.Mass() / 200.f);
 		}
 	}
 
