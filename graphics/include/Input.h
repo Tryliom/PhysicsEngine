@@ -49,7 +49,7 @@ namespace Input
 	bool IsMouseButtonHeld(int button);
 
 	Vec2I GetMousePosition();
-	Vec2I GetPreviousMousePosition();
+	Vec2I GetMouseDelta();
 
 	float GetMouseWheelDelta();
 }

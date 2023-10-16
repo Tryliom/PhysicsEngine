@@ -79,15 +79,30 @@ void Update(float deltaTime)
 
 	if (PlanetsInteract && Input::IsMouseButtonPressed(SDL_BUTTON_LEFT))
 	{
-		CreatePlanet(Vec2F{ Input::GetMousePosition() });
+		CreatePlanet(Display::GetMousePosition());
 	}
 	else if (!PlanetsInteract && Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
 	{
-		CreatePlanet(Vec2F{ Input::GetMousePosition() } + Vec2F(Random::Range<float>(-MouseRandomRadius, MouseRandomRadius), Random::Range<float>(-MouseRandomRadius, MouseRandomRadius)));
+		CreatePlanet(Display::GetMousePosition() + Vec2F(Random::Range<float>(-MouseRandomRadius, MouseRandomRadius), Random::Range<float>(-MouseRandomRadius, MouseRandomRadius)));
 	}
-	else if (Input::IsMouseButtonPressed(SDL_BUTTON_RIGHT))
+	else if (Input::IsMouseButtonPressed(SDL_BUTTON_MIDDLE))
 	{
-		CreatePlanet(Vec2F{ Input::GetMousePosition() }, Random::Range<float>(1000.f, 3000.f));
+		CreatePlanet(Display::GetMousePosition(), Random::Range<float>(1000.f, 3000.f));
+	}
+
+	auto mouseWheelDelta = Input::GetMouseWheelDelta();
+
+	if (mouseWheelDelta != 0)
+	{
+		Display::SetCameraZoom(Display::GetCameraZoom() + mouseWheelDelta * 0.01f);
+	}
+
+	auto mouseDelta = Display::GetMouseDelta();
+
+	// Move camera when holding right mouse button.
+	if (Input::IsMouseButtonHeld(SDL_BUTTON_RIGHT) && mouseDelta != Vec2F::Zero())
+	{
+		Display::MoveCamera(mouseDelta);
 	}
 
 	for (auto& planet : Planets)
@@ -114,11 +129,8 @@ void Update(float deltaTime)
 			}
 		}
 
-		if (centerToPlanet.Length() < Vec2F(SCREEN_WIDTH, SCREEN_HEIGHT).Length() / 2.f)
-		{
-			Display::PushColor(planet.Color);
-			Display::DrawCircle(body.Position().X, body.Position().Y, planet.Radius);
-		}
+		Display::PushColor(planet.Color);
+		Display::DrawCircle(body.Position().X, body.Position().Y, planet.Radius);
 	}
 
 	Display::PushColor(Color(255, 255, 0));

@@ -13,7 +13,7 @@ namespace Input
 	bool _mouseButtonsHeld[5];
 
 	Vec2I _mousePosition;
-	Vec2I _previousMousePosition;
+	Vec2I _mouseDelta;
 
 	float _mouseWheelDelta;
 
@@ -41,7 +41,8 @@ namespace Input
 			_mouseWheelDelta = event.wheel.y;
 			break;
 		case SDL_MOUSEMOTION:
-			_previousMousePosition = _mousePosition;
+			_mouseDelta.X = event.motion.xrel;
+			_mouseDelta.Y = event.motion.yrel;
 			_mousePosition.X = event.motion.x;
 			_mousePosition.Y = event.motion.y;
 			break;
@@ -63,6 +64,7 @@ namespace Input
 		}
 
 		_mouseWheelDelta = 0;
+		_mouseDelta = Vec2I::Zero();
 	}
 
 	bool IsKeyPressed(int key)
@@ -100,9 +102,9 @@ namespace Input
 		return _mousePosition;
 	}
 
-	Vec2I GetPreviousMousePosition()
+	Vec2I GetMouseDelta()
 	{
-		return _previousMousePosition;
+		return _mouseDelta;
 	}
 
 	float GetMouseWheelDelta()

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Vec2.h"
+
 #include <string>
 #include <SDL_events.h>
 
@@ -19,6 +21,12 @@ struct Color
 	static constexpr Color Black() noexcept { return Color(0, 0, 0); }
 };
 
+struct Camera
+{
+	Vec2F Position { 0.f, 0.f };
+	float Zoom { 1.f };
+};
+
 namespace Display
 {
 	void Init(size_t width, size_t height, const std::string& name = "Display") noexcept;
@@ -30,6 +38,15 @@ namespace Display
 
 	size_t GetWidth() noexcept;
 	size_t GetHeight() noexcept;
+
+	void SetMeterPerPixel(float meterPerPixel) noexcept;
+	Vec2F GetMousePosition() noexcept;
+	Vec2F GetMouseDelta() noexcept;
+
+	void MoveCamera(Vec2F delta) noexcept;
+	void SetCameraPosition(Vec2F position) noexcept;
+	void SetCameraZoom(float zoom) noexcept;
+	float GetCameraZoom() noexcept;
 
 	void PushColor(Color color) noexcept;
 	void DrawCircle(int x, int y, int radius) noexcept;

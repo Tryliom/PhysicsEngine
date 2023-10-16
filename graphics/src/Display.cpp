@@ -12,6 +12,9 @@ namespace Display
 
 	size_t _width = 0;
 	size_t _height = 0;
+	float _meterPerPixel = 1.f;
+
+	Camera _camera;
 
 	void Init(size_t width, size_t height, const std::string& name) noexcept
 	{
@@ -84,6 +87,46 @@ namespace Display
 		return _height;
 	}
 
+	void SetMeterPerPixel(float meterPerPixel) noexcept
+	{
+		_meterPerPixel = meterPerPixel;
+	}
+
+	Vec2F GetMousePosition() noexcept
+	{
+		return (Vec2F{ Input::GetMousePosition() } - _camera.Position) / (_meterPerPixel * _camera.Zoom);
+	}
+
+	Vec2F GetMouseDelta() noexcept
+	{
+		return Vec2F{ Input::GetMouseDelta() };
+	}
+
+	void MoveCamera(Vec2F delta) noexcept
+	{
+		_camera.Position += delta;
+	}
+
+	void SetCameraPosition(Vec2F position) noexcept
+	{
+		_camera.Position = position;
+	}
+
+	void SetCameraZoom(float zoom) noexcept
+	{
+		_camera.Zoom = zoom;
+
+		if (_camera.Zoom < 0.1f)
+		{
+			_camera.Zoom = 0.1f;
+		}
+	}
+
+	float GetCameraZoom() noexcept
+	{
+		return _camera.Zoom;
+	}
+
 	void PushColor(Color color) noexcept
 	{
 		SDL_SetRenderDrawColor(_renderer, color.R, color.G, color.B, color.A);
@@ -97,9 +140,17 @@ namespace Display
 			{
 				int dx = radius - w; // horizontal offset
 				int dy = radius - h; // vertical offset
+
 				if ((dx*dx + dy*dy) <= (radius * radius))
 				{
-					SDL_RenderDrawPoint(_renderer, x + dx, y + dy);
+					// Cancel draw if outside of screen taking camera position and zoom into account.
+					if (x - radius + w < -_camera.Position.X / (_meterPerPixel * _camera.Zoom) || x - radius + w > -_camera.Position.X / (_meterPerPixel * _camera.Zoom) + _width / (_meterPerPixel * _camera.Zoom) ||
+						y - radius + h < -_camera.Position.Y / (_meterPerPixel * _camera.Zoom) || y - radius + h > -_camera.Position.Y / (_meterPerPixel * _camera.Zoom) + _height / (_meterPerPixel * _camera.Zoom))
+					{
+						continue;
+					}
+
+					SDL_RenderDrawPoint(_renderer, _camera.Position.X + (x - radius + w) * _meterPerPixel * _camera.Zoom, _camera.Position.Y + (y - radius + h) * _meterPerPixel * _camera.Zoom);
 				}
 			}
 		}
