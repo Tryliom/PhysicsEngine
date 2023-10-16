@@ -4,6 +4,7 @@
 #include "Timer.h"
 
 #include "SDL.h"
+#include <vector>
 
 namespace Display
 {
@@ -139,27 +140,37 @@ namespace Display
 		SDL_SetRenderDrawColor(_renderer, color.R, color.G, color.B, color.A);
 	}
 
-	void DrawCircle(int x, int y, int radius) noexcept
+	void DrawCircle(float x, float y, float radius, Color color) noexcept
 	{
-		for (int w = 0; w < radius * 2; w++)
+		constexpr static int segments = 15;
+		std::vector<SDL_Vertex> vertices;
+		std::vector<int> indices;
+		SDL_Color circleColor = { color.R, color.G, color.B, color.A };
+
+		for (int i = 0; i < segments; i++)
 		{
-			for (int h = 0; h < radius * 2; h++)
-			{
-				int dx = radius - w; // horizontal offset
-				int dy = radius - h; // vertical offset
+			auto angle = Radian(Degree(i * 360.f / segments));
+			auto circleX = x + radius * MathUtility::Cos(angle);
+			auto circleY = y + radius * MathUtility::Sin(angle);
 
-				if ((dx*dx + dy*dy) <= (radius * radius))
-				{
-					// Cancel draw if outside of screen taking camera position and zoom into account.
-					if (x - radius + w < -_camera.Position.X / (_meterPerPixel * _camera.Zoom) || x - radius + w > -_camera.Position.X / (_meterPerPixel * _camera.Zoom) + _width / (_meterPerPixel * _camera.Zoom) ||
-						y - radius + h < -_camera.Position.Y / (_meterPerPixel * _camera.Zoom) || y - radius + h > -_camera.Position.Y / (_meterPerPixel * _camera.Zoom) + _height / (_meterPerPixel * _camera.Zoom))
-					{
-						continue;
-					}
+			// Apply camera position and zoom
+			circleX = _camera.Position.X + circleX * _meterPerPixel * _camera.Zoom;
+			circleY = _camera.Position.Y + circleY * _meterPerPixel * _camera.Zoom;
 
-					SDL_RenderDrawPoint(_renderer, _camera.Position.X + (x - radius + w) * _meterPerPixel * _camera.Zoom, _camera.Position.Y + (y - radius + h) * _meterPerPixel * _camera.Zoom);
-				}
-			}
+			vertices.push_back({{ circleX, circleY}, circleColor, { 1.f, 1.f }});
 		}
+
+		for (int i = 0; i < segments - 1; i++)
+		{
+			indices.push_back(0);
+			indices.push_back(i);
+			indices.push_back(i + 1);
+		}
+
+		indices.push_back(0);
+		indices.push_back(segments - 1);
+		indices.push_back(0);
+
+		SDL_RenderGeometry(_renderer, nullptr, vertices.data(), vertices.size(), indices.data(), indices.size());
 	}
 }

@@ -49,5 +49,5 @@ namespace Display
 	float GetCameraZoom() noexcept;
 
 	void PushColor(Color color) noexcept;
-	void DrawCircle(int x, int y, int radius) noexcept;
+	void DrawCircle(float x, float y, float radius, Color color = Color::Red()) noexcept;
 }
