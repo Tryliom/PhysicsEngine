@@ -19,8 +19,6 @@ constexpr int SCREEN_HEIGHT = 900;
 constexpr float MouseRandomRadius = 15.f;
 std::vector<Planet> Planets;
 
-constexpr float BaseVelocity = 1600.f;
-
 const Vec2F Sun = Vec2F(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 constexpr float SunMass = 100000.f;
 constexpr int SunRadius = 3;
@@ -45,8 +43,8 @@ void CreatePlanet(Vec2F position, float extraMass = 0.f)
 	// Make the planet velocity perpendicular to the vector from the center of the screen to the planet.
 	Vec2F centerToPlanet = Sun - planet.Position();
 	// Calculate the velocity needed to make the planet orbit around the center of the screen using his mass.
-	Vec2F optimalVelocity = Vec2F(-centerToPlanet.Y, centerToPlanet.X).Normalized() * BaseVelocity * (SunMass / (centerToPlanet.Length() * centerToPlanet.Length()));
-	planet.SetVelocity(optimalVelocity);
+	Vec2F orbitalVelocity = Vec2F(-centerToPlanet.Y, centerToPlanet.X).Normalized() * std::sqrt(SunMass * mass / centerToPlanet.Length());
+	planet.SetVelocity(orbitalVelocity);
 }
 
 int main(int argc, char* args[])

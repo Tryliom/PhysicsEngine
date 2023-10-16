@@ -114,12 +114,19 @@ namespace Display
 
 	void SetCameraZoom(float zoom) noexcept
 	{
+		// Zoom in/out around the mouse position
+		auto mousePosition = GetMousePosition();
+
+		_camera.Position += mousePosition * _meterPerPixel * _camera.Zoom;
+
 		_camera.Zoom = zoom;
 
 		if (_camera.Zoom < 0.1f)
 		{
 			_camera.Zoom = 0.1f;
 		}
+
+		_camera.Position -= mousePosition * _meterPerPixel * _camera.Zoom;
 	}
 
 	float GetCameraZoom() noexcept
