@@ -6,15 +6,20 @@
 #include "Input.h"
 #include "Random.h"
 
+struct Planet
+{
+	BodyRef BodyRef;
+	Color Color;
+	size_t Radius;
+};
+
 constexpr int SCREEN_WIDTH = 1550;
 constexpr int SCREEN_HEIGHT = 900;
 
-constexpr int PlanetRadius = 5;
 constexpr float MouseRandomRadius = 15.f;
-std::vector<std::pair<BodyRef, Color>> Planets;
+std::vector<Planet> Planets;
 
-constexpr float BaseVelocity = 400.f;
-const float R = 700;
+constexpr float BaseVelocity = 1600.f;
 
 const Vec2F Sun = Vec2F(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 constexpr float SunMass = 100000.f;
@@ -27,18 +32,21 @@ Color GenerateRandomColor()
 	return Color(Random::Range<int>(0, 255), Random::Range<int>(0, 255), Random::Range<int>(0, 255));
 }
 
-void CreatePlanet(Vec2F position)
+void CreatePlanet(Vec2F position, float extraMass = 0.f)
 {
 	auto planetRef = World::CreateBody();
 	auto& planet = World::GetBody(planetRef);
-	Planets.emplace_back(planetRef, GenerateRandomColor());
+	auto mass = Random::Range<float>(800.f, 1400.f) + extraMass;
+	Planets.emplace_back(planetRef, GenerateRandomColor(), mass / 200.f);
 
 	planet.SetPosition(position);
-	planet.SetMass(Random::Range<float>(800.f, 1400.f));
+	planet.SetMass(mass);
 
 	// Make the planet velocity perpendicular to the vector from the center of the screen to the planet.
 	Vec2F centerToPlanet = Sun - planet.Position();
-	planet.SetVelocity(Vec2F(-centerToPlanet.Y, centerToPlanet.X).Normalized() * BaseVelocity);
+	// Calculate the velocity needed to make the planet orbit around the center of the screen using his mass.
+	Vec2F optimalVelocity = Vec2F(-centerToPlanet.Y, centerToPlanet.X).Normalized() * BaseVelocity * (SunMass / (centerToPlanet.Length() * centerToPlanet.Length()));
+	planet.SetVelocity(optimalVelocity);
 }
 
 int main(int argc, char* args[])
@@ -48,6 +56,7 @@ int main(int argc, char* args[])
 
 	// Create planets
 	constexpr int planetsToCreate = PlanetsInteract ? 5 : 100;
+	constexpr float R = 700;
 
 	Planets.resize(planetsToCreate);
 
@@ -68,41 +77,47 @@ void Update(float deltaTime)
 {
 	World::Update(deltaTime);
 
-	// If mouse clicked keep pressing, create a new planet.
-	if (Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
+	if (PlanetsInteract && Input::IsMouseButtonPressed(SDL_BUTTON_LEFT))
+	{
+		CreatePlanet(Vec2F{ Input::GetMousePosition() });
+	}
+	else if (!PlanetsInteract && Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
 	{
 		CreatePlanet(Vec2F{ Input::GetMousePosition() } + Vec2F(Random::Range<float>(-MouseRandomRadius, MouseRandomRadius), Random::Range<float>(-MouseRandomRadius, MouseRandomRadius)));
 	}
-
-	for (auto& pair : Planets)
+	else if (Input::IsMouseButtonPressed(SDL_BUTTON_RIGHT))
 	{
-		auto& planet = World::GetBody(pair.first);
-		auto& color = pair.second;
+		CreatePlanet(Vec2F{ Input::GetMousePosition() }, Random::Range<float>(1000.f, 3000.f));
+	}
+
+	for (auto& planet : Planets)
+	{
+		auto& body = World::GetBody(planet.BodyRef);
 
 		// Apply force to planet to make it orbit around the center of the screen.
-		Vec2F centerToPlanet = Sun - planet.Position();
+		Vec2F centerToPlanet = Sun - body.Position();
 
-		planet.ApplyForce(centerToPlanet.Normalized() * (SunMass * planet.Mass() / (centerToPlanet.Length() * centerToPlanet.Length())));
+		body.ApplyForce(centerToPlanet.Normalized() * (SunMass * body.Mass() / (centerToPlanet.Length() * centerToPlanet.Length())));
 
 		if (PlanetsInteract)
 		{
-			for (auto& otherPair: Planets)
+			for (auto& otherPlanet: Planets)
 			{
-				auto& otherPlanet = World::GetBody(otherPair.first);
+				auto& otherBody = World::GetBody(otherPlanet.BodyRef);
 
-				if (&planet == &otherPlanet)
+				if (&body == &otherBody)
 				{ continue; }
 
-				Vec2F planetToOtherPlanet = otherPlanet.Position() - planet.Position();
+				Vec2F planetToOtherPlanet = otherBody.Position() - body.Position();
 
-				planet.ApplyForce(planetToOtherPlanet.Normalized() * (otherPlanet.Mass() * planet.Mass() / (planetToOtherPlanet.Length() * planetToOtherPlanet.Length())));
+				body.ApplyForce(planetToOtherPlanet.Normalized() * (otherBody.Mass() * body.Mass() / (planetToOtherPlanet.Length() * planetToOtherPlanet.Length())));
 			}
 		}
 
 		if (centerToPlanet.Length() < Vec2F(SCREEN_WIDTH, SCREEN_HEIGHT).Length() / 2.f)
 		{
-			Display::PushColor(color);
-			Display::DrawCircle(planet.Position().X, planet.Position().Y, planet.Mass() / 200.f);
+			Display::PushColor(planet.Color);
+			Display::DrawCircle(body.Position().X, body.Position().Y, planet.Radius);
 		}
 	}
 
