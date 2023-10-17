@@ -209,7 +209,7 @@ void Update(float deltaTime)
 
 	if (Input::IsKeyHeld(SDL_SCANCODE_LSHIFT))
 	{
-		if (Input::IsMouseButtonPressed(SDL_BUTTON_LEFT))
+		if (Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
 		{
 			CreatePlanet(Display::GetMousePosition(), Random::Range<float>(1000.f, 3000.f));
 		}
