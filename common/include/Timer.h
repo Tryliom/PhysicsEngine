@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Timer
+namespace Physics::Timer
 {
 	void Init() noexcept;
 

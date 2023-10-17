@@ -2,6 +2,8 @@
 
 #include "gtest/gtest.h"
 
+using namespace Physics;
+
 struct TestUniquePtrFixture : public ::testing::TestWithParam<int> {};
 
 INSTANTIATE_TEST_SUITE_P(UniquePtr, TestUniquePtrFixture, testing::Values(

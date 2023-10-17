@@ -6,6 +6,9 @@
 
 #include <array>
 
+using namespace Physics;
+using namespace Math;
+
 struct TestWorldFixtureTime : public ::testing::TestWithParam<std::pair<std::array<Vec2F, 4>, std::pair<float, float>>> {};
 
 INSTANTIATE_TEST_SUITE_P(World, TestWorldFixtureTime, testing::Values(

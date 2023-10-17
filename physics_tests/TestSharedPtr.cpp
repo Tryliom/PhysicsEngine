@@ -2,6 +2,8 @@
 
 #include "gtest/gtest.h"
 
+using namespace Physics;
+
 struct TestSharedPtrFixture : public ::testing::TestWithParam<int> {};
 
 INSTANTIATE_TEST_SUITE_P(SharedPtr, TestSharedPtrFixture, testing::Values(

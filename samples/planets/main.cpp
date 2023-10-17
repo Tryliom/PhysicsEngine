@@ -8,7 +8,7 @@
 
 struct Planet
 {
-	BodyRef BodyRef;
+	Physics::BodyRef BodyRef;
 	Color Color;
 	float Radius;
 };
@@ -22,21 +22,21 @@ std::vector<Planet> Planets;
 constexpr float SunMass = 10000.f;
 constexpr int SunRadius = 10;
 constexpr Color SunColor = Color(255, 255, 0);
-std::vector<BodyRef> Suns;
+std::vector<Physics::BodyRef> Suns;
 
 bool FollowSun = false;
-BodyRef FollowedSun;
+Physics::BodyRef FollowedSun;
 
 Color GenerateRandomColor()
 {
-	return Color(Random::Range<int>(0, 255), Random::Range<int>(0, 255), Random::Range<int>(0, 255));
+	return Color(Math::Random::Range<int>(0, 255), Math::Random::Range<int>(0, 255), Math::Random::Range<int>(0, 255));
 }
 
-void CreatePlanet(Vec2F position, float extraMass = 0.f)
+void CreatePlanet(Math::Vec2F position, float extraMass = 0.f)
 {
-	auto planetRef = World::CreateBody();
-	auto& planet = World::GetBody(planetRef);
-	auto mass = Random::Range<float>(800.f, 1400.f) + extraMass;
+	auto planetRef = Physics::World::CreateBody();
+	auto& planet = Physics::World::GetBody(planetRef);
+	auto mass = Math::Random::Range<float>(800.f, 1400.f) + extraMass;
 	Planets.emplace_back(planetRef, GenerateRandomColor(), mass / 200.f);
 
 	planet.SetPosition(position);
@@ -47,8 +47,8 @@ void CreatePlanet(Vec2F position, float extraMass = 0.f)
 
 	for (auto& sun : Suns)
 	{
-		auto sunBody = World::GetBody(sun);
-		auto nearestSunBody = World::GetBody(nearestSun);
+		auto sunBody = Physics::World::GetBody(sun);
+		auto nearestSunBody = Physics::World::GetBody(nearestSun);
 
 		if ((sunBody.Position() - planet.Position()).Length() < (nearestSunBody.Position() - planet.Position()).Length())
 		{
@@ -56,22 +56,22 @@ void CreatePlanet(Vec2F position, float extraMass = 0.f)
 		}
 	}
 
-	auto& nearestSunBody = World::GetBody(nearestSun);
+	auto& nearestSunBody = Physics::World::GetBody(nearestSun);
 
 	// Make the planet velocity perpendicular to the vector from the center of the screen to the planet.
-	Vec2F sunToPlanet = planet.Position() - nearestSunBody.Position();
+	Math::Vec2F sunToPlanet = planet.Position() - nearestSunBody.Position();
 	// Calculate the velocity needed to make the planet orbit around the center of the screen using his mass.
-	Vec2F orbitalVelocity = Vec2F(-sunToPlanet.Y, sunToPlanet.X).Normalized() * std::sqrt(nearestSunBody.Mass() * mass / sunToPlanet.Length());
+	Math::Vec2F orbitalVelocity = Math::Vec2F(-sunToPlanet.Y, sunToPlanet.X).Normalized() * std::sqrt(nearestSunBody.Mass() * mass / sunToPlanet.Length());
 	// Apply the sun velocity to the planet.
 	orbitalVelocity += nearestSunBody.Velocity();
 
 	planet.SetVelocity(orbitalVelocity);
 }
 
-void CreateSun(Vec2F position)
+void CreateSun(Math::Vec2F position)
 {
-	auto sunRef = World::CreateBody();
-	auto& sun = World::GetBody(sunRef);
+	auto sunRef = Physics::World::CreateBody();
+	auto& sun = Physics::World::GetBody(sunRef);
 
 	Suns.push_back(sunRef);
 	sun.SetPosition(position);
@@ -86,8 +86,8 @@ void CreateSun(Vec2F position)
 	{
 		if (otherSun == nearestSun || otherSun == sunRef) continue;
 
-		auto otherSunBody = World::GetBody(otherSun);
-		auto nearestSunBody = World::GetBody(nearestSun);
+		auto otherSunBody = Physics::World::GetBody(otherSun);
+		auto nearestSunBody = Physics::World::GetBody(nearestSun);
 
 		if ((otherSunBody.Position() - sun.Position()).Length() < (nearestSunBody.Position() - sun.Position()).Length())
 		{
@@ -95,11 +95,11 @@ void CreateSun(Vec2F position)
 		}
 	}
 
-	auto nearestSunBody = World::GetBody(nearestSun);
-	Vec2F centerToSun = nearestSunBody.Position() - sun.Position();
+	auto nearestSunBody = Physics::World::GetBody(nearestSun);
+	Math::Vec2F centerToSun = nearestSunBody.Position() - sun.Position();
 
 	// Calculate the velocity needed to make the sun orbit around the center of the screen using his mass.
-	Vec2F orbitalVelocity = Vec2F(-centerToSun.Y, centerToSun.X).Normalized() * std::sqrt(SunMass * SunMass / centerToSun.Length());
+	Math::Vec2F orbitalVelocity = Math::Vec2F(-centerToSun.Y, centerToSun.X).Normalized() * std::sqrt(SunMass * SunMass / centerToSun.Length());
 	// Apply the sun velocity to the sun.
 	orbitalVelocity += nearestSunBody.Velocity();
 
@@ -109,17 +109,17 @@ void CreateSun(Vec2F position)
 int main(int argc, char* args[])
 {
 	Display::Init(SCREEN_WIDTH, SCREEN_HEIGHT, "Planets");
-	World::Init(1000);
+	Physics::World::Init(1000);
 
 	// Create sun
-	CreateSun(Vec2F(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT / 2.f));
+	CreateSun(Math::Vec2F(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT / 2.f));
 
 	FollowSun = true;
 	FollowedSun = Suns[0];
 
-	auto& sunBody = World::GetBody(Suns[0]);
+	auto& sunBody = Physics::World::GetBody(Suns[0]);
 
-	sunBody.SetVelocity(Vec2F::One() * 50.f);
+	sunBody.SetVelocity(Math::Vec2F::One() * 50.f);
 
 	// Create planets
 	constexpr int planetsToCreate = 250;
@@ -129,10 +129,10 @@ int main(int argc, char* args[])
 
 	for (std::size_t i = 0; i < planetsToCreate; i++)
 	{
-		auto randomAngle = Radian(Degree(Random::Range<float>(0.f, 360.f)));
-		auto randomR = Random::Range<float>(R / 2.f, R);
+		auto randomAngle = Math::Radian(Math::Degree(Math::Random::Range<float>(0.f, 360.f)));
+		auto randomR = Math::Random::Range<float>(R / 2.f, R);
 
-		CreatePlanet(Vec2F(MathUtility::Cos(randomAngle), MathUtility::Sin(randomAngle)) * randomR + sunBody.Position());
+		CreatePlanet(Math::Vec2F(Math::Utility::Cos(randomAngle), Math::Utility::Sin(randomAngle)) * randomR + sunBody.Position());
 	}
 
     Display::Run();
@@ -142,7 +142,7 @@ int main(int argc, char* args[])
 
 void Update(float deltaTime)
 {
-	World::Update(deltaTime);
+	Physics::World::Update(deltaTime);
 
 	if (Input::IsKeyPressed(SDL_SCANCODE_F))
 	{
@@ -160,8 +160,8 @@ void Update(float deltaTime)
 
 			for (auto& sun : Suns)
 			{
-				auto sunBody = World::GetBody(sun);
-				auto nearestSunBody = World::GetBody(nearestSun);
+				auto sunBody = Physics::World::GetBody(sun);
+				auto nearestSunBody = Physics::World::GetBody(nearestSun);
 
 				if ((sunBody.Position() - mousePosition).Length() < (nearestSunBody.Position() - mousePosition).Length())
 				{
@@ -171,7 +171,7 @@ void Update(float deltaTime)
 
 			FollowedSun = nearestSun;
 
-			Display::LookAt(World::GetBody(FollowedSun).Position());
+			Display::LookAt(Physics::World::GetBody(FollowedSun).Position());
 		}
 	}
 
@@ -180,11 +180,11 @@ void Update(float deltaTime)
 
 	if (mouseWheelDelta != 0)
 	{
-		Vec2F target = Display::GetMousePosition();
+		Math::Vec2F target = Display::GetMousePosition();
 
 		if (FollowSun)
 		{
-			target = World::GetBody(FollowedSun).Position();
+			target = Physics::World::GetBody(FollowedSun).Position();
 		}
 
 		Display::SetCameraZoom(Display::GetCameraZoom() + mouseWheelDelta * 0.05f, target);
@@ -193,7 +193,7 @@ void Update(float deltaTime)
 	auto mouseDelta = Display::GetMouseDelta();
 
 	// Move camera when holding right mouse button.
-	if (Input::IsMouseButtonHeld(SDL_BUTTON_RIGHT) && mouseDelta != Vec2F::Zero())
+	if (Input::IsMouseButtonHeld(SDL_BUTTON_RIGHT) && mouseDelta != Math::Vec2F::Zero())
 	{
 		Display::MoveCamera(mouseDelta);
 
@@ -202,7 +202,7 @@ void Update(float deltaTime)
 
 	if (FollowSun)
 	{
-		auto& followedSunBody = World::GetBody(FollowedSun);
+		auto& followedSunBody = Physics::World::GetBody(FollowedSun);
 
 		Display::LookAt(followedSunBody.Position());
 	}
@@ -211,12 +211,12 @@ void Update(float deltaTime)
 	{
 		if (Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
 		{
-			CreatePlanet(Display::GetMousePosition(), Random::Range<float>(1000.f, 3000.f));
+			CreatePlanet(Display::GetMousePosition(), Math::Random::Range<float>(1000.f, 3000.f));
 		}
 	}
 	else if (Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
 	{
-		CreatePlanet(Display::GetMousePosition() + Vec2F(Random::Range<float>(-MouseRandomRadius, MouseRandomRadius), Random::Range<float>(-MouseRandomRadius, MouseRandomRadius)));
+		CreatePlanet(Display::GetMousePosition() + Math::Vec2F(Math::Random::Range<float>(-MouseRandomRadius, MouseRandomRadius), Math::Random::Range<float>(-MouseRandomRadius, MouseRandomRadius)));
 	}
 
 	if (Input::IsMouseButtonPressed(SDL_BUTTON_MIDDLE))
@@ -227,16 +227,16 @@ void Update(float deltaTime)
 
 	for (auto& planet : Planets)
 	{
-		auto& body = World::GetBody(planet.BodyRef);
+		auto& body = Physics::World::GetBody(planet.BodyRef);
 
 		for (auto sun : Suns)
 		{
-			auto& sunBody = World::GetBody(sun);
+			auto& sunBody = Physics::World::GetBody(sun);
 
 			// Apply force to planet to make it orbit around the center of the screen.
-			Vec2F centerToPlanet = sunBody.Position() - body.Position();
+			Math::Vec2F centerToPlanet = sunBody.Position() - body.Position();
 
-			if (centerToPlanet == Vec2F::Zero()) continue;
+			if (centerToPlanet == Math::Vec2F::Zero()) continue;
 
 			body.ApplyForce(centerToPlanet.Normalized() * (SunMass * body.Mass() / (centerToPlanet.Length() * centerToPlanet.Length())));
 		}
@@ -246,17 +246,17 @@ void Update(float deltaTime)
 
 	for (auto& sun : Suns)
 	{
-		auto& sunBody = World::GetBody(sun);
+		auto& sunBody = Physics::World::GetBody(sun);
 
 		for (auto& otherSun : Suns)
 		{
-			auto& otherSunBody = World::GetBody(otherSun);
+			auto& otherSunBody = Physics::World::GetBody(otherSun);
 
 			if (&sunBody == &otherSunBody) continue;
 
-			Vec2F sunToOtherSun = otherSunBody.Position() - sunBody.Position();
+			Math::Vec2F sunToOtherSun = otherSunBody.Position() - sunBody.Position();
 
-			if (sunToOtherSun == Vec2F::Zero()) continue;
+			if (sunToOtherSun == Math::Vec2F::Zero()) continue;
 
 			sunBody.ApplyForce(sunToOtherSun.Normalized() * (otherSunBody.Mass() * sunBody.Mass() / (sunToOtherSun.Length() * sunToOtherSun.Length())));
 		}

@@ -6,9 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(GTest CONFIG REQUIRED)
 
 file(GLOB_RECURSE SRC_FILES include/*.h)
-add_library(Common ${SRC_FILES})
-set_target_properties(Common PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(Common PUBLIC include/)
+add_library(MathLibrary ${SRC_FILES})
+set_target_properties(MathLibrary PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(MathLibrary PUBLIC include/)
 
 # Tests
 SET(TEST_DIR ${CMAKE_SOURCE_DIR}/tests)
@@ -19,7 +19,7 @@ foreach(test_file ${TEST_FILES} )
     get_filename_component(test_name ${test_file} NAME_WE)
     add_executable(${test_name} ${test_file})
     # Make sure YourLib is linked to each app
-    target_link_libraries(${test_name} PUBLIC Common)
+    target_link_libraries(${test_name} PUBLIC MathLibrary)
     target_link_libraries(${test_name} PRIVATE GTest::gtest GTest::gtest_main)
 
     IF(MSVC)

@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-namespace Timer
+namespace Physics::Timer
 {
 	std::chrono::nanoseconds _deltaTime = std::chrono::nanoseconds(0);
 	std::chrono::nanoseconds _currentTime = std::chrono::nanoseconds(0);

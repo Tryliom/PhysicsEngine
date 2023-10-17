@@ -1,19 +1,22 @@
 #pragma once
 
-class Body;
-
-struct BodyRef
+namespace Physics
 {
-	size_t Index;
-	size_t Generation;
+	class Body;
 
-	constexpr bool operator==(const BodyRef& other) const noexcept
+	struct BodyRef
 	{
-		return Index == other.Index && Generation == other.Generation;
-	}
-};
+		size_t Index;
+		size_t Generation;
 
-namespace World
+		constexpr bool operator==(const BodyRef& other) const noexcept
+		{
+			return Index == other.Index && Generation == other.Generation;
+		}
+	};
+}
+
+namespace Physics::World
 {
 	void Init(size_t defaultBodySize = 500) noexcept;
 	void Update(float deltaTime) noexcept;

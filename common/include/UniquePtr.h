@@ -1,32 +1,35 @@
 #pragma once
 
-template <typename T>
-class UniquePtr
+namespace Physics
 {
-public:
-	constexpr explicit UniquePtr(T* ptr) noexcept
+	template<typename T>
+	class UniquePtr
 	{
-		_ptr = ptr;
-	}
+	public:
+		constexpr explicit UniquePtr(T* ptr) noexcept
+		{
+			_ptr = ptr;
+		}
 
-	constexpr UniquePtr(UniquePtr&& other) noexcept = delete;
-	constexpr UniquePtr(const UniquePtr& other) noexcept = delete;
-	constexpr UniquePtr& operator=(UniquePtr&& other) noexcept = delete;
-	constexpr UniquePtr& operator=(const UniquePtr& other) noexcept = delete;
+		constexpr UniquePtr(UniquePtr&& other) noexcept = delete;
+		constexpr UniquePtr(const UniquePtr& other) noexcept = delete;
+		constexpr UniquePtr& operator=(UniquePtr&& other) noexcept = delete;
+		constexpr UniquePtr& operator=(const UniquePtr& other) noexcept = delete;
 
-	constexpr ~UniquePtr() noexcept
-	{
-		delete _ptr;
-	}
+		constexpr ~UniquePtr() noexcept
+		{
+			delete _ptr;
+		}
 
-private:
-	T* _ptr = nullptr;
+	private:
+		T* _ptr = nullptr;
 
-public:
-	UniquePtr() noexcept = delete;
+	public:
+		UniquePtr() noexcept = delete;
 
-	constexpr T* Get() noexcept
-	{
-		return _ptr;
-	}
-};
+		constexpr T* Get() noexcept
+		{
+			return _ptr;
+		}
+	};
+}

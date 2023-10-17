@@ -2,6 +2,8 @@
 
 #include "gtest/gtest.h"
 
+using namespace Physics;
+
 TEST(Timer, Init)
 {
 	Timer::Init();

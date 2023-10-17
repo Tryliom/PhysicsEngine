@@ -23,7 +23,7 @@ struct Color
 
 struct Camera
 {
-	Vec2F Position { 0.f, 0.f };
+	Math::Vec2F Position { 0.f, 0.f };
 	float Zoom { 1.f };
 };
 
@@ -40,14 +40,14 @@ namespace Display
 	size_t GetHeight() noexcept;
 
 	void SetMeterPerPixel(float meterPerPixel) noexcept;
-	Vec2F GetMousePosition() noexcept;
-	Vec2F GetMouseDelta() noexcept;
-	Vec2F GetCameraPosition() noexcept;
+	Math::Vec2F GetMousePosition() noexcept;
+	Math::Vec2F GetMouseDelta() noexcept;
+	Math::Vec2F GetCameraPosition() noexcept;
 
-	void MoveCamera(Vec2F delta) noexcept;
-	void SetCameraPosition(Vec2F position) noexcept;
-	void LookAt(Vec2F position) noexcept;
-	void SetCameraZoom(float zoom, Vec2F targetPoint) noexcept;
+	void MoveCamera(Math::Vec2F delta) noexcept;
+	void SetCameraPosition(Math::Vec2F position) noexcept;
+	void LookAt(Math::Vec2F position) noexcept;
+	void SetCameraZoom(float zoom, Math::Vec2F targetPoint) noexcept;
 	float GetCameraZoom() noexcept;
 
 	void PushColor(Color color) noexcept;

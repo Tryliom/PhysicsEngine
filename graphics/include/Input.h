@@ -48,8 +48,8 @@ namespace Input
 	 */
 	bool IsMouseButtonHeld(int button);
 
-	Vec2I GetMousePosition();
-	Vec2I GetMouseDelta();
+	Math::Vec2I GetMousePosition();
+	Math::Vec2I GetMouseDelta();
 
 	float GetMouseWheelDelta();
 }

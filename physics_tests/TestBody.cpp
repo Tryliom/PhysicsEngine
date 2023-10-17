@@ -5,6 +5,9 @@
 
 #include <array>
 
+using namespace Math;
+using namespace Physics;
+
 struct TestBodyFixtureConstructor : public ::testing::TestWithParam<std::array<Vec2F, 4>> {};
 
 INSTANTIATE_TEST_SUITE_P(Body, TestBodyFixtureConstructor, testing::Values(

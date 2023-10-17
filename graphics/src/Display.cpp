@@ -46,7 +46,7 @@ namespace Display
 
 	void Run() noexcept
 	{
-		Timer::Init();
+		Physics::Timer::Init();
 
 		while (true)
 		{
@@ -60,12 +60,12 @@ namespace Display
 				Input::OnInput(e);
 			}
 
-			Timer::Update();
+			Physics::Timer::Update();
 
 			SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 			SDL_RenderClear(_renderer);
 
-			Update(Timer::DeltaTime());
+			Update(Physics::Timer::DeltaTime());
 
 			SDL_RenderPresent(_renderer);
 		}
@@ -93,39 +93,39 @@ namespace Display
 		_meterPerPixel = meterPerPixel;
 	}
 
-	Vec2F GetMousePosition() noexcept
+	Math::Vec2F GetMousePosition() noexcept
 	{
-		return (Vec2F{ Input::GetMousePosition() } - _camera.Position) / (_meterPerPixel * _camera.Zoom);
+		return (Math::Vec2F{ Input::GetMousePosition() } - _camera.Position) / (_meterPerPixel * _camera.Zoom);
 	}
 
-	Vec2F GetMouseDelta() noexcept
+	Math::Vec2F GetMouseDelta() noexcept
 	{
-		return Vec2F{ Input::GetMouseDelta() };
+		return Math::Vec2F{ Input::GetMouseDelta() };
 	}
 
-	Vec2F GetCameraPosition() noexcept
+	Math::Vec2F GetCameraPosition() noexcept
 	{
 		return _camera.Position;
 	}
 
-	void MoveCamera(Vec2F delta) noexcept
+	void MoveCamera(Math::Vec2F delta) noexcept
 	{
 		_camera.Position += delta;
 	}
 
-	void SetCameraPosition(Vec2F position) noexcept
+	void SetCameraPosition(Math::Vec2F position) noexcept
 	{
 		_camera.Position = position;
 	}
 
-	void LookAt(Vec2F position) noexcept
+	void LookAt(Math::Vec2F position) noexcept
 	{
-		const auto center = Vec2F{ _width / 2.f, _height / 2.f };
+		const auto center = Math::Vec2F{ _width / 2.f, _height / 2.f };
 
 		_camera.Position = center - position * _meterPerPixel * _camera.Zoom;
 	}
 
-	void SetCameraZoom(float zoom, Vec2F targetPoint) noexcept
+	void SetCameraZoom(float zoom, Math::Vec2F targetPoint) noexcept
 	{
 		_camera.Position += targetPoint * _meterPerPixel * _camera.Zoom;
 
@@ -158,9 +158,9 @@ namespace Display
 
 		for (int i = 0; i < segments; i++)
 		{
-			auto angle = Radian(Degree(i * 360.f / segments));
-			auto circleX = x + radius * MathUtility::Cos(angle);
-			auto circleY = y + radius * MathUtility::Sin(angle);
+			auto angle = Math::Radian(Math::Degree(i * 360.f / segments));
+			auto circleX = x + radius * Math::Utility::Cos(angle);
+			auto circleY = y + radius * Math::Utility::Sin(angle);
 
 			// Apply camera position and zoom
 			circleX = _camera.Position.X + circleX * _meterPerPixel * _camera.Zoom;

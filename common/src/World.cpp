@@ -4,7 +4,7 @@
 
 #include <vector>
 
-namespace World
+namespace Physics::World
 {
 	std::vector<Body> _bodies;
 	std::vector<size_t> _generations;
@@ -37,7 +37,7 @@ namespace World
 			body.SetAcceleration(body.Force() / body.Mass());
 			body.SetVelocity(body.Velocity() + body.Acceleration() * deltaTime);
 			body.SetPosition(body.Position() + body.Velocity() * deltaTime);
-			body.SetForce(Vec2F(0, 0));
+			body.SetForce(Math::Vec2F(0, 0));
 		}
 	}
 

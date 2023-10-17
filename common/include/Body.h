@@ -2,107 +2,112 @@
 
 #include "Vec2.h"
 
-class Body
+namespace Physics
 {
-public:
-	Body() noexcept = default;
-
-	Body(Vec2F position, Vec2F velocity, Vec2F acceleration) noexcept
-	: _position(position), _velocity(velocity), _acceleration(acceleration) {}
-
-private:
-	Vec2F _position = Vec2F(0, 0);
-	Vec2F _velocity = Vec2F(0, 0);
-	Vec2F _acceleration = Vec2F(0, 0);
-	Vec2F _force = Vec2F(0, 0);
-	float _mass = -1.f;
-
-public:
-	[[nodiscard]] constexpr Vec2F Position() const noexcept
+	class Body
 	{
-		return _position;
-	}
+	public:
+		Body() noexcept = default;
 
-	void SetPosition(Vec2F position) noexcept
-	{
-		_position = position;
-	}
+		Body(Math::Vec2F position, Math::Vec2F velocity, Math::Vec2F acceleration) noexcept
+			:
+			_position(position), _velocity(velocity), _acceleration(acceleration)
+		{}
 
-	[[nodiscard]] constexpr Vec2F Velocity() const noexcept
-	{
-		return _velocity;
-	}
+	private:
+		Math::Vec2F _position = Math::Vec2F(0, 0);
+		Math::Vec2F _velocity = Math::Vec2F(0, 0);
+		Math::Vec2F _acceleration = Math::Vec2F(0, 0);
+		Math::Vec2F _force = Math::Vec2F(0, 0);
+		float _mass = -1.f;
 
-	void SetVelocity(Vec2F velocity) noexcept
-	{
-		_velocity = velocity;
-	}
+	public:
+		[[nodiscard]] constexpr Math::Vec2F Position() const noexcept
+		{
+			return _position;
+		}
 
-	[[nodiscard]] constexpr Vec2F Acceleration() const noexcept
-	{
-		return _acceleration;
-	}
+		void SetPosition(Math::Vec2F position) noexcept
+		{
+			_position = position;
+		}
 
-	void SetAcceleration(Vec2F acceleration) noexcept
-	{
-		_acceleration = acceleration;
-	}
+		[[nodiscard]] constexpr Math::Vec2F Velocity() const noexcept
+		{
+			return _velocity;
+		}
 
-	[[nodiscard]] constexpr Vec2F Force() const noexcept
-	{
-		return _force;
-	}
+		void SetVelocity(Math::Vec2F velocity) noexcept
+		{
+			_velocity = velocity;
+		}
 
-	void SetForce(Vec2F force) noexcept
-	{
-		_force = force;
-	}
+		[[nodiscard]] constexpr Math::Vec2F Acceleration() const noexcept
+		{
+			return _acceleration;
+		}
 
-	[[nodiscard]] constexpr float Mass() const noexcept
-	{
-		return _mass;
-	}
+		void SetAcceleration(Math::Vec2F acceleration) noexcept
+		{
+			_acceleration = acceleration;
+		}
 
-	/**
-	 * @brief Set the mass of the body. If the mass is less than or equal to 0, the mass will not be set.
-	 * @note The mass is set to -1 by default, which means the body is disabled.
-	 * @param mass
-	 */
-	void SetMass(float mass) noexcept
-	{
-		if (mass <= 0.f) return;
+		[[nodiscard]] constexpr Math::Vec2F Force() const noexcept
+		{
+			return _force;
+		}
 
-		_mass = mass;
-	}
+		void SetForce(Math::Vec2F force) noexcept
+		{
+			_force = force;
+		}
 
-	void ApplyForce(Vec2F force) noexcept
-	{
-		_force += force * _mass;
-	}
+		[[nodiscard]] constexpr float Mass() const noexcept
+		{
+			return _mass;
+		}
 
-	/**
-	 * @brief Disable the body by setting its mass to -1. Reset all other values.
-	 */
-	void Disable() noexcept
-	{
-		_mass = -1.f;
+		/**
+		 * @brief Set the mass of the body. If the mass is less than or equal to 0, the mass will not be set.
+		 * @note The mass is set to -1 by default, which means the body is disabled.
+		 * @param mass
+		 */
+		void SetMass(float mass) noexcept
+		{
+			if (mass <= 0.f) return;
 
-		_position = Vec2F(0, 0);
-		_velocity = Vec2F(0, 0);
-		_acceleration = Vec2F(0, 0);
-		_force = Vec2F(0, 0);
-	}
+			_mass = mass;
+		}
 
-	/**
-	 * @brief Enable the body by setting its mass to 1.
-	 */
-	void Enable() noexcept
-	{
-		_mass = 1.f;
-	}
+		void ApplyForce(Math::Vec2F force) noexcept
+		{
+			_force += force * _mass;
+		}
 
-	[[nodiscard]] constexpr bool IsEnabled() const noexcept
-	{
-		return _mass > 0.f;
-	}
-};
+		/**
+		 * @brief Disable the body by setting its mass to -1. Reset all other values.
+		 */
+		void Disable() noexcept
+		{
+			_mass = -1.f;
+
+			_position = Math::Vec2F(0, 0);
+			_velocity = Math::Vec2F(0, 0);
+			_acceleration = Math::Vec2F(0, 0);
+			_force = Math::Vec2F(0, 0);
+		}
+
+		/**
+		 * @brief Enable the body by setting its mass to 1.
+		 */
+		void Enable() noexcept
+		{
+			_mass = 1.f;
+		}
+
+		[[nodiscard]] constexpr bool IsEnabled() const noexcept
+		{
+			return _mass > 0.f;
+		}
+	};
+}

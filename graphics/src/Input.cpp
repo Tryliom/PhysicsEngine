@@ -12,8 +12,8 @@ namespace Input
 	bool _mouseButtonsReleased[5];
 	bool _mouseButtonsHeld[5];
 
-	Vec2I _mousePosition;
-	Vec2I _mouseDelta;
+	Math::Vec2I _mousePosition;
+	Math::Vec2I _mouseDelta;
 
 	float _mouseWheelDelta;
 
@@ -64,7 +64,7 @@ namespace Input
 		}
 
 		_mouseWheelDelta = 0;
-		_mouseDelta = Vec2I::Zero();
+		_mouseDelta = Math::Vec2I::Zero();
 	}
 
 	bool IsKeyPressed(int key)
@@ -97,12 +97,12 @@ namespace Input
 		return _mouseButtonsHeld[button];
 	}
 
-	Vec2I GetMousePosition()
+	Math::Vec2I GetMousePosition()
 	{
 		return _mousePosition;
 	}
 
-	Vec2I GetMouseDelta()
+	Math::Vec2I GetMouseDelta()
 	{
 		return _mouseDelta;
 	}
