@@ -63,9 +63,14 @@ public:
 		return _mass;
 	}
 
+	/**
+	 * @brief Set the mass of the body. If the mass is less than or equal to 0, the mass will not be set.
+	 * @note The mass is set to -1 by default, which means the body is disabled.
+	 * @param mass
+	 */
 	void SetMass(float mass) noexcept
 	{
-		if (mass < 0.f) return;
+		if (mass <= 0.f) return;
 
 		_mass = mass;
 	}
@@ -75,6 +80,9 @@ public:
 		_force += force * _mass;
 	}
 
+	/**
+	 * @brief Disable the body by setting its mass to -1. Reset all other values.
+	 */
 	void Disable() noexcept
 	{
 		_mass = -1.f;
@@ -82,8 +90,12 @@ public:
 		_position = Vec2F(0, 0);
 		_velocity = Vec2F(0, 0);
 		_acceleration = Vec2F(0, 0);
+		_force = Vec2F(0, 0);
 	}
 
+	/**
+	 * @brief Enable the body by setting its mass to 1.
+	 */
 	void Enable() noexcept
 	{
 		_mass = 1.f;
@@ -91,6 +103,6 @@ public:
 
 	[[nodiscard]] constexpr bool IsEnabled() const noexcept
 	{
-		return _mass >= 0.f;
+		return _mass > 0.f;
 	}
 };
