@@ -6,6 +6,11 @@ struct BodyRef
 {
 	size_t Index;
 	size_t Generation;
+
+	constexpr bool operator==(const BodyRef& other) const noexcept
+	{
+		return Index == other.Index && Generation == other.Generation;
+	}
 };
 
 namespace World

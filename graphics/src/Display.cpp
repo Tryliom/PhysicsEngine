@@ -103,6 +103,11 @@ namespace Display
 		return Vec2F{ Input::GetMouseDelta() };
 	}
 
+	Vec2F GetCameraPosition() noexcept
+	{
+		return _camera.Position;
+	}
+
 	void MoveCamera(Vec2F delta) noexcept
 	{
 		_camera.Position += delta;
@@ -113,12 +118,16 @@ namespace Display
 		_camera.Position = position;
 	}
 
-	void SetCameraZoom(float zoom) noexcept
+	void LookAt(Vec2F position) noexcept
 	{
-		// Zoom in/out around the mouse position
-		auto mousePosition = GetMousePosition();
+		const auto center = Vec2F{ _width / 2.f, _height / 2.f };
 
-		_camera.Position += mousePosition * _meterPerPixel * _camera.Zoom;
+		_camera.Position = center - position * _meterPerPixel * _camera.Zoom;
+	}
+
+	void SetCameraZoom(float zoom, Vec2F targetPoint) noexcept
+	{
+		_camera.Position += targetPoint * _meterPerPixel * _camera.Zoom;
 
 		_camera.Zoom = zoom;
 
@@ -127,7 +136,7 @@ namespace Display
 			_camera.Zoom = 0.1f;
 		}
 
-		_camera.Position -= mousePosition * _meterPerPixel * _camera.Zoom;
+		_camera.Position -= targetPoint * _meterPerPixel * _camera.Zoom;
 	}
 
 	float GetCameraZoom() noexcept

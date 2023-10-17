@@ -42,10 +42,12 @@ namespace Display
 	void SetMeterPerPixel(float meterPerPixel) noexcept;
 	Vec2F GetMousePosition() noexcept;
 	Vec2F GetMouseDelta() noexcept;
+	Vec2F GetCameraPosition() noexcept;
 
 	void MoveCamera(Vec2F delta) noexcept;
 	void SetCameraPosition(Vec2F position) noexcept;
-	void SetCameraZoom(float zoom) noexcept;
+	void LookAt(Vec2F position) noexcept;
+	void SetCameraZoom(float zoom, Vec2F targetPoint) noexcept;
 	float GetCameraZoom() noexcept;
 
 	void PushColor(Color color) noexcept;
