@@ -7,9 +7,6 @@ namespace Physics::World
 {
 	static std::vector<Body> _bodies;
     static std::vector<std::size_t> _generations;
-    static std::size_t _increaseBodySize = 500;
-
-    //TODO: Change defaultBodySize to be a power of 2 or 1.5
 
 	void Init(std::size_t defaultBodySize) noexcept
 	{
@@ -18,7 +15,6 @@ namespace Physics::World
 			defaultBodySize = 1;
 		}
 
-		_increaseBodySize = defaultBodySize;
 		_bodies.resize(defaultBodySize);
 		_generations.resize(defaultBodySize, 0);
 	}
@@ -29,10 +25,7 @@ namespace Physics::World
 		{
 			if (!body.IsEnabled()) continue;
 
-            //TODO: Remove acceleration from body, and calculate it in here
-
-			body.SetAcceleration(body.Force() / body.Mass());
-			body.SetVelocity(body.Velocity() + body.Acceleration() * deltaTime);
+			body.SetVelocity(body.Velocity() + body.Force() * deltaTime);
 			body.SetPosition(body.Position() + body.Velocity() * deltaTime);
 			body.SetForce(Math::Vec2F(0, 0));
 		}
@@ -50,18 +43,22 @@ namespace Physics::World
 		}
 
 		// No free bodies found, create a new one, and increase the size of the vector
-		_bodies.resize(_bodies.size() + _increaseBodySize);
-        _generations.resize(_generations.size() + _increaseBodySize);
+        const std::size_t oldSize = _bodies.size();
+		_bodies.resize(_bodies.size() * 2);
+        _generations.resize(_generations.size() * 2);
 
-		std::size_t index = _bodies.size() - _increaseBodySize;
+		_bodies[oldSize].Enable();
 
-		_bodies[index].Enable();
-
-		return { index, _generations[index] };
+		return { oldSize, _generations[oldSize] };
 	}
 
-	void DestroyBody(BodyRef bodyRef) noexcept
+	void DestroyBody(BodyRef bodyRef)
 	{
+        if (_generations[bodyRef.Index] != bodyRef.Generation)
+        {
+            throw InvalidBodyRefException();
+        }
+
 		_bodies[bodyRef.Index].Disable();
 		_generations[bodyRef.Index]++;
 	}

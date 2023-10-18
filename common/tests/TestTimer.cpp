@@ -1,4 +1,4 @@
-#include "../common/include/Timer.h"
+#include "Timer.h"
 
 #include "gtest/gtest.h"
 

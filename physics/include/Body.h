@@ -11,15 +11,11 @@ namespace Physics
 	public:
 		Body() noexcept = default;
 
-		Body(Math::Vec2F position, Math::Vec2F velocity, Math::Vec2F acceleration) noexcept
-			:
-			_position(position), _velocity(velocity), _acceleration(acceleration)
-		{}
+		Body(Math::Vec2F position, Math::Vec2F velocity) noexcept : _position(position), _velocity(velocity) {}
 
 	private:
 		Math::Vec2F _position = Math::Vec2F(0, 0);
 		Math::Vec2F _velocity = Math::Vec2F(0, 0);
-		Math::Vec2F _acceleration = Math::Vec2F(0, 0);
 		Math::Vec2F _force = Math::Vec2F(0, 0);
 		float _mass = -1.f;
 
@@ -42,16 +38,6 @@ namespace Physics
 		void SetVelocity(Math::Vec2F velocity) noexcept
 		{
 			_velocity = velocity;
-		}
-
-		[[nodiscard]] constexpr Math::Vec2F Acceleration() const noexcept
-		{
-			return _acceleration;
-		}
-
-		void SetAcceleration(Math::Vec2F acceleration) noexcept
-		{
-			_acceleration = acceleration;
 		}
 
 		[[nodiscard]] constexpr Math::Vec2F Force() const noexcept
@@ -95,7 +81,6 @@ namespace Physics
 
 			_position = Math::Vec2F(0, 0);
 			_velocity = Math::Vec2F(0, 0);
-			_acceleration = Math::Vec2F(0, 0);
 			_force = Math::Vec2F(0, 0);
 		}
 

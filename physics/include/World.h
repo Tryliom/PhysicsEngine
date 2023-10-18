@@ -18,12 +18,13 @@ namespace Physics
 	};
 }
 
+//TODO: Transform into a class
 namespace Physics::World
 {
 	void Init(std::size_t defaultBodySize = 500) noexcept;
 	void Update(float deltaTime) noexcept;
 
 	BodyRef CreateBody() noexcept;
-	void DestroyBody(BodyRef bodyRef) noexcept;
+	void DestroyBody(BodyRef bodyRef);
 	Body& GetBody(BodyRef bodyRef);
 };

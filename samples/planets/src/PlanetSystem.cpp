@@ -129,7 +129,7 @@ void PlanetSystem::Update(float deltaTime) noexcept
 
             if (centerToPlanet == Math::Vec2F::Zero()) continue;
 
-            body.ApplyForce(centerToPlanet.Normalized() * (_sunMass * body.Mass() / (centerToPlanet.Length() * centerToPlanet.Length())) * body.Mass());
+            body.ApplyForce(centerToPlanet.Normalized() * (_sunMass * body.Mass() / (centerToPlanet.Length() * centerToPlanet.Length())));
         }
 
         Display::DrawCircle(body.Position().X, body.Position().Y, planet.Radius, planet.Color);
@@ -150,7 +150,7 @@ void PlanetSystem::Update(float deltaTime) noexcept
             if (sunToOtherSun == Math::Vec2F::Zero()) continue;
 
             sunBody.ApplyForce(sunToOtherSun.Normalized() * (otherSunBody.Mass() *
-                sunBody.Mass() / (sunToOtherSun.Length() * sunToOtherSun.Length())) * sunBody.Mass());
+                sunBody.Mass() / (sunToOtherSun.Length() * sunToOtherSun.Length())));
         }
 
         Display::DrawCircle(sunBody.Position().X, sunBody.Position().Y, _sunRadius, _sunColor);

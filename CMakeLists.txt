@@ -12,6 +12,23 @@ add_library(CommonLib ${COMMON_FILES})
 set_target_properties(CommonLib PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(CommonLib PUBLIC common/include/)
 
+# Common tests
+SET(COMMON_TEST_DIR ${CMAKE_SOURCE_DIR}/common/tests)
+file(GLOB COMMON_TEST_FILES ${COMMON_TEST_DIR}/*.cpp )
+
+foreach(test_file ${COMMON_TEST_FILES} )
+    get_filename_component(test_name ${test_file} NAME_WE)
+    add_executable(${test_name} ${test_file})
+
+    target_link_libraries(${test_name} PRIVATE GTest::gtest GTest::gtest_main)
+
+    IF(MSVC)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2 /Oi /Oy-")
+    else()
+        set_target_properties(${test_name} PROPERTIES COMPILE_FLAGS "-save-temps -march=haswell -ffast-math -fno-omit-frame-pointer")
+    ENDIF()
+endforeach()
+
 # Physics library
 file(GLOB_RECURSE SRC_FILES physics/include/*.h physics/src/*.cpp)
 add_library(PhysicsEngineLib ${SRC_FILES})
@@ -27,10 +44,10 @@ add_subdirectory(libs/Math)
 add_definitions(-DSDL_MAIN_HANDLED)
 
 # Physics tests
-SET(TEST_DIR ${CMAKE_SOURCE_DIR}/physics_tests)
-file(GLOB TEST_FILES ${TEST_DIR}/*.cpp )
+SET(PHYSICS_TEST_DIR ${CMAKE_SOURCE_DIR}/physics/tests)
+file(GLOB PHYSICS_TEST_FILES ${PHYSICS_TEST_DIR}/*.cpp )
 
-foreach(test_file ${TEST_FILES} )
+foreach(test_file ${PHYSICS_TEST_FILES} )
     get_filename_component(test_name ${test_file} NAME_WE)
     add_executable(${test_name} ${test_file})
 
