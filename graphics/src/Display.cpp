@@ -1,5 +1,6 @@
 #include "Display.h"
 #include "Input.h"
+#include "Exception.h"
 
 #include "SDL.h"
 
@@ -19,7 +20,7 @@ namespace Display
 
     static Camera _camera;
 
-	void Init(size_t width, size_t height, const std::string& name) noexcept
+	void Init(size_t width, size_t height, const std::string& name)
 	{
 		_width = width;
 		_height = height;
@@ -27,8 +28,7 @@ namespace Display
 		// Initialize SDL
 		if (SDL_Init(SDL_INIT_VIDEO) < 0)
 		{
-			printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-			return;
+			throw SDLNotInitializedException();
 		}
 
 		// Create window
@@ -44,9 +44,7 @@ namespace Display
 
 		if (_window == nullptr)
 		{
-            //TODO: Create SDL exceptions
-			printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-			return;
+            throw SDLWindowNotCreatedException();
 		}
 
         // Enable VSync
@@ -56,8 +54,7 @@ namespace Display
 
         if (_renderer == nullptr)
         {
-            printf("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
-            return;
+            throw SDLRendererNotCreatedException();
         }
 
         ClearRender();

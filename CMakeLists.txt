@@ -63,7 +63,6 @@ add_library(GraphicsLib ${GRAPHICS_FILES})
 target_include_directories(GraphicsLib PUBLIC ${GRAPHICS_DIR}/include/)
 target_include_directories(GraphicsLib PUBLIC physics/include/)
 target_include_directories(GraphicsLib PUBLIC libs/Math/include/)
-target_include_directories(PhysicsEngineLib PUBLIC common/include/)
 target_link_libraries(GraphicsLib PUBLIC PhysicsEngineLib SDL2::SDL2 CommonLib)
 
 # Samples
