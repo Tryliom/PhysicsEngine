@@ -4,7 +4,6 @@
 #include "SDL.h"
 
 #include <vector>
-#include <iostream>
 
 namespace Display
 {
@@ -159,9 +158,10 @@ namespace Display
         _indices.clear();
     }
 
-	void DrawCircle(float x, float y, float radius, Color color) noexcept
+	void DrawCircle(float x, float y, float radius, Color color, int segments) noexcept
 	{
-		constexpr static int segments = 50;
+        if (!IsVisible({ x, y }, radius)) return;
+
 		SDL_Color circleColor = { color.R, color.G, color.B, color.A };
         const int offset = static_cast<int>(_vertices.size());
 
@@ -173,7 +173,7 @@ namespace Display
 
 		for (int i = 0; i < segments; i++)
 		{
-			auto angle = Math::Radian(Math::Degree(static_cast<float>(i) * 360.f / segments));
+			auto angle = Math::Radian(Math::Degree(static_cast<float>(i) * 360.f / static_cast<float>(segments)));
 			auto circleX = x + radius * Math::Utility::Cos(angle);
 			auto circleY = y + radius * Math::Utility::Sin(angle);
 
@@ -195,4 +195,16 @@ namespace Display
         _indices.push_back(offset + segments - 1);
         _indices.push_back(offset + 1);
 	}
+
+    bool IsVisible(Math::Vec2F position, float radius) noexcept
+    {
+        const Math::Vec2F positionRelativeToCamera = _camera.Position + position * _meterPerPixel * _camera.Zoom;
+
+        const float left = positionRelativeToCamera.X - radius;
+        const float right = positionRelativeToCamera.X + radius;
+        const float top = positionRelativeToCamera.Y - radius;
+        const float bottom = positionRelativeToCamera.Y + radius;
+
+        return left < static_cast<float>(_width) && right > 0 && top < static_cast<float>(_height) && bottom > 0;
+    }
 }
