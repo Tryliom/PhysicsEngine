@@ -60,7 +60,7 @@ TEST_P(TestWorldFixtureTime, Update)
 	body.SetVelocity(pair.first[1]);
 	body.SetAcceleration(pair.first[2]);
 	body.SetMass(pair.second.second);
-	body.ApplyForce(pair.first[3]);
+	body.ApplyForce(pair.first[3] * body.Mass());
 
 	auto acceleration = body.Force() / body.Mass();
 	auto velocity = body.Velocity() + acceleration * deltaTime;

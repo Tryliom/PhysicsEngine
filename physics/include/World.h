@@ -1,13 +1,15 @@
 #pragma once
 
+#include "Body.h"
+
+#include <cstdlib>
+
 namespace Physics
 {
-	class Body;
-
 	struct BodyRef
 	{
-		size_t Index;
-		size_t Generation;
+        std::size_t Index;
+        std::size_t Generation;
 
 		constexpr bool operator==(const BodyRef& other) const noexcept
 		{
@@ -18,7 +20,7 @@ namespace Physics
 
 namespace Physics::World
 {
-	void Init(size_t defaultBodySize = 500) noexcept;
+	void Init(std::size_t defaultBodySize = 500) noexcept;
 	void Update(float deltaTime) noexcept;
 
 	BodyRef CreateBody() noexcept;

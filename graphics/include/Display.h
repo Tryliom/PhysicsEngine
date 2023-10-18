@@ -5,8 +5,6 @@
 #include <string>
 #include <SDL_events.h>
 
-void Update(float deltaTime);
-
 struct Color
 {
 	unsigned char R { 0 };
@@ -30,15 +28,13 @@ struct Camera
 namespace Display
 {
 	void Init(size_t width, size_t height, const std::string& name = "Display") noexcept;
-	/**
-	 * @brief Call Update() in a loop until the user closes the window. Call OnInput() for each SDL_Event.
-	 */
-	void Run() noexcept;
+	void Update() noexcept;
 	void Shutdown() noexcept;
 
 	size_t GetWidth() noexcept;
 	size_t GetHeight() noexcept;
 
+    void SetUpdate(void(*update)(float)) noexcept;
 	void SetMeterPerPixel(float meterPerPixel) noexcept;
 	Math::Vec2F GetMousePosition() noexcept;
 	Math::Vec2F GetMouseDelta() noexcept;
@@ -50,6 +46,6 @@ namespace Display
 	void SetCameraZoom(float zoom, Math::Vec2F targetPoint) noexcept;
 	float GetCameraZoom() noexcept;
 
-	void PushColor(Color color) noexcept;
+    void ClearRender() noexcept;
 	void DrawCircle(float x, float y, float radius, Color color = Color::Red()) noexcept;
 }

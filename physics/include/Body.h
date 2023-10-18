@@ -2,6 +2,8 @@
 
 #include "Vec2.h"
 
+//TODO: Make Body.cpp
+
 namespace Physics
 {
 	class Body
@@ -81,7 +83,7 @@ namespace Physics
 
 		void ApplyForce(Math::Vec2F force) noexcept
 		{
-			_force += force * _mass;
+			_force += force;
 		}
 
 		/**

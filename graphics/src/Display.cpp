@@ -1,21 +1,20 @@
 #include "Display.h"
 #include "Input.h"
 
-#include "Timer.h"
-
 #include "SDL.h"
+
 #include <vector>
 
 namespace Display
 {
-	SDL_Window* _window = nullptr;
-	SDL_Renderer* _renderer = nullptr;
+    static SDL_Window* _window = nullptr;
+    static SDL_Renderer* _renderer = nullptr;
 
-	size_t _width = 0;
-	size_t _height = 0;
-	float _meterPerPixel = 1.f;
+    static std::size_t _width = 0;
+    static std::size_t _height = 0;
+    static float _meterPerPixel = 1.f;
 
-	Camera _camera;
+    static Camera _camera;
 
 	void Init(size_t width, size_t height, const std::string& name) noexcept
 	{
@@ -30,45 +29,41 @@ namespace Display
 		}
 
 		// Create window
-		_window = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _width, _height, SDL_WINDOW_SHOWN);
+		_window = SDL_CreateWindow(
+            name.c_str(),
+            SDL_WINDOWPOS_UNDEFINED,
+            SDL_WINDOWPOS_UNDEFINED,
+            static_cast<int>(_width),
+            static_cast<int>(_height),
+            SDL_WINDOW_SHOWN
+        );
 
-		// Enable VSync
-		SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
 
 		if (_window == nullptr)
 		{
+            //TODO: Create SDL exceptions
 			printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
 			return;
 		}
 
+        // Enable VSync
+		SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
+
 		_renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED);
+
+        if (_renderer == nullptr)
+        {
+            printf("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+            return;
+        }
+
+        ClearRender();
 	}
 
-	void Run() noexcept
+	void Update() noexcept
 	{
-		Physics::Timer::Init();
-
-		while (true)
-		{
-			Input::Update();
-
-			SDL_Event e;
-			while (SDL_PollEvent(&e) != 0)
-			{
-				if (e.type == SDL_QUIT) return;
-
-				Input::OnInput(e);
-			}
-
-			Physics::Timer::Update();
-
-			SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-			SDL_RenderClear(_renderer);
-
-			Update(Physics::Timer::DeltaTime());
-
-			SDL_RenderPresent(_renderer);
-		}
+        SDL_RenderPresent(_renderer);
+        ClearRender();
 	}
 
 	void Shutdown() noexcept
@@ -144,10 +139,11 @@ namespace Display
 		return _camera.Zoom;
 	}
 
-	void PushColor(Color color) noexcept
-	{
-		SDL_SetRenderDrawColor(_renderer, color.R, color.G, color.B, color.A);
-	}
+    void ClearRender() noexcept
+    {
+        SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
+        SDL_RenderClear(_renderer);
+    }
 
 	void DrawCircle(float x, float y, float radius, Color color) noexcept
 	{
@@ -166,7 +162,7 @@ namespace Display
 			circleX = _camera.Position.X + circleX * _meterPerPixel * _camera.Zoom;
 			circleY = _camera.Position.Y + circleY * _meterPerPixel * _camera.Zoom;
 
-			vertices.push_back({{ circleX, circleY}, circleColor, { 1.f, 1.f }});
+			vertices.push_back({{ circleX, circleY}, circleColor, { 0.f, 0.f }});
 		}
 
 		for (int i = 0; i < segments - 1; i++)

@@ -1,16 +1,17 @@
 #include "World.h"
-#include "Body.h"
 #include "Exception.h"
 
 #include <vector>
 
 namespace Physics::World
 {
-	std::vector<Body> _bodies;
-	std::vector<size_t> _generations;
-	std::size_t _increaseBodySize = 500;
+	static std::vector<Body> _bodies;
+    static std::vector<std::size_t> _generations;
+    static std::size_t _increaseBodySize = 500;
 
-	void Init(size_t defaultBodySize) noexcept
+    //TODO: Change defaultBodySize to be a power of 2 or 1.5
+
+	void Init(std::size_t defaultBodySize) noexcept
 	{
 		if (defaultBodySize == 0)
 		{
@@ -18,14 +19,8 @@ namespace Physics::World
 		}
 
 		_increaseBodySize = defaultBodySize;
-		_bodies.reserve(defaultBodySize);
-		_generations.reserve(defaultBodySize);
-
-		for (size_t i = 0; i < defaultBodySize; i++)
-		{
-			_bodies.emplace_back();
-			_generations.push_back(0);
-		}
+		_bodies.resize(defaultBodySize);
+		_generations.resize(defaultBodySize, 0);
 	}
 
 	void Update(float deltaTime) noexcept
@@ -33,6 +28,8 @@ namespace Physics::World
 		for (auto& body : _bodies)
 		{
 			if (!body.IsEnabled()) continue;
+
+            //TODO: Remove acceleration from body, and calculate it in here
 
 			body.SetAcceleration(body.Force() / body.Mass());
 			body.SetVelocity(body.Velocity() + body.Acceleration() * deltaTime);
@@ -53,15 +50,11 @@ namespace Physics::World
 		}
 
 		// No free bodies found, create a new one, and increase the size of the vector
-		_bodies.reserve(_bodies.size() + _increaseBodySize);
-
-		for (size_t i = 0; i < _increaseBodySize; i++)
-		{
-			_bodies.emplace_back();
-			_generations.push_back(0);
-		}
+		_bodies.resize(_bodies.size() + _increaseBodySize);
+        _generations.resize(_generations.size() + _increaseBodySize);
 
 		std::size_t index = _bodies.size() - _increaseBodySize;
+
 		_bodies[index].Enable();
 
 		return { index, _generations[index] };

@@ -2,25 +2,19 @@
 
 #include <chrono>
 
-namespace Physics::Timer
+Timer::Timer() noexcept
 {
-	std::chrono::nanoseconds _deltaTime = std::chrono::nanoseconds(0);
-	std::chrono::nanoseconds _currentTime = std::chrono::nanoseconds(0);
+    _currentTime = std::chrono::high_resolution_clock::now();
+}
 
-	void Init() noexcept
-	{
-		_currentTime = std::chrono::high_resolution_clock::now().time_since_epoch();
-	}
+void Timer::Update() noexcept
+{
+    const auto previousTime = _currentTime;
+    _currentTime = std::chrono::high_resolution_clock::now();
+    _deltaTime = _currentTime - previousTime;
+}
 
-	void Update() noexcept
-	{
-		std::chrono::nanoseconds previousTime = _currentTime;
-		_currentTime = std::chrono::high_resolution_clock::now().time_since_epoch();
-		_deltaTime = _currentTime - previousTime;
-	}
-
-	float DeltaTime() noexcept
-	{
-		return _deltaTime.count() / 1000000000.f;
-	}
+float Timer::DeltaTime() noexcept
+{
+    return _deltaTime.count();
 }

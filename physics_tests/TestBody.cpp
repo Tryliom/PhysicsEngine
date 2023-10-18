@@ -37,7 +37,7 @@ TEST_P(TestBodyFixtureConstructor, Constructor)
 	Body body(position, velocity, acceleration);
 
 	body.SetMass(mass);
-	body.ApplyForce(force);
+	body.ApplyForce(force * mass);
 
 	EXPECT_EQ(body.Position(), position);
 	EXPECT_EQ(body.Velocity(), velocity);

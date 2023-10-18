@@ -6,10 +6,17 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(SDL2 REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 
-file(GLOB_RECURSE SRC_FILES common/include/*.h common/src/*.cpp)
+# Common library
+file(GLOB_RECURSE COMMON_FILES common/include/*.h common/src/*.cpp)
+add_library(CommonLib ${COMMON_FILES})
+set_target_properties(CommonLib PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(CommonLib PUBLIC common/include/)
+
+# Physics library
+file(GLOB_RECURSE SRC_FILES physics/include/*.h physics/src/*.cpp)
 add_library(PhysicsEngineLib ${SRC_FILES})
 set_target_properties(PhysicsEngineLib PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(PhysicsEngineLib PUBLIC common/include/)
+target_include_directories(PhysicsEngineLib PUBLIC physics/include/)
 target_include_directories(PhysicsEngineLib PUBLIC libs/Math/include/)
 target_link_libraries(PhysicsEngineLib PRIVATE SDL2::SDL2)
 
@@ -19,7 +26,7 @@ add_subdirectory(libs/Math)
 # Disable SDL main
 add_definitions(-DSDL_MAIN_HANDLED)
 
-# Tests
+# Physics tests
 SET(TEST_DIR ${CMAKE_SOURCE_DIR}/physics_tests)
 file(GLOB TEST_FILES ${TEST_DIR}/*.cpp )
 
@@ -43,9 +50,10 @@ file(GLOB_RECURSE GRAPHICS_FILES ${GRAPHICS_DIR}/src/*.cpp ${GRAPHICS_DIR}/inclu
 
 add_library(GraphicsLib ${GRAPHICS_FILES})
 target_include_directories(GraphicsLib PUBLIC ${GRAPHICS_DIR}/include/)
-target_include_directories(GraphicsLib PUBLIC common/include/)
+target_include_directories(GraphicsLib PUBLIC physics/include/)
 target_include_directories(GraphicsLib PUBLIC libs/Math/include/)
-target_link_libraries(GraphicsLib PUBLIC PhysicsEngineLib SDL2::SDL2)
+target_include_directories(PhysicsEngineLib PUBLIC common/include/)
+target_link_libraries(GraphicsLib PUBLIC PhysicsEngineLib SDL2::SDL2 CommonLib)
 
 # Samples
 SET(SAMPLE_DIR ${CMAKE_SOURCE_DIR}/samples)
@@ -66,9 +74,10 @@ foreach(sample ${SAMPLES})
     endif ()
 
     target_include_directories(${sample_name}_LIB PUBLIC ${GRAPHICS_DIR}/include/)
-    target_include_directories(${sample_name}_LIB PUBLIC common/include/)
+    target_include_directories(${sample_name}_LIB PUBLIC physics/include/)
     target_include_directories(${sample_name}_LIB PUBLIC libs/Math/include/)
-    target_link_libraries(${sample_name}_LIB PUBLIC PhysicsEngineLib SDL2::SDL2 GraphicsLib)
+    target_include_directories(${sample_name}_LIB PUBLIC common/include/)
+    target_link_libraries(${sample_name}_LIB PUBLIC PhysicsEngineLib SDL2::SDL2 GraphicsLib CommonLib)
 
     target_link_libraries(${sample_name} PUBLIC ${sample_name}_LIB)
 
