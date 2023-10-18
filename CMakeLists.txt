@@ -81,7 +81,7 @@ foreach(sample ${SAMPLES})
     file(GLOB_RECURSE ${sample_name}_FILES ${sample}/src/*.cpp ${sample}/include/*.h)
     list(LENGTH ${sample_name}_FILES num_files)
 
-    add_executable(${sample_name} ${sample}/main.cpp)
+    add_executable(Sample_${sample_name} ${sample}/main.cpp)
 
     if (num_files GREATER 0)
         add_library(${sample_name}_LIB ${${sample_name}_FILES})
@@ -96,11 +96,11 @@ foreach(sample ${SAMPLES})
     target_include_directories(${sample_name}_LIB PUBLIC common/include/)
     target_link_libraries(${sample_name}_LIB PUBLIC PhysicsEngineLib SDL2::SDL2 GraphicsLib CommonLib)
 
-    target_link_libraries(${sample_name} PUBLIC ${sample_name}_LIB)
+    target_link_libraries(Sample_${sample_name} PUBLIC ${sample_name}_LIB)
 
     IF(MSVC)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2 /Oi /Oy-")
     else()
-        set_target_properties(${sample_name} PROPERTIES COMPILE_FLAGS "-save-temps -march=haswell -ffast-math -fno-omit-frame-pointer")
+        set_target_properties(Sample_${sample_name} PROPERTIES COMPILE_FLAGS "-save-temps -march=haswell -ffast-math -fno-omit-frame-pointer")
     ENDIF()
 endforeach()
