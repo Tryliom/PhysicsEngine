@@ -9,6 +9,11 @@ int main(int argc, char* args[])
     PlanetSystem planetSystem;
     Timer timer;
 
+    constexpr int SCREEN_WIDTH = 1550;
+    constexpr int SCREEN_HEIGHT = 900;
+
+    Display::Init(SCREEN_WIDTH, SCREEN_HEIGHT, "Planets");
+
     while (true)
     {
         Input::Update();

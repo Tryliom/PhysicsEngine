@@ -5,14 +5,10 @@
 
 PlanetSystem::PlanetSystem()
 {
-    constexpr int SCREEN_WIDTH = 1550;
-    constexpr int SCREEN_HEIGHT = 900;
-
-    Display::Init(SCREEN_WIDTH, SCREEN_HEIGHT, "Planets");
     Physics::World::Init(1000);
 
     // Create sun
-    CreateSun(Math::Vec2F(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT / 2.f));
+    CreateSun(Math::Vec2F(0.f, 0.f));
 
     _followedRef = { true, _suns[0] };
 
