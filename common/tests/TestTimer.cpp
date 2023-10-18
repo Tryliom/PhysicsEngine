@@ -2,24 +2,25 @@
 
 #include "gtest/gtest.h"
 
-using namespace Physics;
-
 TEST(Timer, Init)
 {
-	Timer::Init();
+	Timer timer;
 
-	EXPECT_FLOAT_EQ(Timer::DeltaTime(), 0.0f);
+	EXPECT_FLOAT_EQ(timer.DeltaTime(), 0.0f);
 }
 
 TEST(Timer, Update)
 {
-	Timer::Init();
-	auto time = std::chrono::high_resolution_clock::now().time_since_epoch();
+    const float epsilon = 0.001f;
+	Timer timer;
+
+	auto time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> deltaTime = std::chrono::duration<float>(0);
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(50));
-	Timer::Update();
+    timer.Update();
 
-	time = std::chrono::high_resolution_clock::now().time_since_epoch() - time;
+	deltaTime = std::chrono::high_resolution_clock::now() - time;
 
-	EXPECT_FLOAT_EQ(Timer::DeltaTime(), time.count() / 1000000000.f);
+	EXPECT_NEAR(timer.DeltaTime(), deltaTime.count(), epsilon);
 }

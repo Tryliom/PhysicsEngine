@@ -20,6 +20,7 @@ foreach(test_file ${COMMON_TEST_FILES} )
     get_filename_component(test_name ${test_file} NAME_WE)
     add_executable(${test_name} ${test_file})
 
+    target_link_libraries(${test_name} PUBLIC CommonLib)
     target_link_libraries(${test_name} PRIVATE GTest::gtest GTest::gtest_main)
 
     IF(MSVC)
@@ -35,13 +36,6 @@ add_library(PhysicsEngineLib ${SRC_FILES})
 set_target_properties(PhysicsEngineLib PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(PhysicsEngineLib PUBLIC physics/include/)
 target_include_directories(PhysicsEngineLib PUBLIC libs/Math/include/)
-target_link_libraries(PhysicsEngineLib PRIVATE SDL2::SDL2)
-
-# Make that the include direction in libs/Math/ is directly accessible
-add_subdirectory(libs/Math)
-
-# Disable SDL main
-add_definitions(-DSDL_MAIN_HANDLED)
 
 # Physics tests
 SET(PHYSICS_TEST_DIR ${CMAKE_SOURCE_DIR}/physics/tests)

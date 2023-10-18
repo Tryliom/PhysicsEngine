@@ -3,6 +3,7 @@
 #include "Body.h"
 
 #include <cstdlib>
+#include <vector>
 
 namespace Physics
 {
@@ -19,12 +20,22 @@ namespace Physics
 }
 
 //TODO: Transform into a class
-namespace Physics::World
+namespace Physics
 {
-	void Init(std::size_t defaultBodySize = 500) noexcept;
-	void Update(float deltaTime) noexcept;
+    class World
+    {
+    public:
+        World(std::size_t defaultBodySize = 500) noexcept;
 
-	BodyRef CreateBody() noexcept;
-	void DestroyBody(BodyRef bodyRef);
-	Body& GetBody(BodyRef bodyRef);
-};
+    private:
+        std::vector<Body> _bodies;
+        std::vector<std::size_t> _generations;
+
+    public:
+        void Update(float deltaTime) noexcept;
+
+        BodyRef CreateBody() noexcept;
+        void DestroyBody(BodyRef bodyRef);
+        Body& GetBody(BodyRef bodyRef);
+    };
+}

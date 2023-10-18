@@ -28,7 +28,11 @@ public:
 
     constexpr ~UniquePtr() noexcept
     {
-        delete _ptr;
+        if (_ptr != nullptr)
+        {
+            delete _ptr;
+            _ptr = nullptr;
+        }
     }
 
 private:

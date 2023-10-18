@@ -1,14 +1,10 @@
 #include "World.h"
+
 #include "Exception.h"
 
-#include <vector>
-
-namespace Physics::World
+namespace Physics
 {
-	static std::vector<Body> _bodies;
-    static std::vector<std::size_t> _generations;
-
-	void Init(std::size_t defaultBodySize) noexcept
+	World::World(std::size_t defaultBodySize) noexcept
 	{
 		if (defaultBodySize == 0)
 		{
@@ -19,7 +15,7 @@ namespace Physics::World
 		_generations.resize(defaultBodySize, 0);
 	}
 
-	void Update(float deltaTime) noexcept
+	void World::Update(float deltaTime) noexcept
 	{
 		for (auto& body : _bodies)
 		{
@@ -31,7 +27,7 @@ namespace Physics::World
 		}
 	}
 
-	BodyRef CreateBody() noexcept
+	BodyRef World::CreateBody() noexcept
 	{
 		for (size_t i = 0; i < _bodies.size(); i++)
 		{
@@ -52,7 +48,7 @@ namespace Physics::World
 		return { oldSize, _generations[oldSize] };
 	}
 
-	void DestroyBody(BodyRef bodyRef)
+	void World::DestroyBody(BodyRef bodyRef)
 	{
         if (_generations[bodyRef.Index] != bodyRef.Generation)
         {
@@ -63,7 +59,7 @@ namespace Physics::World
 		_generations[bodyRef.Index]++;
 	}
 
-	Body& GetBody(BodyRef bodyRef)
+	Body& World::GetBody(BodyRef bodyRef)
 	{
 		if (_generations[bodyRef.Index] != bodyRef.Generation)
 		{

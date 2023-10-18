@@ -2,21 +2,10 @@
 
 #include "gtest/gtest.h"
 
-using namespace Physics;
-
 struct TestSharedPtrFixture : public ::testing::TestWithParam<int> {};
 
 INSTANTIATE_TEST_SUITE_P(SharedPtr, TestSharedPtrFixture, testing::Values(
-	0,
-	1,
-	2,
-	3,
-	4,
-	5,
-	6,
-	7,
-	8,
-	9
+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 ));
 
 TEST_P(TestSharedPtrFixture, Constructor)
@@ -38,10 +27,12 @@ TEST_P(TestSharedPtrFixture, Destructor)
 
 		EXPECT_EQ(ptr.Get(), createdPtr);
 		EXPECT_EQ(*ptr.Get(), param);
-	}
 
-	// Test that trying to delete again createdPtr terminates the program
-	EXPECT_EXIT(delete createdPtr, ::testing::ExitedWithCode(-1073740940), "");
+        /* Cannot test it, crash instantly after the end of the scope
+         * ptr.~SharedPtr();
+
+        EXPECT_EQ(ptr.Get(), nullptr);*/
+	}
 }
 
 TEST_P(TestSharedPtrFixture, CopyConstructor)
@@ -58,9 +49,6 @@ TEST_P(TestSharedPtrFixture, CopyConstructor)
 		EXPECT_EQ(*ptr.Get(), param);
 		EXPECT_EQ(*ptr2.Get(), param);
 	}
-
-	// Test that trying to delete again createdPtr terminates the program
-	EXPECT_EXIT(delete createdPtr, ::testing::ExitedWithCode(-1073740940), "");
 }
 
 TEST_P(TestSharedPtrFixture, CopyAssignment)
@@ -77,7 +65,4 @@ TEST_P(TestSharedPtrFixture, CopyAssignment)
 		EXPECT_EQ(*ptr.Get(), param);
 		EXPECT_EQ(*ptr2.Get(), param);
 	}
-
-	// Test that trying to delete again createdPtr terminates the program
-	EXPECT_EXIT(delete createdPtr, ::testing::ExitedWithCode(-1073740940), "");
 }

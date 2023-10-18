@@ -26,8 +26,9 @@ public:
     PlanetSystem();
 
 private:
-    const float _mouseRandomRadius = 15.f;
+    Physics::World _world;
 
+    const float _mouseRandomRadius = 15.f;
     const float _sunMass = 10000.f;
     const float _sunRadius = 10.f;
     const Color _sunColor = Color(255, 255, 0);

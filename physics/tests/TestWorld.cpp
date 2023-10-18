@@ -20,62 +20,57 @@ INSTANTIATE_TEST_SUITE_P(World, TestWorldFixtureTime, testing::Values(
 
 TEST(World, CreateBody)
 {
-	World::Init(1);
+	World world(1);
 
-	auto body = World::CreateBody();
+	auto body = world.CreateBody();
 
 	EXPECT_EQ(body.Index, 0);
 	EXPECT_EQ(body.Generation, 0);
-	EXPECT_TRUE(World::GetBody(body).IsEnabled());
+	EXPECT_TRUE(world.GetBody(body).IsEnabled());
 
-	World::DestroyBody(body);
+	world.DestroyBody(body);
 
-	body = World::CreateBody();
+	body = world.CreateBody();
 
 	EXPECT_EQ(body.Index, 0);
 	EXPECT_EQ(body.Generation, 1);
-	EXPECT_TRUE(World::GetBody(body).IsEnabled());
+	EXPECT_TRUE(world.GetBody(body).IsEnabled());
 
-	auto body2 = World::CreateBody();
+	auto body2 = world.CreateBody();
 
 	EXPECT_EQ(body2.Index, 1);
 	EXPECT_EQ(body2.Generation, 0);
-	EXPECT_TRUE(World::GetBody(body2).IsEnabled());
+	EXPECT_TRUE(world.GetBody(body2).IsEnabled());
 
-	World::DestroyBody(body);
+	world.DestroyBody(body);
 
-	EXPECT_THROW(World::GetBody(body), InvalidBodyRefException);
+	EXPECT_THROW(world.GetBody(body), InvalidBodyRefException);
 }
 
 TEST_P(TestWorldFixtureTime, Update)
 {
-	World::Init(1);
+    World world(1);
 
 	auto pair = GetParam();
 	auto deltaTime = pair.second.first;
-	auto bodyRef = World::CreateBody();
-	auto& body = World::GetBody(bodyRef);
+	auto bodyRef = world.CreateBody();
+	auto& body = world.GetBody(bodyRef);
 
 	body.SetPosition(pair.first[0]);
 	body.SetVelocity(pair.first[1]);
-	body.SetAcceleration(pair.first[2]);
 	body.SetMass(pair.second.second);
 	body.ApplyForce(pair.first[3] * body.Mass());
 
-	auto acceleration = body.Force() / body.Mass();
-	auto velocity = body.Velocity() + acceleration * deltaTime;
+	auto velocity = body.Velocity() + body.Force() * deltaTime;
 	auto position = body.Position() + velocity * deltaTime;
 
-	World::Update(deltaTime);
+	world.Update(deltaTime);
 
 	EXPECT_FLOAT_EQ(body.Position().X, position.X);
 	EXPECT_FLOAT_EQ(body.Position().Y, position.Y);
 
 	EXPECT_FLOAT_EQ(body.Velocity().X, velocity.X);
 	EXPECT_FLOAT_EQ(body.Velocity().Y, velocity.Y);
-
-	EXPECT_FLOAT_EQ(body.Acceleration().X, acceleration.X);
-	EXPECT_FLOAT_EQ(body.Acceleration().Y, acceleration.Y);
 
 	EXPECT_FLOAT_EQ(body.Force().X, 0.f);
 	EXPECT_FLOAT_EQ(body.Force().Y, 0.f);

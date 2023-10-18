@@ -52,10 +52,13 @@ public:
     {
         (*_refCount)--;
 
-        if (*_refCount == 0)
+        if (*_refCount == 0 && _ptr != nullptr && _refCount != nullptr)
         {
             delete _ptr;
             delete _refCount;
+
+            _ptr = nullptr;
+            _refCount = nullptr;
         }
     }
 
