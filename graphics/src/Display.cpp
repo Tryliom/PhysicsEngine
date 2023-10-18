@@ -4,11 +4,15 @@
 #include "SDL.h"
 
 #include <vector>
+#include <iostream>
 
 namespace Display
 {
     static SDL_Window* _window = nullptr;
     static SDL_Renderer* _renderer = nullptr;
+
+    static std::vector<SDL_Vertex> _vertices;
+    static std::vector<int> _indices;
 
     static std::size_t _width = 0;
     static std::size_t _height = 0;
@@ -60,10 +64,17 @@ namespace Display
         ClearRender();
 	}
 
-	void Update() noexcept
+	void Render() noexcept
 	{
+        SDL_RenderGeometry(
+            _renderer,
+            nullptr,
+            _vertices.data(),
+            static_cast<int>(_vertices.size()),
+            _indices.data(),
+            static_cast<int>(_indices.size())
+        );
         SDL_RenderPresent(_renderer);
-        ClearRender();
 	}
 
 	void Shutdown() noexcept
@@ -115,7 +126,7 @@ namespace Display
 
 	void LookAt(Math::Vec2F position) noexcept
 	{
-		const auto center = Math::Vec2F{ _width / 2.f, _height / 2.f };
+		const auto center = Math::Vec2F{ static_cast<float>(_width) / 2.f, static_cast<float>(_height) / 2.f };
 
 		_camera.Position = center - position * _meterPerPixel * _camera.Zoom;
 	}
@@ -143,18 +154,26 @@ namespace Display
     {
         SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
         SDL_RenderClear(_renderer);
+
+        _vertices.clear();
+        _indices.clear();
     }
 
 	void DrawCircle(float x, float y, float radius, Color color) noexcept
 	{
-		constexpr static int segments = 15;
-		std::vector<SDL_Vertex> vertices;
-		std::vector<int> indices;
+		constexpr static int segments = 50;
 		SDL_Color circleColor = { color.R, color.G, color.B, color.A };
+        const int offset = static_cast<int>(_vertices.size());
+
+        // Apply camera position and zoom
+        const float centerX = _camera.Position.X + x * _meterPerPixel * _camera.Zoom;
+        const float centerY = _camera.Position.Y + y * _meterPerPixel * _camera.Zoom;
+
+        _vertices.push_back({{ centerX, centerY }, circleColor, { 1.f, 1.f }});
 
 		for (int i = 0; i < segments; i++)
 		{
-			auto angle = Math::Radian(Math::Degree(i * 360.f / segments));
+			auto angle = Math::Radian(Math::Degree(static_cast<float>(i) * 360.f / segments));
 			auto circleX = x + radius * Math::Utility::Cos(angle);
 			auto circleY = y + radius * Math::Utility::Sin(angle);
 
@@ -162,20 +181,18 @@ namespace Display
 			circleX = _camera.Position.X + circleX * _meterPerPixel * _camera.Zoom;
 			circleY = _camera.Position.Y + circleY * _meterPerPixel * _camera.Zoom;
 
-			vertices.push_back({{ circleX, circleY}, circleColor, { 0.f, 0.f }});
+			_vertices.push_back({{ circleX, circleY}, circleColor, { 1.f, 1.f }});
+
+            if (i > 0)
+            {
+                _indices.push_back(offset);
+                _indices.push_back(offset + i - 1);
+                _indices.push_back(offset + i);
+            }
 		}
 
-		for (int i = 0; i < segments - 1; i++)
-		{
-			indices.push_back(0);
-			indices.push_back(i);
-			indices.push_back(i + 1);
-		}
-
-		indices.push_back(0);
-		indices.push_back(segments - 1);
-		indices.push_back(0);
-
-		SDL_RenderGeometry(_renderer, nullptr, vertices.data(), vertices.size(), indices.data(), indices.size());
+        _indices.push_back(offset);
+        _indices.push_back(offset + segments - 1);
+        _indices.push_back(offset + 1);
 	}
 }

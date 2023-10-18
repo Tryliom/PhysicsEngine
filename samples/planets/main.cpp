@@ -12,7 +12,7 @@ int main(int argc, char* args[])
     constexpr int SCREEN_WIDTH = 1550;
     constexpr int SCREEN_HEIGHT = 900;
 
-    Display::Init(SCREEN_WIDTH, SCREEN_HEIGHT, "Planets");
+    Display::Init(SCREEN_WIDTH, SCREEN_HEIGHT, "_planets");
 
     while (true)
     {
@@ -27,9 +27,10 @@ int main(int argc, char* args[])
         }
 
         timer.Update();
-
         planetSystem.Update(timer.DeltaTime());
 
-        Display::Update();
+        Display::ClearRender();
+        planetSystem.Render();
+        Display::Render();
     }
 }

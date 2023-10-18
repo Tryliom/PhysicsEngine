@@ -20,7 +20,7 @@ PlanetSystem::PlanetSystem()
     constexpr int planetsToCreate = 250;
     constexpr float R = 700;
 
-    Planets.resize(planetsToCreate);
+    _planets.resize(planetsToCreate);
 
     for (std::size_t i = 0; i < planetsToCreate; i++)
     {
@@ -116,7 +116,7 @@ void PlanetSystem::Update(float deltaTime) noexcept
         CreateSun(Display::GetMousePosition());
     }
 
-    for (auto& planet : Planets)
+    for (auto& planet : _planets)
     {
         auto& body = Physics::World::GetBody(planet.BodyRef);
 
@@ -157,6 +157,23 @@ void PlanetSystem::Update(float deltaTime) noexcept
     }
 }
 
+void PlanetSystem::Render() noexcept
+{
+    for (auto& planet : _planets)
+    {
+        auto& body = Physics::World::GetBody(planet.BodyRef);
+
+        Display::DrawCircle(body.Position().X, body.Position().Y, planet.Radius, planet.Color);
+    }
+
+    for (auto& sun : _suns)
+    {
+        auto& sunBody = Physics::World::GetBody(sun);
+
+        Display::DrawCircle(sunBody.Position().X, sunBody.Position().Y, _sunRadius, _sunColor);
+    }
+}
+
 Color PlanetSystem::GenerateRandomColor() noexcept
 {
     return Color(
@@ -172,7 +189,7 @@ void PlanetSystem::CreatePlanet(Math::Vec2F position, float extraMass)
     auto planetRef = Physics::World::CreateBody();
     auto& planet = Physics::World::GetBody(planetRef);
     auto mass = Math::Random::Range<float>(800.f, 1400.f) + extraMass;
-    Planets.emplace_back(planetRef, GenerateRandomColor(), mass / 200.f);
+    _planets.emplace_back(planetRef, GenerateRandomColor(), mass / 200.f);
 
     planet.SetPosition(position);
     planet.SetMass(mass);

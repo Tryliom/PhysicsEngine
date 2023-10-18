@@ -27,17 +27,19 @@ public:
 
 private:
     const float _mouseRandomRadius = 15.f;
-    std::vector<Planet> Planets;
 
     const float _sunMass = 10000.f;
     const float _sunRadius = 10.f;
     const Color _sunColor = Color(255, 255, 0);
+
+    std::vector<Planet> _planets;
     std::vector<Physics::BodyRef> _suns;
 
     Follow _followedRef {};
 
 public:
     void Update(float deltaTime) noexcept;
+    void Render() noexcept;
 
     static Color GenerateRandomColor() noexcept;
 

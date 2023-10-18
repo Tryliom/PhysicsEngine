@@ -28,7 +28,7 @@ struct Camera
 namespace Display
 {
 	void Init(size_t width, size_t height, const std::string& name = "Display") noexcept;
-	void Update() noexcept;
+	void Render() noexcept;
 	void Shutdown() noexcept;
 
 	size_t GetWidth() noexcept;
