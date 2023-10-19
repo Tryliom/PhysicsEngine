@@ -162,12 +162,6 @@ namespace Display
 		SDL_Color circleColor = { color.R, color.G, color.B, color.A };
         const int offset = static_cast<int>(_vertices.size());
 
-        // Apply camera position and zoom
-        const float centerX = _camera.Position.X + x * _meterPerPixel * _camera.Zoom;
-        const float centerY = _camera.Position.Y + y * _meterPerPixel * _camera.Zoom;
-
-        _vertices.push_back({{ centerX, centerY }, circleColor, { 1.f, 1.f }});
-
 		for (int i = 0; i < segments; i++)
 		{
 			auto angle = Math::Radian(Math::Degree(static_cast<float>(i) * 360.f / static_cast<float>(segments)));
