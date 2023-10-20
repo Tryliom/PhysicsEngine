@@ -35,7 +35,7 @@ file(GLOB_RECURSE SRC_FILES physics/include/*.h physics/src/*.cpp)
 add_library(PhysicsEngineLib ${SRC_FILES})
 set_target_properties(PhysicsEngineLib PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(PhysicsEngineLib PUBLIC physics/include/)
-target_include_directories(PhysicsEngineLib PUBLIC libs/Math/include/)
+target_include_directories(PhysicsEngineLib PUBLIC libs/Math/)
 
 # Physics tests
 SET(PHYSICS_TEST_DIR ${CMAKE_SOURCE_DIR}/physics/tests)
@@ -62,7 +62,7 @@ file(GLOB_RECURSE GRAPHICS_FILES ${GRAPHICS_DIR}/src/*.cpp ${GRAPHICS_DIR}/inclu
 add_library(GraphicsLib ${GRAPHICS_FILES})
 target_include_directories(GraphicsLib PUBLIC ${GRAPHICS_DIR}/include/)
 target_include_directories(GraphicsLib PUBLIC physics/include/)
-target_include_directories(GraphicsLib PUBLIC libs/Math/include/)
+target_include_directories(GraphicsLib PUBLIC libs/Math/)
 target_link_libraries(GraphicsLib PUBLIC PhysicsEngineLib SDL2::SDL2 CommonLib)
 
 # Samples
@@ -85,7 +85,7 @@ foreach(sample ${SAMPLES})
 
     target_include_directories(${sample_name}_LIB PUBLIC ${GRAPHICS_DIR}/include/)
     target_include_directories(${sample_name}_LIB PUBLIC physics/include/)
-    target_include_directories(${sample_name}_LIB PUBLIC libs/Math/include/)
+    target_include_directories(${sample_name}_LIB PUBLIC libs/Math/)
     target_include_directories(${sample_name}_LIB PUBLIC common/include/)
     target_link_libraries(${sample_name}_LIB PUBLIC PhysicsEngineLib SDL2::SDL2 GraphicsLib CommonLib)
 
