@@ -165,8 +165,8 @@ namespace Display
 		for (int i = 0; i < segments; i++)
 		{
 			auto angle = Math::Radian(Math::Degree(static_cast<float>(i) * 360.f / static_cast<float>(segments)));
-			auto circleX = x + radius * Math::Utility::Cos(angle);
-			auto circleY = y + radius * Math::Utility::Sin(angle);
+			auto circleX = x + radius * Math::Cos(angle);
+			auto circleY = y + radius * Math::Sin(angle);
 
 			// Apply camera position and zoom
 			circleX = _camera.Position.X + circleX * _meterPerPixel * _camera.Zoom;

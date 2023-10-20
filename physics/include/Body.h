@@ -2,16 +2,13 @@
 
 #include "Vec2.h"
 
-//TODO: Make Body.cpp
-
 namespace Physics
 {
 	class Body
 	{
 	public:
-		Body() noexcept = default;
-
-		Body(Math::Vec2F position, Math::Vec2F velocity) noexcept : _position(position), _velocity(velocity) {}
+		constexpr Body() noexcept = default;
+		Body(Math::Vec2F position, Math::Vec2F velocity) noexcept;
 
 	private:
 		Math::Vec2F _position = Math::Vec2F(0, 0);
@@ -20,81 +17,32 @@ namespace Physics
 		float _mass = -1.f;
 
 	public:
-		[[nodiscard]] constexpr Math::Vec2F Position() const noexcept
-		{
-			return _position;
-		}
+		[[nodiscard]] Math::Vec2F Position() const noexcept;
+		[[nodiscard]] Math::Vec2F Velocity() const noexcept;
+		[[nodiscard]] Math::Vec2F Force() const noexcept;
+		[[nodiscard]] float Mass() const noexcept;
 
-		void SetPosition(Math::Vec2F position) noexcept
-		{
-			_position = position;
-		}
-
-		[[nodiscard]] constexpr Math::Vec2F Velocity() const noexcept
-		{
-			return _velocity;
-		}
-
-		void SetVelocity(Math::Vec2F velocity) noexcept
-		{
-			_velocity = velocity;
-		}
-
-		[[nodiscard]] constexpr Math::Vec2F Force() const noexcept
-		{
-			return _force;
-		}
-
-		void SetForce(Math::Vec2F force) noexcept
-		{
-			_force = force;
-		}
-
-		[[nodiscard]] constexpr float Mass() const noexcept
-		{
-			return _mass;
-		}
-
+		void SetPosition(Math::Vec2F position) noexcept;
+		void SetVelocity(Math::Vec2F velocity) noexcept;
+		void SetForce(Math::Vec2F force) noexcept;
 		/**
 		 * @brief Set the mass of the body. If the mass is less than or equal to 0, the mass will not be set.
 		 * @note The mass is set to -1 by default, which means the body is disabled.
 		 * @param mass
 		 */
-		void SetMass(float mass) noexcept
-		{
-			if (mass <= 0.f) return;
+		void SetMass(float mass) noexcept;
 
-			_mass = mass;
-		}
-
-		void ApplyForce(Math::Vec2F force) noexcept
-		{
-			_force += force;
-		}
-
+		void ApplyForce(Math::Vec2F force) noexcept;
 		/**
 		 * @brief Disable the body by setting its mass to -1. Reset all other values.
 		 */
-		void Disable() noexcept
-		{
-			_mass = -1.f;
-
-			_position = Math::Vec2F(0, 0);
-			_velocity = Math::Vec2F(0, 0);
-			_force = Math::Vec2F(0, 0);
-		}
+		void Disable() noexcept;
 
 		/**
 		 * @brief Enable the body by setting its mass to 1.
 		 */
-		void Enable() noexcept
-		{
-			_mass = 1.f;
-		}
+		void Enable() noexcept;
 
-		[[nodiscard]] constexpr bool IsEnabled() const noexcept
-		{
-			return _mass > 0.f;
-		}
+		[[nodiscard]] bool IsEnabled() const noexcept;
 	};
 }
