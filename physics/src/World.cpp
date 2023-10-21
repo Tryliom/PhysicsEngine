@@ -198,7 +198,7 @@ namespace Physics
 
 		for (auto& collider : _colliders)
 		{
-			if (collider.GetContactListener() == nullptr) continue;
+			if (collider.IsFree()) continue;
 
 			if (collider.GetBodyRef() == bodyRef)
 			{

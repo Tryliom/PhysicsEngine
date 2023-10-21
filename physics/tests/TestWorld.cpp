@@ -18,6 +18,41 @@ INSTANTIATE_TEST_SUITE_P(World, TestWorldFixtureTime, testing::Values(
 	std::make_pair(std::array<Vec2F, 4>{ Vec2F(0.3f, 1.3f), Vec2F(0.634f, 1.f), Vec2F(0.6f, 1.6f) }, std::make_pair(0.94f, 0.3244f))
 ));
 
+enum class Interaction
+{
+	None, Enter, Exit, Stay
+};
+
+class TestContactListener : public ContactListener
+{
+public:
+	TestContactListener(Interaction& interactionId, int& interactionCount) noexcept
+		: _interactionId(interactionId), _interactionCount(interactionCount) {}
+
+private:
+	Interaction& _interactionId;
+	int& _interactionCount;
+
+public:
+	void OnTriggerEnter(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept override
+	{
+		_interactionId = Interaction::Enter;
+		_interactionCount++;
+	}
+
+	void OnTriggerExit(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept override
+	{
+		_interactionId = Interaction::Exit;
+		_interactionCount++;
+	}
+
+	void OnTriggerStay(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept override
+	{
+		_interactionId = Interaction::Stay;
+		_interactionCount++;
+	}
+};
+
 TEST(World, CreateBody)
 {
 	World world(1);
@@ -47,6 +82,39 @@ TEST(World, CreateBody)
 	EXPECT_THROW(world.GetBody(body), InvalidBodyRefException);
 }
 
+TEST(World, Collider)
+{
+	World world(1);
+
+	auto bodyRef = world.CreateBody();
+	auto colliderRef = world.CreateCollider(bodyRef);
+	auto& collider = world.GetCollider(colliderRef);
+
+	EXPECT_EQ(colliderRef.Index, 0);
+	EXPECT_EQ(colliderRef.Generation, 0);
+	EXPECT_EQ(collider.GetBodyRef(), bodyRef);
+	EXPECT_TRUE(collider.IsEnabled());
+	EXPECT_FALSE(collider.IsTrigger());
+	EXPECT_EQ(collider.GetContactListener(), nullptr);
+	EXPECT_EQ(collider.GetBounciness(), 0.f);
+	EXPECT_EQ(collider.GetFriction(), 0.f);
+
+	world.DestroyCollider(colliderRef);
+
+	EXPECT_THROW(world.GetCollider(colliderRef), InvalidColliderRefException);
+
+	colliderRef = world.CreateCollider(bodyRef);
+
+	EXPECT_EQ(colliderRef.Index, 0);
+	EXPECT_EQ(colliderRef.Generation, 1);
+	EXPECT_EQ(collider.GetBodyRef(), bodyRef);
+	EXPECT_TRUE(collider.IsEnabled());
+
+	world.DestroyBody(bodyRef);
+
+	EXPECT_THROW(world.GetCollider(colliderRef), InvalidColliderRefException);
+}
+
 TEST_P(TestWorldFixtureTime, Update)
 {
     World world(1);
@@ -74,4 +142,163 @@ TEST_P(TestWorldFixtureTime, Update)
 
 	EXPECT_FLOAT_EQ(body.Force().X, 0.f);
 	EXPECT_FLOAT_EQ(body.Force().Y, 0.f);
+}
+
+TEST(World, UpdateCollisionCircle)
+{
+	World world(1);
+
+	auto bodyRef2 = world.CreateBody();
+	auto colliderRef2 = world.CreateCollider(bodyRef2);
+	auto& collider2 = world.GetCollider(colliderRef2);
+	auto interaction = Interaction::None;
+	auto interactionCount = 0;
+	auto* contactListener = new TestContactListener(interaction, interactionCount);
+
+	collider2.SetContactListener(contactListener);
+	collider2.SetCircle(CircleF({0.1f, 0.1f}, 1.f));
+	collider2.SetIsTrigger(true);
+
+	EXPECT_EQ(colliderRef2.Index, 0);
+	EXPECT_EQ(colliderRef2.Generation, 0);
+	EXPECT_EQ(collider2.GetBodyRef(), bodyRef2);
+	EXPECT_TRUE(collider2.IsEnabled());
+
+	auto bodyRef3 = world.CreateBody();
+	auto colliderRef3 = world.CreateCollider(bodyRef3);
+	auto& collider3 = world.GetCollider(colliderRef3);
+	auto interaction2 = Interaction::None;
+	auto interactionCount2 = 0;
+
+	collider3.SetContactListener(new TestContactListener(interaction2, interactionCount2));
+	collider3.SetCircle(CircleF({0.f, 0.f}, 1.f));
+
+	EXPECT_EQ(colliderRef3.Index, 1);
+	EXPECT_EQ(colliderRef3.Generation, 0);
+
+	// Check that the contact listener is called when the collider is a trigger
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Enter);
+	EXPECT_EQ(interactionCount, 1);
+
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Stay);
+	EXPECT_EQ(interactionCount, 2);
+
+	world.GetBody(bodyRef2).SetPosition({ 10.f, 10.f });
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Exit);
+	EXPECT_EQ(interactionCount, 3);
+
+	world.DestroyBody(bodyRef2);
+	world.DestroyBody(bodyRef3);
+}
+
+TEST(World, UpdateCollisionRectangle)
+{
+	World world(1);
+
+	auto bodyRef2 = world.CreateBody();
+	auto colliderRef2 = world.CreateCollider(bodyRef2);
+	auto& collider2 = world.GetCollider(colliderRef2);
+	auto interaction = Interaction::None;
+	auto interactionCount = 0;
+	auto* contactListener = new TestContactListener(interaction, interactionCount);
+
+	collider2.SetContactListener(contactListener);
+	collider2.SetRectangle(RectangleF({0.1f, 0.1f}, {1.f, 1.f}));
+	collider2.SetIsTrigger(true);
+
+	EXPECT_EQ(colliderRef2.Index, 0);
+	EXPECT_EQ(colliderRef2.Generation, 0);
+	EXPECT_EQ(collider2.GetBodyRef(), bodyRef2);
+	EXPECT_TRUE(collider2.IsEnabled());
+
+	auto bodyRef3 = world.CreateBody();
+	auto colliderRef3 = world.CreateCollider(bodyRef3);
+	auto& collider3 = world.GetCollider(colliderRef3);
+	auto interaction2 = Interaction::None;
+	auto interactionCount2 = 0;
+
+	collider3.SetContactListener(new TestContactListener(interaction2, interactionCount2));
+	collider3.SetRectangle(RectangleF({0.f, 0.f}, {1.f, 1.f}));
+
+	EXPECT_EQ(colliderRef3.Index, 1);
+	EXPECT_EQ(colliderRef3.Generation, 0);
+
+	// Check that the contact listener is called when the collider is a trigger
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Enter);
+	EXPECT_EQ(interactionCount, 1);
+
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Stay);
+	EXPECT_EQ(interactionCount, 2);
+
+	world.GetBody(bodyRef2).SetPosition({ 10.f, 10.f });
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Exit);
+	EXPECT_EQ(interactionCount, 3);
+
+	world.DestroyBody(bodyRef2);
+	world.DestroyBody(bodyRef3);
+}
+
+TEST(World, UpdateCollisionPolygon)
+{
+	World world(1);
+
+	auto bodyRef2 = world.CreateBody();
+	auto colliderRef2 = world.CreateCollider(bodyRef2);
+	auto& collider2 = world.GetCollider(colliderRef2);
+	auto interaction = Interaction::None;
+	auto interactionCount = 0;
+	auto* contactListener = new TestContactListener(interaction, interactionCount);
+
+	collider2.SetContactListener(contactListener);
+	collider2.SetPolygon(PolygonF({ {0.1f, 0.1f}, {0.8f, 0.1f}, {0.8f, 0.8f} }));
+	collider2.SetIsTrigger(true);
+
+	EXPECT_EQ(colliderRef2.Index, 0);
+	EXPECT_EQ(colliderRef2.Generation, 0);
+	EXPECT_EQ(collider2.GetBodyRef(), bodyRef2);
+	EXPECT_TRUE(collider2.IsEnabled());
+
+	auto bodyRef3 = world.CreateBody();
+	auto colliderRef3 = world.CreateCollider(bodyRef3);
+	auto& collider3 = world.GetCollider(colliderRef3);
+	auto interaction2 = Interaction::None;
+	auto interactionCount2 = 0;
+
+	collider3.SetContactListener(new TestContactListener(interaction2, interactionCount2));
+	collider3.SetPolygon(PolygonF({ {0.f, 0.f}, {8.f, 0.f}, {8.f, 8.f} }));
+
+	EXPECT_EQ(colliderRef3.Index, 1);
+	EXPECT_EQ(colliderRef3.Generation, 0);
+
+	// Check that the contact listener is called when the collider is a trigger
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Enter);
+	EXPECT_EQ(interactionCount, 1);
+
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Stay);
+	EXPECT_EQ(interactionCount, 2);
+
+	world.GetBody(bodyRef2).SetPosition({ 100.f, 100.f });
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Exit);
+	EXPECT_EQ(interactionCount, 3);
+
+	world.DestroyBody(bodyRef2);
+	world.DestroyBody(bodyRef3);
 }
