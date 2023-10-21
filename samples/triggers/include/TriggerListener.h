@@ -1,22 +1,21 @@
 #pragma once
 
 #include "ContactListener.h"
-#include "Ball.h"
+#include "Trigger.h"
 
 #include <vector>
 
-class BallListener : public Physics::ContactListener
+class TriggerListener : public Physics::ContactListener
 {
 public:
-	explicit BallListener(std::vector<Ball>& balls, std::size_t ballIndex) noexcept;
+	explicit TriggerListener(std::vector<Trigger>& trigger, std::size_t index) noexcept;
 
 private:
-	std::vector<Ball>& _balls;
-	std::size_t _ballIndex;
+	std::vector<Trigger>& _triggers;
+	std::size_t _index;
 
-	const Color _ballTriggerEnterColor = Color(100, 155, 100);
-	const Color _ballTriggerExitColor = Color(100, 100, 155);
-	const Color _ballTriggerStayColor = Color(155, 155, 100);
+	const Color _triggerStayColor = Color(155, 155, 100);
+	const float _blinkTimer = 0.3f;
 
 public:
 	void OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;

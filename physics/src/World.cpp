@@ -104,57 +104,15 @@ namespace Physics
 		const auto& bodyA = GetBody(colliderA.GetBodyRef());
 		const auto& bodyB = GetBody(colliderB.GetBodyRef());
 
-		auto circleA = colliderA.GetCircle();
-		auto circleB = colliderB.GetCircle();
-		auto rectA = colliderA.GetRectangle();
-		auto rectB = colliderB.GetRectangle();
-		auto polyA = colliderA.GetPolygon();
-		auto polyB = colliderB.GetPolygon();
+		auto circleA = colliderA.GetCircle() + bodyA.Position();
+		auto circleB = colliderB.GetCircle() + bodyB.Position();
+		auto rectA = colliderA.GetRectangle() + bodyA.Position();
+		auto rectB = colliderB.GetRectangle() + bodyB.Position();
+		auto polyA = colliderA.GetPolygon() + bodyA.Position();
+		auto polyB = colliderB.GetPolygon() + bodyB.Position();
 
 		const auto shapeTypeA = colliderA.GetShapeType();
 		const auto shapeTypeB = colliderB.GetShapeType();
-
-		if (shapeTypeA == Math::ShapeType::Circle)
-		{
-			circleA.SetCenter(bodyA.Position() + circleA.Center());
-		}
-		else if (shapeTypeA == Math::ShapeType::Rectangle)
-		{
-			rectA.SetMinBound(bodyA.Position() + rectA.MinBound());
-			rectA.SetMaxBound(bodyA.Position() + rectA.MaxBound());
-		}
-		else if (shapeTypeA == Math::ShapeType::Polygon)
-		{
-			auto points = polyA.Vertices();
-
-			for (auto& point : points)
-			{
-				point += bodyA.Position();
-			}
-
-			polyA.SetVertices(points);
-		}
-
-		if (shapeTypeB == Math::ShapeType::Circle)
-		{
-			circleB.SetCenter(bodyB.Position() + circleB.Center());
-		}
-		else if (shapeTypeB == Math::ShapeType::Rectangle)
-		{
-			rectB.SetMinBound(bodyB.Position() + rectB.MinBound());
-			rectB.SetMaxBound(bodyB.Position() + rectB.MaxBound());
-		}
-		else if (shapeTypeB == Math::ShapeType::Polygon)
-		{
-			auto points = polyB.Vertices();
-
-			for (auto& point : points)
-			{
-				point += bodyB.Position();
-			}
-
-			polyB.SetVertices(points);
-		}
 
 		if (shapeTypeA == Math::ShapeType::Circle && shapeTypeB == Math::ShapeType::Circle)
 		{

@@ -3,6 +3,8 @@
 #include "Random.h"
 #include "Input.h"
 
+#include <iostream>
+
 PlanetSystem::PlanetSystem() : _world(1000)
 {
     // Create sun
@@ -25,7 +27,7 @@ PlanetSystem::PlanetSystem() : _world(1000)
         auto randomAngle = Math::Radian(Math::Degree(Math::Random::Range<float>(0.f, 360.f)));
         auto randomR = Math::Random::Range<float>(R / 2.f, R);
 
-        CreatePlanet(Math::Vec2F(Math::Utility::Cos(randomAngle), Math::Utility::Sin(randomAngle)) * randomR + sunBody.Position());
+        CreatePlanet(Math::Vec2F(Math::Cos(randomAngle), Math::Sin(randomAngle)) * randomR + sunBody.Position());
     }
 }
 
@@ -110,7 +112,6 @@ void PlanetSystem::Update(float deltaTime) noexcept
 
     if (Input::IsMouseButtonPressed(SDL_BUTTON_MIDDLE))
     {
-        // Create a sun at the mouse position.
         CreateSun(Display::GetMousePosition());
     }
 
@@ -129,8 +130,6 @@ void PlanetSystem::Update(float deltaTime) noexcept
 
             body.ApplyForce(centerToPlanet.Normalized() * (_sunMass * body.Mass() / (centerToPlanet.Length() * centerToPlanet.Length())));
         }
-
-        Display::DrawCircle(body.Position().X, body.Position().Y, planet.Radius, planet.Color);
     }
 
     for (auto& sun : _suns)
@@ -150,25 +149,23 @@ void PlanetSystem::Update(float deltaTime) noexcept
             sunBody.ApplyForce(sunToOtherSun.Normalized() * (otherSunBody.Mass() *
                 sunBody.Mass() / (sunToOtherSun.Length() * sunToOtherSun.Length())));
         }
-
-        Display::DrawCircle(sunBody.Position().X, sunBody.Position().Y, _sunRadius, _sunColor);
     }
 }
 
 void PlanetSystem::Render() noexcept
 {
-    for (auto& planet : _planets)
+	for (auto& planet : _planets)
     {
         auto& body = _world.GetBody(planet.BodyRef);
 
-        Display::DrawCircle(body.Position().X, body.Position().Y, planet.Radius, planet.Color);
+	    Display::Draw(Math::CircleF{{body.Position().X, body.Position().Y}, planet.Radius}, planet.Color);
     }
 
     for (auto& sun : _suns)
     {
         auto& sunBody = _world.GetBody(sun);
 
-        Display::DrawCircle(sunBody.Position().X, sunBody.Position().Y, _sunRadius, _sunColor);
+	    Display::Draw(Math::CircleF{{sunBody.Position().X, sunBody.Position().Y}, _sunRadius}, _sunColor);
     }
 }
 

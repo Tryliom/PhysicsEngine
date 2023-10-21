@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vec2.h"
+#include "Shape.h"
 
 #include <string>
 #include <SDL_events.h>
@@ -47,7 +48,12 @@ namespace Display
 	float GetCameraZoom() noexcept;
 
     void ClearRender() noexcept;
-	void DrawCircle(float x, float y, float radius, Color color, int segments = 15) noexcept;
 
-    bool IsVisible(Math::Vec2F position, float radius) noexcept;
+	void Draw(Math::CircleF circle, Color color, Math::Vec2F scale = Math::Vec2F::One(), int segments = 15) noexcept;
+	void Draw(Math::RectangleF rectangle, Color color, Math::Vec2F scale = Math::Vec2F::One()) noexcept;
+	void Draw(const Math::PolygonF& polygon, Color color, Math::Vec2F scale = Math::Vec2F::One()) noexcept;
+
+    bool IsVisible(Math::CircleF circle) noexcept;
+	bool IsVisible(Math::RectangleF rectangle) noexcept;
+	bool IsVisible(const Math::PolygonF& polygon) noexcept;
 }

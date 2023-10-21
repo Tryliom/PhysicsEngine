@@ -1,7 +1,17 @@
 #pragma once
 
-#include "BallListener.h"
+#include "TriggerListener.h"
 #include "World.h"
+#include "Trigger.h"
+
+struct Object
+{
+	Physics::BodyRef BodyRef{};
+	Physics::ColliderRef ColliderRef{};
+	std::size_t TriggerIndex{};
+	Physics::Shape Shape;
+	Math::ShapeType ShapeType = Math::ShapeType::Circle;
+};
 
 class Triggers
 {
@@ -10,16 +20,16 @@ public:
 
 private:
 	Physics::World _world;
-	std::vector<Ball> _balls;
+	std::vector<Trigger> _triggers;
+	std::vector<Object> _objects;
 
-	const float _ballMinRadius = 10.f;
-	const float _ballMaxRadius = 30.f;
-
-	const Color _ballColor = Color(155, 100, 100);
-	const Color _ballTriggerEnterColor = Color(100, 155, 100);
-	const Color _ballTriggerExitColor = Color(100, 100, 155);
+	const Color _color = Color(100, 100, 100);
+	const Color _triggerEnterColor = Color(100, 255, 100);
+	const Color _triggerExitColor = Color(255, 100, 100);
 
 	void CreateBall();
+	void CreateBox();
+	void CreatePolygon();
 
 public:
 	void Update(float deltaTime) noexcept;
