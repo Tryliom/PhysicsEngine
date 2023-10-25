@@ -1,4 +1,4 @@
-#include "Triggers.h"
+#include "TriggerSample.h"
 
 #include "Display.h"
 #include "Timer.h"
@@ -11,7 +11,7 @@ int main(int argc, char* args[])
 
     Display::Init(SCREEN_WIDTH, SCREEN_HEIGHT, "_planets");
 
-	Triggers triggers;
+	TriggerSample triggers;
 	Timer timer;
 
     while (true)

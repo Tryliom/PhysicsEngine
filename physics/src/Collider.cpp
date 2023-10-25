@@ -2,22 +2,17 @@
 
 namespace Physics
 {
-	ColliderRef Collider::GetColliderRef() const noexcept
-	{
-		return _colliderRef;
-	}
-
 	BodyRef Collider::GetBodyRef() const noexcept
 	{
 		return _bodyRef;
 	}
 
-	ContactListener* Collider::GetContactListener() const noexcept
-	{
-		return _contactListener;
-	}
+    Math::Vec2F Collider::GetOffset() const noexcept
+    {
+        return _offset;
+    }
 
-	float Collider::GetBounciness() const noexcept
+    float Collider::GetBounciness() const noexcept
 	{
 		return _bounciness;
 	}
@@ -42,20 +37,16 @@ namespace Physics
 		return !_isFree && _isEnabled;
 	}
 
-	void Collider::SetColliderRef(ColliderRef colliderRef) noexcept
-	{
-		_colliderRef = colliderRef;
-	}
-
 	void Collider::SetBodyRef(BodyRef bodyRef) noexcept
 	{
 		_bodyRef = bodyRef;
 	}
 
-	void Collider::SetContactListener(ContactListener* contactListener) noexcept
-	{
-		_contactListener = contactListener;
-	}
+
+    void Collider::SetOffset(Math::Vec2F offset) noexcept
+    {
+        _offset = offset;
+    }
 
 	void Collider::SetBounciness(float bounciness) noexcept
 	{
@@ -75,19 +66,19 @@ namespace Physics
 	void Collider::SetCircle(Math::CircleF circle) noexcept
 	{
 		_shapeType = Math::ShapeType::Circle;
-		_shape.Circle = circle;
+		_shape = circle;
 	}
 
 	void Collider::SetRectangle(Math::RectangleF rectangle) noexcept
 	{
 		_shapeType = Math::ShapeType::Rectangle;
-		_shape.Rectangle = rectangle;
+		_shape = rectangle;
 	}
 
 	void Collider::SetPolygon(Math::PolygonF polygon) noexcept
 	{
 		_shapeType = Math::ShapeType::Polygon;
-		_shape.Polygon = polygon;
+		_shape = polygon;
 	}
 
 	void Collider::Enable() noexcept
@@ -103,9 +94,6 @@ namespace Physics
 
 	void Collider::Free() noexcept
 	{
-		delete _contactListener;
-
-		_contactListener = nullptr;
 		_isEnabled = false;
 		_bounciness = 0.f;
 		_friction = 0.f;
@@ -115,17 +103,17 @@ namespace Physics
 
 	Math::CircleF Collider::GetCircle() const noexcept
 	{
-		return _shape.Circle;
+	    return std::get<Math::CircleF>(_shape);
 	}
 
 	Math::RectangleF Collider::GetRectangle() const noexcept
 	{
-		return _shape.Rectangle;
+		return std::get<Math::RectangleF>(_shape);
 	}
 
 	Math::PolygonF Collider::GetPolygon() const noexcept
 	{
-		return _shape.Polygon;
+        return std::get<Math::PolygonF>(_shape);
 	}
 
 	Math::ShapeType Collider::GetShapeType() const noexcept

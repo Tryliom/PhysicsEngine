@@ -1,13 +1,14 @@
-#include "Triggers.h"
+#include "TriggerSample.h"
 
 #include "Random.h"
 
-Triggers::Triggers()
+TriggerSample::TriggerSample()
 {
+    _world.SetContactListener(this);
+
 	constexpr static int TriggerObjectCount = 10;
 
 	_objects.resize(TriggerObjectCount * 3);
-	_triggers.reserve(TriggerObjectCount * 3);
 
 	for (int i = 0; i < TriggerObjectCount; ++i)
 	{
@@ -17,7 +18,7 @@ Triggers::Triggers()
 	}
 }
 
-void Triggers::CreateBall()
+void TriggerSample::CreateBall()
 {
 	const static auto screenWidth = static_cast<float>(Display::GetWidth());
 	const static auto screenHeight = static_cast<float>(Display::GetHeight());
@@ -27,14 +28,9 @@ void Triggers::CreateBall()
 
 	auto circle = Math::CircleF{ {0.f, 0.f}, Math::Random::Range(minRadius, maxRadius) };
 
-	_triggers.emplace_back();
-
 	_objects.emplace_back();
-	_objects.back().ShapeType = Math::ShapeType::Circle;
-	_objects.back().Shape.Circle = circle;
 	_objects.back().BodyRef = _world.CreateBody();
 	_objects.back().ColliderRef = _world.CreateCollider(_objects.back().BodyRef);
-	_objects.back().TriggerIndex = _triggers.size() - 1;
 
 	auto& collider = _world.GetCollider(_objects.back().ColliderRef);
 	auto& body = _world.GetBody(_objects.back().BodyRef);
@@ -44,10 +40,9 @@ void Triggers::CreateBall()
 
 	collider.SetCircle(circle);
 	collider.SetIsTrigger(true);
-	collider.SetContactListener(new TriggerListener(_triggers, _triggers.size() - 1));
 }
 
-void Triggers::CreateBox()
+void TriggerSample::CreateBox()
 {
 	const static auto screenWidth = static_cast<float>(Display::GetWidth());
 	const static auto screenHeight = static_cast<float>(Display::GetHeight());
@@ -62,14 +57,9 @@ void Triggers::CreateBox()
 		{Math::Random::Range(maxBoundMin, maxBoundMax), Math::Random::Range(maxBoundMin, maxBoundMax)}
 	};
 
-	_triggers.emplace_back();
-
 	_objects.emplace_back();
-	_objects.back().ShapeType = Math::ShapeType::Rectangle;
-	_objects.back().Shape.Rectangle = rect;
 	_objects.back().BodyRef = _world.CreateBody();
 	_objects.back().ColliderRef = _world.CreateCollider(_objects.back().BodyRef);
-	_objects.back().TriggerIndex = _triggers.size() - 1;
 
 	auto& collider = _world.GetCollider(_objects.back().ColliderRef);
 	auto& body = _world.GetBody(_objects.back().BodyRef);
@@ -79,10 +69,9 @@ void Triggers::CreateBox()
 
 	collider.SetRectangle(rect);
 	collider.SetIsTrigger(true);
-	collider.SetContactListener(new TriggerListener(_triggers, _triggers.size() - 1));
 }
 
-void Triggers::CreatePolygon()
+void TriggerSample::CreatePolygon()
 {
 	const static auto screenWidth = static_cast<float>(Display::GetWidth());
 	const static auto screenHeight = static_cast<float>(Display::GetHeight());
@@ -102,14 +91,9 @@ void Triggers::CreatePolygon()
 
 	auto poly = Math::PolygonF{ vertices };
 
-	_triggers.emplace_back();
-
 	_objects.emplace_back();
-	_objects.back().ShapeType = Math::ShapeType::Polygon;
-	_objects.back().Shape.Polygon = poly;
 	_objects.back().BodyRef = _world.CreateBody();
 	_objects.back().ColliderRef = _world.CreateCollider(_objects.back().BodyRef);
-	_objects.back().TriggerIndex = _triggers.size() - 1;
 
 	auto& collider = _world.GetCollider(_objects.back().ColliderRef);
 	auto& body = _world.GetBody(_objects.back().BodyRef);
@@ -119,10 +103,9 @@ void Triggers::CreatePolygon()
 
 	collider.SetPolygon(poly);
 	collider.SetIsTrigger(true);
-	collider.SetContactListener(new TriggerListener(_triggers, _triggers.size() - 1));
 }
 
-void Triggers::Update(float deltaTime) noexcept
+void TriggerSample::Update(float deltaTime) noexcept
 {
 	const auto screenWidth = static_cast<float>(Display::GetWidth());
 	const auto screenHeight = static_cast<float>(Display::GetHeight());
@@ -132,9 +115,8 @@ void Triggers::Update(float deltaTime) noexcept
 	for (auto& object : _objects)
 	{
 		auto& body = _world.GetBody(object.BodyRef);
-		auto& trigger = _triggers[object.TriggerIndex];
 
-		trigger.Color = _color;
+		object.Color = _color;
 
 		if (body.Position().X < 0.f)
 		{
@@ -154,82 +136,122 @@ void Triggers::Update(float deltaTime) noexcept
 			body.SetPosition({ body.Position().X, 0.f });
 		}
 
-		if (trigger.TriggerEnterTimer > 0.f)
+		if (object.TriggerEnterTimer > 0.f)
 		{
-			trigger.TriggerEnterTimer -= deltaTime;
+            object.TriggerEnterTimer -= deltaTime;
 		}
 		else
 		{
-			trigger.TriggerEnterTimer = 0.f;
+            object.TriggerEnterTimer = 0.f;
 		}
 
-		if (trigger.TriggerExitTimer > 0.f)
+		if (object.TriggerExitTimer > 0.f)
 		{
-			trigger.TriggerExitTimer -= deltaTime;
+            object.TriggerExitTimer -= deltaTime;
 		}
 		else
 		{
-			trigger.TriggerExitTimer = 0.f;
+            object.TriggerExitTimer = 0.f;
 		}
 	}
 
 	_world.Update(deltaTime);
 }
 
-void Triggers::Render() noexcept
+void TriggerSample::Render() noexcept
 {
 	for (auto& object : _objects)
 	{
 		const auto& body = _world.GetBody(object.BodyRef);
-		const auto& trigger = _triggers[object.TriggerIndex];
+        const auto& collider = _world.GetCollider(object.ColliderRef);
 
-		if (object.ShapeType == Math::ShapeType::Circle)
-		{
-			const auto circle = object.Shape.Circle + body.Position();
+        switch(collider.GetShapeType())
+        {
+            case Math::ShapeType::Circle:
+            {
+                const auto circle = collider.GetCircle() + body.Position();
 
-			if (trigger.TriggerEnterTimer > 0.f)
-			{
-				Display::Draw({circle.Center(), circle.Radius() * 1.4f}, _triggerEnterColor);
-			}
+                if (object.TriggerEnterTimer > 0.f)
+                {
+                    Display::Draw({circle.Center(), circle.Radius() * 1.4f}, _triggerEnterColor);
+                }
 
-			if (trigger.TriggerExitTimer > 0.f)
-			{
-				Display::Draw({circle.Center(), circle.Radius() * 1.2f}, _triggerExitColor);
-			}
+                if (object.TriggerExitTimer > 0.f)
+                {
+                    Display::Draw({circle.Center(), circle.Radius() * 1.2f}, _triggerExitColor);
+                }
 
-			Display::Draw(circle, trigger.Color);
-		}
-		else if (object.ShapeType == Math::ShapeType::Rectangle)
-		{
-			const auto rect = object.Shape.Rectangle + body.Position();
+                Display::Draw(circle, object.Color);
+            }
+            break;
 
-			if (trigger.TriggerEnterTimer > 0.f)
-			{
-				Display::Draw(rect, _triggerEnterColor, Math::Vec2F(1.4f, 1.4f));
-			}
+            case Math::ShapeType::Rectangle:
+            {
+                const auto rect = collider.GetRectangle() + body.Position();
 
-			if (trigger.TriggerExitTimer > 0.f)
-			{
-				Display::Draw(rect, _triggerExitColor, Math::Vec2F(1.2f, 1.2f));
-			}
+                if (object.TriggerEnterTimer > 0.f)
+                {
+                    Display::Draw(rect, _triggerEnterColor, Math::Vec2F(1.4f, 1.4f));
+                }
 
-			Display::Draw(rect, trigger.Color);
-		}
-		else if (object.ShapeType == Math::ShapeType::Polygon)
-		{
-			auto poly = object.Shape.Polygon + body.Position();
+                if (object.TriggerExitTimer > 0.f)
+                {
+                    Display::Draw(rect, _triggerExitColor, Math::Vec2F(1.2f, 1.2f));
+                }
 
-			if (trigger.TriggerEnterTimer > 0.f)
-			{
-				Display::Draw(poly, _triggerEnterColor, Math::Vec2F(1.4f, 1.4f));
-			}
+                Display::Draw(rect, object.Color);
+            }
+            break;
 
-			if (trigger.TriggerExitTimer > 0.f)
-			{
-				Display::Draw(poly, _triggerExitColor, Math::Vec2F(1.2f, 1.2f));
-			}
+            case Math::ShapeType::Polygon:
+            {
+                auto poly = collider.GetPolygon() + body.Position();
 
-			Display::Draw(poly, trigger.Color);
-		}
+                if (object.TriggerEnterTimer > 0.f)
+                {
+                    Display::Draw(poly, _triggerEnterColor, Math::Vec2F(1.4f, 1.4f));
+                }
+
+                if (object.TriggerExitTimer > 0.f)
+                {
+                    Display::Draw(poly, _triggerExitColor, Math::Vec2F(1.2f, 1.2f));
+                }
+
+                Display::Draw(poly, object.Color);
+            }
+        }
 	}
+}
+
+void TriggerSample::OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
+{
+    for (auto & _object : _objects)
+    {
+        if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
+        {
+            _object.TriggerEnterTimer = _blinkTimer;
+        }
+    }
+}
+
+void TriggerSample::OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
+{
+    for (auto & _object : _objects)
+    {
+        if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
+        {
+            _object.TriggerExitTimer = _blinkTimer;
+        }
+    }
+}
+
+void TriggerSample::OnTriggerStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
+{
+    for (auto & _object : _objects)
+    {
+        if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
+        {
+            _object.Color = _triggerStayColor;
+        }
+    }
 }

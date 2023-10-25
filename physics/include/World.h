@@ -3,6 +3,7 @@
 #include "Body.h"
 #include "Collider.h"
 #include "ColliderPair.h"
+#include "ContactListener.h"
 
 #include <vector>
 #include <unordered_set>
@@ -21,8 +22,10 @@ namespace Physics
 	    std::vector<std::size_t> _colliderGenerations;
 		std::unordered_set<ColliderPair, ColliderPairHash> _colliderPairs;
 
-		void updateCollisions() noexcept;
-		[[nodiscard]] bool collide(Collider& colliderA, Collider& colliderB) noexcept;
+        ContactListener* _contactListener { nullptr };
+
+		void updateColliders() noexcept;
+		[[nodiscard]] bool overlap(Collider& colliderA, Collider& colliderB) noexcept;
 
     public:
         void Update(float deltaTime) noexcept;
@@ -39,5 +42,7 @@ namespace Physics
 		ColliderRef CreateCollider(BodyRef bodyRef) noexcept;
 		void DestroyCollider(ColliderRef colliderRef);
 		Collider& GetCollider(ColliderRef colliderRef);
+
+        void SetContactListener(ContactListener* contactListener) noexcept;
     };
 }

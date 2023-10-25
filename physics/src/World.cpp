@@ -17,79 +17,74 @@ namespace Physics
 		_colliderGenerations.resize(defaultBodySize, 0);
 	}
 
-	void World::updateCollisions() noexcept
+	void World::updateColliders() noexcept
 	{
 		std::unordered_set<ColliderPair, ColliderPairHash> newColliderPairs;
 
-		for (auto& collider : _colliders)
+        if (_contactListener == nullptr) return;
+
+		for (std::size_t i = 0; i < _colliders.size(); i++)
 		{
+            auto& collider = _colliders[i];
+
 			if (!collider.IsEnabled() || collider.IsFree()) continue;
 
-			for (auto& otherCollider : _colliders)
+			for (std::size_t j = i + 1; j < _colliders.size(); j++)
 			{
+                auto& otherCollider = _colliders[j];
+
 				if (!otherCollider.IsEnabled() || collider.IsFree()) continue;
-				if (collider.GetColliderRef() == otherCollider.GetColliderRef()) continue;
+
+                auto colliderRefA = ColliderRef{ i, _colliderGenerations[i] };
+                auto colliderRefB = ColliderRef{ j, _colliderGenerations[j] };
+
+				if (colliderRefA == colliderRefB) continue;
 				if (collider.GetBodyRef() == otherCollider.GetBodyRef()) continue;
 
-				if (collide(collider, otherCollider))
+				if (overlap(collider, otherCollider))
 				{
-					newColliderPairs.insert({ collider.GetColliderRef(), otherCollider.GetColliderRef() });
+					newColliderPairs.insert({ colliderRefA, colliderRefB });
 				}
 			}
 		}
 
 		for (auto& colliderPair : newColliderPairs)
 		{
-			// Trigger enter
+			// TriggerInfo enter
 			if (_colliderPairs.find(colliderPair) == _colliderPairs.end())
 			{
 				Collider& colliderA = GetCollider(colliderPair.A);
 				Collider& colliderB = GetCollider(colliderPair.B);
 
-				if (colliderA.GetContactListener() != nullptr && colliderA.IsTrigger())
+				if (colliderA.IsTrigger() || colliderB.IsTrigger())
 				{
-					colliderA.GetContactListener()->OnTriggerEnter(colliderPair.A, colliderPair.B);
-				}
-
-				if (colliderB.GetContactListener() != nullptr && colliderB.IsTrigger())
-				{
-					colliderB.GetContactListener()->OnTriggerEnter(colliderPair.B, colliderPair.A);
+					_contactListener->OnTriggerEnter(colliderPair.A, colliderPair.B);
 				}
 			}
-			// Trigger stay
+			// TriggerInfo stay
 			else
 			{
 				Collider& colliderA = GetCollider(colliderPair.A);
 				Collider& colliderB = GetCollider(colliderPair.B);
 
-				if (colliderA.GetContactListener() != nullptr && colliderA.IsTrigger())
-				{
-					colliderA.GetContactListener()->OnTriggerStay(colliderPair.A, colliderPair.B);
-				}
-
-				if (colliderB.GetContactListener() != nullptr && colliderB.IsTrigger())
-				{
-					colliderB.GetContactListener()->OnTriggerStay(colliderPair.B, colliderPair.A);
+                if (colliderA.IsTrigger() || colliderB.IsTrigger())
+                {
+                    _contactListener->OnTriggerStay(colliderPair.A, colliderPair.B);
 				}
 			}
 		}
 
 		for (auto& colliderPair : _colliderPairs)
 		{
-			// Trigger exit
+			// TriggerInfo exit
 			if (newColliderPairs.find(colliderPair) == newColliderPairs.end())
 			{
 				Collider& colliderA = GetCollider(colliderPair.A);
 				Collider& colliderB = GetCollider(colliderPair.B);
 
-				if (colliderA.GetContactListener() != nullptr && colliderA.IsTrigger())
-				{
-					colliderA.GetContactListener()->OnTriggerExit(colliderPair.A, colliderPair.B);
-				}
-
-				if (colliderB.GetContactListener() != nullptr && colliderB.IsTrigger())
-				{
-					colliderB.GetContactListener()->OnTriggerExit(colliderPair.B, colliderPair.A);
+                if (colliderA.IsTrigger() || colliderB.IsTrigger())
+                {
+                    _contactListener->OnTriggerExit(colliderPair.A, colliderPair.B);
 				}
 			}
 		}
@@ -97,59 +92,108 @@ namespace Physics
 		_colliderPairs = newColliderPairs;
 	}
 
-	bool World::collide(Physics::Collider& colliderA, Physics::Collider& colliderB) noexcept
+	bool World::overlap(Collider& colliderA, Collider& colliderB) noexcept
 	{
 		if (colliderA.GetBodyRef() == colliderB.GetBodyRef()) return false;
 
 		const auto& bodyA = GetBody(colliderA.GetBodyRef());
 		const auto& bodyB = GetBody(colliderB.GetBodyRef());
 
-		auto circleA = colliderA.GetCircle() + bodyA.Position();
-		auto circleB = colliderB.GetCircle() + bodyB.Position();
-		auto rectA = colliderA.GetRectangle() + bodyA.Position();
-		auto rectB = colliderB.GetRectangle() + bodyB.Position();
-		auto polyA = colliderA.GetPolygon() + bodyA.Position();
-		auto polyB = colliderB.GetPolygon() + bodyB.Position();
+        const auto positionA = bodyA.Position() + colliderA.GetOffset();
+        const auto positionB = bodyB.Position() + colliderB.GetOffset();
 
-		const auto shapeTypeA = colliderA.GetShapeType();
-		const auto shapeTypeB = colliderB.GetShapeType();
+        switch (colliderA.GetShapeType())
+        {
+            case Math::ShapeType::Circle:
+            {
+                auto circleA = colliderA.GetCircle() + positionA;
 
-		if (shapeTypeA == Math::ShapeType::Circle && shapeTypeB == Math::ShapeType::Circle)
-		{
-			return Math::Intersect(circleA, circleB);
-		}
-		else if (shapeTypeA == Math::ShapeType::Circle && shapeTypeB == Math::ShapeType::Rectangle)
-		{
-			return Math::Intersect(circleA, rectB);
-		}
-		else if (shapeTypeA == Math::ShapeType::Circle && shapeTypeB == Math::ShapeType::Polygon)
-		{
-			return Math::Intersect(circleA, polyB);
-		}
-		else if (shapeTypeA == Math::ShapeType::Rectangle && shapeTypeB == Math::ShapeType::Circle)
-		{
-			return Math::Intersect(rectA, circleB);
-		}
-		else if (shapeTypeA == Math::ShapeType::Rectangle && shapeTypeB == Math::ShapeType::Rectangle)
-		{
-			return Math::Intersect(rectA, rectB);
-		}
-		else if (shapeTypeA == Math::ShapeType::Rectangle && shapeTypeB == Math::ShapeType::Polygon)
-		{
-			return Math::Intersect(rectA, polyB);
-		}
-		else if (shapeTypeA == Math::ShapeType::Polygon && shapeTypeB == Math::ShapeType::Circle)
-		{
-			return Math::Intersect(polyA, circleB);
-		}
-		else if (shapeTypeA == Math::ShapeType::Polygon && shapeTypeB == Math::ShapeType::Rectangle)
-		{
-			return Math::Intersect(polyA, rectB);
-		}
-		else if (shapeTypeA == Math::ShapeType::Polygon && shapeTypeB == Math::ShapeType::Polygon)
-		{
-			return Math::Intersect(polyA, polyB);
-		}
+                switch (colliderB.GetShapeType())
+                {
+                    case Math::ShapeType::Circle:
+                    {
+                        auto circleB = colliderB.GetCircle() + positionB;
+
+                        return Math::Intersect(circleA, circleB);
+                    }
+                    break;
+                    case Math::ShapeType::Rectangle:
+                    {
+                        auto rectB = colliderB.GetRectangle() + positionB;
+
+                        return Math::Intersect(circleA, rectB);
+                    }
+                    break;
+                    case Math::ShapeType::Polygon:
+                    {
+                        auto polyB = colliderB.GetPolygon() + positionB;
+
+                        return Math::Intersect(circleA, polyB);
+                    }
+                }
+            }
+            break;
+
+            case Math::ShapeType::Rectangle:
+            {
+                auto rectA = colliderA.GetRectangle() + positionA;
+
+                switch (colliderB.GetShapeType())
+                {
+                    case Math::ShapeType::Circle:
+                    {
+                        auto circleB = colliderB.GetCircle() + positionB;
+
+                        return Math::Intersect(rectA, circleB);
+                    }
+                    break;
+                    case Math::ShapeType::Rectangle:
+                    {
+                        auto rectB = colliderB.GetRectangle() + positionB;
+
+                        return Math::Intersect(rectA, rectB);
+                    }
+                    break;
+                    case Math::ShapeType::Polygon:
+                    {
+                        auto polyB = colliderB.GetPolygon() + positionB;
+
+                        return Math::Intersect(rectA, polyB);
+                    }
+                }
+            }
+            break;
+
+            case Math::ShapeType::Polygon:
+            {
+                auto polyA = colliderA.GetPolygon() + positionA;
+
+                switch (colliderB.GetShapeType())
+                {
+                    case Math::ShapeType::Circle:
+                    {
+                        auto circleB = colliderB.GetCircle() + positionB;
+
+                        return Math::Intersect(polyA, circleB);
+                    }
+                    break;
+                    case Math::ShapeType::Rectangle:
+                    {
+                        auto rectB = colliderB.GetRectangle() + positionB;
+
+                        return Math::Intersect(polyA, rectB);
+                    }
+                    break;
+                    case Math::ShapeType::Polygon:
+                    {
+                        auto polyB = colliderB.GetPolygon() + positionB;
+
+                        return Math::Intersect(polyA, polyB);
+                    }
+                }
+            }
+            break;
+        }
 
 		return false;
 	}
@@ -165,7 +209,7 @@ namespace Physics
 			body.SetForce(Math::Vec2F(0, 0));
 		}
 
-		updateCollisions();
+        updateColliders();
 	}
 
 	BodyRef World::CreateBody() noexcept
@@ -196,14 +240,16 @@ namespace Physics
             throw InvalidBodyRefException();
         }
 
-		for (auto& collider : _colliders)
+		for (std::size_t i = 0; i < _colliders.size(); i++)
 		{
+            auto& collider = _colliders[i];
+
 			if (collider.IsFree()) continue;
 
 			if (collider.GetBodyRef() == bodyRef)
 			{
-				DestroyCollider(collider.GetColliderRef());
-			}
+				DestroyCollider({ i, _colliderGenerations[i] });
+            }
 		}
 
 		_bodies[bodyRef.Index].Disable();
@@ -227,7 +273,6 @@ namespace Physics
 			if (!_colliders[i].IsFree()) continue;
 
 			_colliders[i].SetBodyRef(bodyRef);
-			_colliders[i].SetColliderRef({ i, _colliderGenerations[i] });
 			_colliders[i].Enable();
 
 			return { i, _colliderGenerations[i] };
@@ -239,7 +284,6 @@ namespace Physics
 		_colliderGenerations.resize(_colliderGenerations.size() * 2);
 
 		_colliders[oldSize].SetBodyRef(bodyRef);
-		_colliders[oldSize].SetColliderRef({ oldSize, _colliderGenerations[oldSize] });
 		_colliders[oldSize].Enable();
 
 		return { oldSize, _colliderGenerations[oldSize] };
@@ -260,4 +304,9 @@ namespace Physics
 
 		return _colliders[colliderRef.Index];
 	}
+
+    void World::SetContactListener(ContactListener* contactListener) noexcept
+    {
+        _contactListener = contactListener;
+    }
 }
