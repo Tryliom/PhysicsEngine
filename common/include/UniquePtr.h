@@ -2,6 +2,10 @@
 
 #include <algorithm>
 
+/**
+ * @brief The UniquePtr class is a smart pointer that owns and manages another object through a pointer and disposes of that object when the UniquePtr goes out of scope.
+ * @tparam T Type of the managed object.
+ */
 template<typename T>
 class UniquePtr
 {
@@ -61,11 +65,20 @@ public:
         return *_ptr;
     }
 
+    /**
+     * @brief Returns a pointer to the managed object.
+     * @return A pointer to the managed object.
+     */
     constexpr T* Get() noexcept
     {
         return _ptr;
     }
 
+    /**
+     * @brief Returns a pointer to the managed object as a child type.
+     * @tparam U Child type.
+     * @return A pointer to the managed object as a child type.
+     */
     template<typename U>
     constexpr UniquePtr<U> As() noexcept
     {

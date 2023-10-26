@@ -2,6 +2,9 @@
 
 #include <chrono>
 
+/**
+ * @brief A simple timer class
+ */
 class Timer
 {
 public:
@@ -12,6 +15,9 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> _currentTime;
 
 public:
+    /**
+     * @brief Update the timer and calculate the delta time from the last frame
+     */
 	void Update() noexcept;
 
 	/**
