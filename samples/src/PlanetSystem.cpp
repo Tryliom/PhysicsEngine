@@ -1,14 +1,14 @@
-#include "PlanetSystem.h"
+#include "PlanetSystemSample.h"
 
 #include "Random.h"
 #include "Input.h"
 
-#include <iostream>
-
-PlanetSystem::PlanetSystem() : _world(1000)
+void PlanetSystemSample::onInit() noexcept
 {
+    Display::SetTitle("Planet System Sample");
+
     // Create sun
-    CreateSun(Math::Vec2F(0.f, 0.f));
+    createSun(Math::Vec2F(0.f, 0.f));
 
     _followedRef = { true, _suns[0] };
 
@@ -24,17 +24,21 @@ PlanetSystem::PlanetSystem() : _world(1000)
 
     for (std::size_t i = 0; i < planetsToCreate; i++)
     {
-        auto randomAngle = Math::Radian(Math::Degree(Math::Random::Range<float>(0.f, 360.f)));
-        auto randomR = Math::Random::Range<float>(R / 2.f, R);
+        auto randomAngle = Math::Radian(Math::Degree(Math::Random::Range(0.f, 360.f)));
+        auto randomR = Math::Random::Range(R / 2.f, R);
 
-        CreatePlanet(Math::Vec2F(Math::Cos(randomAngle), Math::Sin(randomAngle)) * randomR + sunBody.Position());
+        createPlanet(Math::Vec2F(Math::Cos(randomAngle), Math::Sin(randomAngle)) * randomR + sunBody.Position());
     }
 }
 
-void PlanetSystem::Update(float deltaTime) noexcept
+void PlanetSystemSample::onDeinit() noexcept
 {
-    _world.Update(deltaTime);
+    _planets.clear();
+    _suns.clear();
+}
 
+void PlanetSystemSample::onUpdate(float deltaTime) noexcept
+{
     if (Input::IsKeyPressed(SDL_SCANCODE_F))
     {
         if (_followedRef.Enable)
@@ -65,7 +69,6 @@ void PlanetSystem::Update(float deltaTime) noexcept
             Display::LookAt(_world.GetBody(_followedRef.Ref).Position());
         }
     }
-
 
     auto mouseWheelDelta = Input::GetMouseWheelDelta();
 
@@ -102,17 +105,18 @@ void PlanetSystem::Update(float deltaTime) noexcept
     {
         if (Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
         {
-            CreatePlanet(Display::GetMousePosition(), Math::Random::Range<float>(1000.f, 3000.f));
+            createPlanet(Display::GetMousePosition(), Math::Random::Range(1000.f, 3000.f));
         }
     }
     else if (Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
     {
-        CreatePlanet(Display::GetMousePosition() + Math::Vec2F(Math::Random::Range<float>(-_mouseRandomRadius, _mouseRandomRadius), Math::Random::Range<float>(-_mouseRandomRadius, _mouseRandomRadius)));
+        createPlanet(Display::GetMousePosition() +
+                     Math::Vec2F(Math::Random::Range(-_mouseRandomRadius, _mouseRandomRadius), Math::Random::Range(-_mouseRandomRadius, _mouseRandomRadius)));
     }
 
     if (Input::IsMouseButtonPressed(SDL_BUTTON_MIDDLE))
     {
-        CreateSun(Display::GetMousePosition());
+        createSun(Display::GetMousePosition());
     }
 
     for (auto& planet : _planets)
@@ -152,7 +156,7 @@ void PlanetSystem::Update(float deltaTime) noexcept
     }
 }
 
-void PlanetSystem::Render() noexcept
+void PlanetSystemSample::onRender() noexcept
 {
 	for (auto& planet : _planets)
     {
@@ -169,22 +173,22 @@ void PlanetSystem::Render() noexcept
     }
 }
 
-Color PlanetSystem::GenerateRandomColor() noexcept
+Color PlanetSystemSample::generateRandomColor() noexcept
 {
     return Color(
-        Math::Random::Range<int>(0, 255),
-        Math::Random::Range<int>(0, 255),
-        Math::Random::Range<int>(0, 255),
+        Math::Random::Range(0, 255),
+        Math::Random::Range(0, 255),
+        Math::Random::Range(0, 255),
         255
     );
 }
 
-void PlanetSystem::CreatePlanet(Math::Vec2F position, float extraMass)
+void PlanetSystemSample::createPlanet(Math::Vec2F position, float extraMass)
 {
     auto planetRef = _world.CreateBody();
     auto& planet = _world.GetBody(planetRef);
-    auto mass = Math::Random::Range<float>(800.f, 1400.f) + extraMass;
-    _planets.emplace_back(planetRef, GenerateRandomColor(), mass / 200.f);
+    auto mass = Math::Random::Range(800.f, 1400.f) + extraMass;
+    _planets.emplace_back(planetRef, generateRandomColor(), mass / 200.f);
 
     planet.SetPosition(position);
     planet.SetMass(mass);
@@ -215,7 +219,7 @@ void PlanetSystem::CreatePlanet(Math::Vec2F position, float extraMass)
     planet.SetVelocity(orbitalVelocity);
 }
 
-void PlanetSystem::CreateSun(Math::Vec2F position)
+void PlanetSystemSample::createSun(Math::Vec2F position)
 {
     auto sunRef = _world.CreateBody();
     auto& sun = _world.GetBody(sunRef);

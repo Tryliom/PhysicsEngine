@@ -81,6 +81,19 @@ namespace Display
 		SDL_Quit();
 	}
 
+    void Resize(size_t width, size_t height) noexcept
+    {
+        _width = width;
+        _height = height;
+
+        SDL_SetWindowSize(_window, static_cast<int>(_width), static_cast<int>(_height));
+    }
+
+    void SetTitle(const std::string& title) noexcept
+    {
+        SDL_SetWindowTitle(_window, title.c_str());
+    }
+
 	size_t GetWidth() noexcept
 	{
 		return _width;

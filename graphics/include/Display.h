@@ -31,11 +31,12 @@ namespace Display
 	void Init(size_t width, size_t height, const std::string& name = "Display");
 	void Render() noexcept;
 	void Shutdown() noexcept;
+    void Resize(size_t width, size_t height) noexcept;
+    void SetTitle(const std::string& title) noexcept;
 
 	size_t GetWidth() noexcept;
 	size_t GetHeight() noexcept;
 
-    void SetUpdate(void(*update)(float)) noexcept;
 	void SetMeterPerPixel(float meterPerPixel) noexcept;
 	Math::Vec2F GetMousePosition() noexcept;
 	Math::Vec2F GetMouseDelta() noexcept;

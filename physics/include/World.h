@@ -10,6 +10,9 @@
 
 namespace Physics
 {
+    /**
+     * @brief The world class is the main class of the physics engine. It contains all bodies and colliders.
+     */
     class World
     {
     public:

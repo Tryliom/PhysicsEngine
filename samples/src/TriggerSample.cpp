@@ -2,23 +2,145 @@
 
 #include "Random.h"
 
-TriggerSample::TriggerSample()
+void TriggerSample::onInit() noexcept
 {
+    Display::SetTitle("Trigger Sample");
     _world.SetContactListener(this);
 
-	constexpr static int TriggerObjectCount = 10;
+	constexpr static int TriggerObjectCount = 100;
 
 	_objects.resize(TriggerObjectCount * 3);
 
 	for (int i = 0; i < TriggerObjectCount; ++i)
 	{
-		CreateBall();
-		CreateBox();
-		CreatePolygon();
+        createBall();
+        createBox();
+        createPolygon();
 	}
 }
 
-void TriggerSample::CreateBall()
+void TriggerSample::onDeinit() noexcept
+{
+    _objects.clear();
+}
+
+void TriggerSample::onUpdate(float deltaTime) noexcept
+{
+    const auto screenWidth = static_cast<float>(Display::GetWidth());
+    const auto screenHeight = static_cast<float>(Display::GetHeight());
+
+    // Check if the object is outside the screen, and if so, teleport it to the other side
+    // Set up also his color to normal
+    for (auto& object : _objects)
+    {
+        auto& body = _world.GetBody(object.BodyRef);
+
+        object.Color = _color;
+
+        if (body.Position().X < 0.f)
+        {
+            body.SetPosition({ screenWidth, body.Position().Y });
+        }
+        else if (body.Position().X > screenWidth)
+        {
+            body.SetPosition({ 0.f, body.Position().Y });
+        }
+
+        if (body.Position().Y < 0.f)
+        {
+            body.SetPosition({ body.Position().X, screenHeight });
+        }
+        else if (body.Position().Y > screenHeight)
+        {
+            body.SetPosition({ body.Position().X, 0.f });
+        }
+
+        if (object.TriggerEnterTimer > 0.f)
+        {
+            object.TriggerEnterTimer -= deltaTime;
+        }
+        else
+        {
+            object.TriggerEnterTimer = 0.f;
+        }
+
+        if (object.TriggerExitTimer > 0.f)
+        {
+            object.TriggerExitTimer -= deltaTime;
+        }
+        else
+        {
+            object.TriggerExitTimer = 0.f;
+        }
+    }
+}
+
+void TriggerSample::onRender() noexcept
+{
+    for (auto& object : _objects)
+    {
+        const auto& body = _world.GetBody(object.BodyRef);
+        const auto& collider = _world.GetCollider(object.ColliderRef);
+
+        switch(collider.GetShapeType())
+        {
+            case Math::ShapeType::Circle:
+            {
+                const auto circle = collider.GetCircle() + body.Position();
+
+                if (object.TriggerEnterTimer > 0.f)
+                {
+                    Display::Draw({circle.Center(), circle.Radius() * 1.4f}, _triggerEnterColor);
+                }
+
+                if (object.TriggerExitTimer > 0.f)
+                {
+                    Display::Draw({circle.Center(), circle.Radius() * 1.2f}, _triggerExitColor);
+                }
+
+                Display::Draw(circle, object.Color);
+            }
+                break;
+
+            case Math::ShapeType::Rectangle:
+            {
+                const auto rect = collider.GetRectangle() + body.Position();
+
+                if (object.TriggerEnterTimer > 0.f)
+                {
+                    Display::Draw(rect, _triggerEnterColor, Math::Vec2F(1.4f, 1.4f));
+                }
+
+                if (object.TriggerExitTimer > 0.f)
+                {
+                    Display::Draw(rect, _triggerExitColor, Math::Vec2F(1.2f, 1.2f));
+                }
+
+                Display::Draw(rect, object.Color);
+            }
+                break;
+
+            case Math::ShapeType::Polygon:
+            {
+                auto poly = collider.GetPolygon() + body.Position();
+
+                if (object.TriggerEnterTimer > 0.f)
+                {
+                    Display::Draw(poly, _triggerEnterColor, Math::Vec2F(1.4f, 1.4f));
+                }
+
+                if (object.TriggerExitTimer > 0.f)
+                {
+                    Display::Draw(poly, _triggerExitColor, Math::Vec2F(1.2f, 1.2f));
+                }
+
+                Display::Draw(poly, object.Color);
+            }
+        }
+    }
+}
+
+void TriggerSample::createBall() noexcept
 {
 	const static auto screenWidth = static_cast<float>(Display::GetWidth());
 	const static auto screenHeight = static_cast<float>(Display::GetHeight());
@@ -42,7 +164,7 @@ void TriggerSample::CreateBall()
 	collider.SetIsTrigger(true);
 }
 
-void TriggerSample::CreateBox()
+void TriggerSample::createBox() noexcept
 {
 	const static auto screenWidth = static_cast<float>(Display::GetWidth());
 	const static auto screenHeight = static_cast<float>(Display::GetHeight());
@@ -71,7 +193,7 @@ void TriggerSample::CreateBox()
 	collider.SetIsTrigger(true);
 }
 
-void TriggerSample::CreatePolygon()
+void TriggerSample::createPolygon() noexcept
 {
 	const static auto screenWidth = static_cast<float>(Display::GetWidth());
 	const static auto screenHeight = static_cast<float>(Display::GetHeight());
@@ -103,124 +225,6 @@ void TriggerSample::CreatePolygon()
 
 	collider.SetPolygon(poly);
 	collider.SetIsTrigger(true);
-}
-
-void TriggerSample::Update(float deltaTime) noexcept
-{
-	const auto screenWidth = static_cast<float>(Display::GetWidth());
-	const auto screenHeight = static_cast<float>(Display::GetHeight());
-
-	// Check if the object is outside the screen, and if so, teleport it to the other side
-	// Set up also his color to normal
-	for (auto& object : _objects)
-	{
-		auto& body = _world.GetBody(object.BodyRef);
-
-		object.Color = _color;
-
-		if (body.Position().X < 0.f)
-		{
-			body.SetPosition({ screenWidth, body.Position().Y });
-		}
-		else if (body.Position().X > screenWidth)
-		{
-			body.SetPosition({ 0.f, body.Position().Y });
-		}
-
-		if (body.Position().Y < 0.f)
-		{
-			body.SetPosition({ body.Position().X, screenHeight });
-		}
-		else if (body.Position().Y > screenHeight)
-		{
-			body.SetPosition({ body.Position().X, 0.f });
-		}
-
-		if (object.TriggerEnterTimer > 0.f)
-		{
-            object.TriggerEnterTimer -= deltaTime;
-		}
-		else
-		{
-            object.TriggerEnterTimer = 0.f;
-		}
-
-		if (object.TriggerExitTimer > 0.f)
-		{
-            object.TriggerExitTimer -= deltaTime;
-		}
-		else
-		{
-            object.TriggerExitTimer = 0.f;
-		}
-	}
-
-	_world.Update(deltaTime);
-}
-
-void TriggerSample::Render() noexcept
-{
-	for (auto& object : _objects)
-	{
-		const auto& body = _world.GetBody(object.BodyRef);
-        const auto& collider = _world.GetCollider(object.ColliderRef);
-
-        switch(collider.GetShapeType())
-        {
-            case Math::ShapeType::Circle:
-            {
-                const auto circle = collider.GetCircle() + body.Position();
-
-                if (object.TriggerEnterTimer > 0.f)
-                {
-                    Display::Draw({circle.Center(), circle.Radius() * 1.4f}, _triggerEnterColor);
-                }
-
-                if (object.TriggerExitTimer > 0.f)
-                {
-                    Display::Draw({circle.Center(), circle.Radius() * 1.2f}, _triggerExitColor);
-                }
-
-                Display::Draw(circle, object.Color);
-            }
-            break;
-
-            case Math::ShapeType::Rectangle:
-            {
-                const auto rect = collider.GetRectangle() + body.Position();
-
-                if (object.TriggerEnterTimer > 0.f)
-                {
-                    Display::Draw(rect, _triggerEnterColor, Math::Vec2F(1.4f, 1.4f));
-                }
-
-                if (object.TriggerExitTimer > 0.f)
-                {
-                    Display::Draw(rect, _triggerExitColor, Math::Vec2F(1.2f, 1.2f));
-                }
-
-                Display::Draw(rect, object.Color);
-            }
-            break;
-
-            case Math::ShapeType::Polygon:
-            {
-                auto poly = collider.GetPolygon() + body.Position();
-
-                if (object.TriggerEnterTimer > 0.f)
-                {
-                    Display::Draw(poly, _triggerEnterColor, Math::Vec2F(1.4f, 1.4f));
-                }
-
-                if (object.TriggerExitTimer > 0.f)
-                {
-                    Display::Draw(poly, _triggerExitColor, Math::Vec2F(1.2f, 1.2f));
-                }
-
-                Display::Draw(poly, object.Color);
-            }
-        }
-	}
 }
 
 void TriggerSample::OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept

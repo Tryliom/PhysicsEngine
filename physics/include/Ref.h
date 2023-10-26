@@ -4,6 +4,10 @@
 
 namespace Physics
 {
+    /**
+     * @brief A reference to a body or collider.
+     * @tparam i The index of the reference. 0 for BodyRef, 1 for ColliderRef.
+     */
     template<int i>
     struct Ref
     {
@@ -21,6 +25,12 @@ namespace Physics
         }
     };
 
+    /**
+     * @brief A reference to a body.
+     */
     using BodyRef = Ref<0>;
+    /**
+     * @brief A reference to a collider.
+     */
     using ColliderRef = Ref<1>;
 }

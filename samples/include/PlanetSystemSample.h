@@ -1,4 +1,5 @@
 #pragma once
+#include "Sample.h"
 
 #include "Body.h"
 #include "Vec2.h"
@@ -20,14 +21,9 @@ struct Follow
     Physics::BodyRef Ref;
 };
 
-class PlanetSystem
+class PlanetSystemSample final : public Sample
 {
-public:
-    PlanetSystem();
-
 private:
-    Physics::World _world;
-
     const float _mouseRandomRadius = 15.f;
     const float _sunMass = 10000.f;
     const float _sunRadius = 10.f;
@@ -38,12 +34,15 @@ private:
 
     Follow _followedRef {};
 
-public:
-    void Update(float deltaTime) noexcept;
-    void Render() noexcept;
+private:
+    void onInit() noexcept override;
+    void onDeinit() noexcept override;
 
-    static Color GenerateRandomColor() noexcept;
+    void onUpdate(float deltaTime) noexcept override;
+    void onRender() noexcept override;
 
-    void CreatePlanet(Math::Vec2F position, float extraMass = 0.f);
-    void CreateSun(Math::Vec2F position);
+    static Color generateRandomColor() noexcept;
+
+    void createPlanet(Math::Vec2F position, float extraMass = 0.f);
+    void createSun(Math::Vec2F position);
 };

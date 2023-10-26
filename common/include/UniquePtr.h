@@ -72,9 +72,3 @@ public:
         return UniquePtr<U>(static_cast<U*>(_ptr));
     }
 };
-
-template <typename T>
-UniquePtr<T> MakeUnique(T value) noexcept
-{
-    return UniquePtr<T>(new T(value));
-}

@@ -2,6 +2,9 @@
 
 #include <exception>
 
+/**
+ * @brief Thrown when a body reference is invalid.
+ */
 class InvalidBodyRefException : public std::exception
 {
 public:
@@ -14,6 +17,9 @@ public:
 	}
 };
 
+/**
+ * @brief Thrown when a collider reference is invalid.
+ */
 class InvalidColliderRefException : public std::exception
 {
 public:
