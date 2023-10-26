@@ -106,27 +106,25 @@ namespace Physics
         {
             case Math::ShapeType::Circle:
             {
-                auto circleA = colliderA.GetCircle() + positionA;
+                auto circleA = Math::CircleF(colliderA.GetOffset() + positionA, colliderA.GetCircle().Radius());
 
                 switch (colliderB.GetShapeType())
                 {
                     case Math::ShapeType::Circle:
                     {
-                        auto circleB = colliderB.GetCircle() + positionB;
+                        auto circleB = Math::CircleF(colliderB.GetOffset() + positionB, colliderB.GetCircle().Radius());
 
                         return Math::Intersect(circleA, circleB);
                     }
-                    break;
                     case Math::ShapeType::Rectangle:
                     {
-                        auto rectB = colliderB.GetRectangle() + positionB;
+                        auto rectB = colliderB.GetRectangle() + positionB + colliderB.GetOffset();
 
                         return Math::Intersect(circleA, rectB);
                     }
-                    break;
                     case Math::ShapeType::Polygon:
                     {
-                        auto polyB = colliderB.GetPolygon() + positionB;
+                        auto polyB = colliderB.GetPolygon() + positionB + colliderB.GetOffset();
 
                         return Math::Intersect(circleA, polyB);
                     }
@@ -136,27 +134,25 @@ namespace Physics
 
             case Math::ShapeType::Rectangle:
             {
-                auto rectA = colliderA.GetRectangle() + positionA;
+                auto rectA = colliderA.GetRectangle() + positionA + colliderA.GetOffset();
 
                 switch (colliderB.GetShapeType())
                 {
                     case Math::ShapeType::Circle:
                     {
-                        auto circleB = colliderB.GetCircle() + positionB;
+                        auto circleB = Math::CircleF(colliderB.GetOffset() + positionB, colliderB.GetCircle().Radius());
 
                         return Math::Intersect(rectA, circleB);
                     }
-                    break;
                     case Math::ShapeType::Rectangle:
                     {
-                        auto rectB = colliderB.GetRectangle() + positionB;
+                        auto rectB = colliderB.GetRectangle() + positionB + colliderB.GetOffset();
 
                         return Math::Intersect(rectA, rectB);
                     }
-                    break;
                     case Math::ShapeType::Polygon:
                     {
-                        auto polyB = colliderB.GetPolygon() + positionB;
+                        auto polyB = colliderB.GetPolygon() + positionB + colliderB.GetOffset();
 
                         return Math::Intersect(rectA, polyB);
                     }
@@ -172,27 +168,26 @@ namespace Physics
                 {
                     case Math::ShapeType::Circle:
                     {
-                        auto circleB = colliderB.GetCircle() + positionB;
+                        auto circleB = Math::CircleF(colliderB.GetOffset() + positionB, colliderB.GetCircle().Radius());
 
                         return Math::Intersect(polyA, circleB);
                     }
-                    break;
                     case Math::ShapeType::Rectangle:
                     {
-                        auto rectB = colliderB.GetRectangle() + positionB;
+                        auto rectB = colliderB.GetRectangle() + positionB + colliderB.GetOffset();
 
                         return Math::Intersect(polyA, rectB);
                     }
-                    break;
                     case Math::ShapeType::Polygon:
                     {
-                        auto polyB = colliderB.GetPolygon() + positionB;
+                        auto polyB = colliderB.GetPolygon() + positionB + colliderB.GetOffset();
 
                         return Math::Intersect(polyA, polyB);
                     }
                 }
             }
             break;
+            case Math::ShapeType::None: break;
         }
 
 		return false;

@@ -5,8 +5,8 @@
 
 void Sample::Update(float deltaTime) noexcept
 {
-    onUpdate(deltaTime);
     _world.Update(deltaTime);
+    onUpdate(deltaTime);
 }
 
 void Sample::Render() noexcept

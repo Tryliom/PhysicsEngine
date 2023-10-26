@@ -17,10 +17,15 @@ namespace Math
     public:
         /**
          * @brief Construct a new Circle object
-         * @param center _center of the circle, also the position of the circle
-         * @param radius _radius of the circle, if negative, it will be converted to its positive value
+         * @param center Center of the circle, also the position of the circle
+         * @param radius Radius of the circle, if negative, it will be converted to its positive value
          */
         constexpr Circle(Vec2<T> center, T radius) noexcept : _center(center), _radius(Math::Abs(radius)) {}
+        /**
+         * @brief Construct a new Circle object with a center in (0, 0)
+         * @param radius Radius of the circle, if negative, it will be converted to its positive value
+         */
+        constexpr explicit Circle(T radius) noexcept : _center(Vec2<T>::Zero()), _radius(Math::Abs(radius)) {}
 
     private:
         Vec2<T> _center = Vec2<T>::Zero();
@@ -102,6 +107,11 @@ namespace Math
 	    {
 		    return Rectangle<T>(_minBound + vec, _maxBound + vec);
 	    }
+
+        [[nodiscard]] static constexpr Rectangle<T> FromCenter(Math::Vec2<T> center, Math::Vec2<T> size) noexcept
+        {
+            return Rectangle<T>(center - size / 2, center + size / 2);
+        }
     };
 
     using RectangleF = Rectangle<float>;

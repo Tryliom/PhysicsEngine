@@ -94,7 +94,7 @@ namespace Physics
 		void SetIsTrigger(bool isTrigger) noexcept;
 
         /**
-         * @brief Set the shape of the collider to a circle
+         * @brief Set the shape of the collider to a circle, the circle center is not used
          * @param circle the circle
          */
 		void SetCircle(Math::CircleF circle) noexcept;

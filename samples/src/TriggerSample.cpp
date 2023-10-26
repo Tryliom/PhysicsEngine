@@ -36,8 +36,6 @@ void TriggerSample::onUpdate(float deltaTime) noexcept
     {
         auto& body = _world.GetBody(object.BodyRef);
 
-        object.Color = _color;
-
         if (body.Position().X < 0.f)
         {
             body.SetPosition({ screenWidth, body.Position().Y });
@@ -137,7 +135,14 @@ void TriggerSample::onRender() noexcept
 
                 Display::Draw(poly, object.Color);
             }
+            case Math::ShapeType::None: break;
         }
+    }
+
+    // Reset object color
+    for (auto& object : _objects)
+    {
+        object.Color = _color;
     }
 }
 
