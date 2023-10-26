@@ -139,7 +139,7 @@ void TriggerSample::onRender() noexcept
         }
     }
 
-    // Reset object color
+    // Clear object color
     for (auto& object : _objects)
     {
         object.Color = _color;

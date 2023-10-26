@@ -37,7 +37,7 @@ namespace Display
      */
 	void Shutdown() noexcept;
     /**
-     * @brief Reset the camera, zoom and meterPerPixel to the default position.
+     * @brief Clear the camera, zoom and meterPerPixel to the default position.
      */
     void ResetView() noexcept;
 

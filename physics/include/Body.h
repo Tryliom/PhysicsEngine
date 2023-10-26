@@ -74,7 +74,7 @@ namespace Physics
          */
 		void ApplyForce(Math::Vec2F force) noexcept;
 		/**
-		 * @brief Disable the body by setting its mass to -1. Reset all other values.
+		 * @brief Disable the body by setting its mass to -1. Clear all other values.
 		 */
 		void Disable() noexcept;
 
