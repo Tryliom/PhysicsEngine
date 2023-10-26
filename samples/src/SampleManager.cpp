@@ -3,6 +3,7 @@
 #include "TriggerSample.h"
 #include "PlanetSystemSample.h"
 #include "Input.h"
+#include "Display.h"
 
 SampleManager::SampleManager() noexcept : _timer(), _samples({
     UniquePtr<Sample>(new PlanetSystemSample()),

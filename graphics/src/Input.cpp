@@ -38,7 +38,7 @@ namespace Input
 			_mouseButtonsHeld[event.button.button] = false;
 			break;
 		case SDL_MOUSEWHEEL:
-			_mouseWheelDelta = event.wheel.y;
+			_mouseWheelDelta = static_cast<float>(event.wheel.y);
 			break;
 		case SDL_MOUSEMOTION:
 			_mouseDelta.X = event.motion.xrel;

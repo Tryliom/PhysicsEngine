@@ -81,6 +81,13 @@ namespace Display
 		SDL_Quit();
 	}
 
+    void ResetView() noexcept
+    {
+        _camera.Position = Math::Vec2F::Zero();
+        _camera.Zoom = 1.f;
+        _meterPerPixel = 1.f;
+    }
+
     void Resize(size_t width, size_t height) noexcept
     {
         _width = width;

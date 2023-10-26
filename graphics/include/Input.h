@@ -6,8 +6,15 @@ typedef union SDL_Event SDL_Event;
 
 namespace Input
 {
+    /**
+     * @brief Called when an input event occurs.
+     * @param event The input event.
+     */
 	void OnInput(SDL_Event event);
 
+    /**
+     * @brief Updates the input state.
+     */
 	void Update();
 
 	/**
@@ -48,8 +55,20 @@ namespace Input
 	 */
 	bool IsMouseButtonHeld(int button);
 
+    /**
+     * @brief Returns the mouse position.
+     * @return
+     */
 	Math::Vec2I GetMousePosition();
+    /**
+     * @brief Returns the mouse delta.
+     * @return
+     */
 	Math::Vec2I GetMouseDelta();
 
+    /**
+     * @brief Returns the mouse wheel delta.
+     * @return
+     */
 	float GetMouseWheelDelta();
 }

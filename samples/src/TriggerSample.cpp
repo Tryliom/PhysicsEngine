@@ -1,13 +1,14 @@
 #include "TriggerSample.h"
 
 #include "Random.h"
+#include "Display.h"
 
 void TriggerSample::onInit() noexcept
 {
     Display::SetTitle("Trigger Sample");
     _world.SetContactListener(this);
 
-	constexpr static int TriggerObjectCount = 100;
+	constexpr static int TriggerObjectCount = 10;
 
 	_objects.resize(TriggerObjectCount * 3);
 

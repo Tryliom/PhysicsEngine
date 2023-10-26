@@ -2,6 +2,7 @@
 
 #include "Random.h"
 #include "Input.h"
+#include "Display.h"
 
 void PlanetSystemSample::onInit() noexcept
 {

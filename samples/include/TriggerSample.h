@@ -2,7 +2,7 @@
 
 #include "World.h"
 #include "Sample.h"
-#include "Display.h"
+#include "Color.h"
 
 struct Object
 {

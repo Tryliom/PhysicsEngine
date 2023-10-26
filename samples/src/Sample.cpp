@@ -5,8 +5,8 @@
 
 void Sample::Update(float deltaTime) noexcept
 {
-    _world.Update(deltaTime);
     onUpdate(deltaTime);
+    _world.Update(deltaTime);
 }
 
 void Sample::Render() noexcept
@@ -17,9 +17,7 @@ void Sample::Render() noexcept
 
 void Sample::Init() noexcept
 {
-    Display::SetCameraPosition(Math::Vec2F(0.f, 0.f));
-    Display::SetCameraZoom(1.f, Math::Vec2F::Zero());
-    Display::SetMeterPerPixel(1.f);
+    Display::ResetView();
 
     onInit();
 }
