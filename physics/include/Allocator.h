@@ -9,7 +9,27 @@ namespace Physics
      */
     class Allocator
     {
+    protected:
+		/**
+		 * @brief Root pointer to allocated memory
+		 */
+		void* _rootPtr {};
+		/**
+		 * @brief Current pointer to allocated memory
+		 */
+		void* _currentPtr {};
+		/**
+		 * @brief Size of allocated memory
+		 */
+		std::size_t _size {};
+		/**
+		 * @brief Number of allocations
+		 */
+		std::size_t _allocations {};
+
     public:
+		Allocator() = default;
+		Allocator(void* ptr, std::size_t size) noexcept;
         virtual ~Allocator() = default;
 
         /**
@@ -17,67 +37,125 @@ namespace Physics
          * @param size Size of memory to allocate
          * @return Pointer to allocated memory
          */
-        virtual void* Allocate(size_t size) = 0;
+        [[nodiscard]] virtual void* Allocate(std::size_t size, std::size_t alignment) noexcept = 0;
         /**
          * @brief Deallocate memory
          * @param ptr Pointer to memory to deallocate
          */
-        virtual void Deallocate(void* ptr) = 0;
+        virtual void Deallocate(void* ptr) noexcept = 0;
+
+		/**
+		 * @brief Get the root pointer
+		 */
+		[[nodiscard]] void* GetRootPtr() const noexcept;
+		/**
+		 * @brief Get the current pointer
+		 */
+		[[nodiscard]] void* GetCurrentPtr() const noexcept;
+		/**
+		 * @brief Get the size of allocated memory
+		 */
+		[[nodiscard]] std::size_t GetSize() const noexcept;
+		/**
+		 * @brief Get the number of allocations
+		 */
+		[[nodiscard]] std::size_t GetAllocations() const noexcept;
     };
 
     /**
      * @brief Linear allocator
      */
-    class LinearAllocator : public Allocator
+    class LinearAllocator final : public Allocator
     {
-    private:
-        void* _ptr;
-        size_t _size;
-        size_t _offset;
+	private:
+		std::size_t _offset = 0;
 
     public:
         /**
          * @brief Constructor
          * @param size Size of memory to allocate
          */
-        LinearAllocator(void* ptr, std::size_t size);
+        LinearAllocator(void* ptr, std::size_t size) noexcept;
         ~LinearAllocator() override;
 
-        void* Allocate(std::size_t size) override;
-        void Deallocate(void* ptr) override;
+		/**
+		 * @brief Allocate memory from allocator
+		 * @param size Size of memory to allocate
+		 * @return Pointer to allocated memory
+		 */
+        [[nodiscard]] void* Allocate(std::size_t size, std::size_t alignment) noexcept override;
+		/**
+		 * @brief Does nothing for linear allocator
+		 */
+        void Deallocate(void* ptr) noexcept override;
 
         /**
          * @brief Clear allocator
          */
-        void Clear();
+        void Clear() noexcept;
     };
 
-    /**
-     * @brief Stack allocator
-     */
-    class StackAllocator : public Allocator
-    {
-    private:
-        void* _rootPtr;
-        void* _topPtr;
-        void* _prevPtr;
-        void* _currentPtr;
-        size_t _size;
+	/**
+	 * @brief Proxy allocator
+	 */
+	class ProxyAllocator final : public Allocator
+	{
+	private:
+		Allocator& _allocator;
 
-    public:
-        /**
-         * @brief Constructor
-         * @param size Size of memory to allocate
-         */
-        StackAllocator(void* ptr, std::size_t size);
-        ~StackAllocator() override;
+	public:
+		/**
+		 * @brief Constructor
+		 * @param allocator Allocator to proxy
+		 */
+		explicit ProxyAllocator(Allocator& allocator) noexcept;
+		~ProxyAllocator() override = default;
 
-        void* Allocate(std::size_t size) override;
-        void Deallocate(void* ptr) override;
+		/**
+		 * @brief Allocate memory from allocator
+		 * @param size Size of memory to allocate
+		 * @return Pointer to allocated memory
+		 */
+		[[nodiscard]] void* Allocate(std::size_t size, std::size_t alignment) noexcept override;
+		/**
+		 * @brief Deallocate memory from allocator
+		 * @param ptr Pointer to memory to deallocate
+		 */
+		void Deallocate(void* ptr) noexcept override;
+	};
 
-        /**
-         * @brief Clear allocator
-         */
-        void Clear();
-    };
+	/**
+	 * @brief Freelist allocator
+	 */
+	class FreeListAllocator final : public Allocator
+	{
+	private:
+		struct FreeBlock
+		{
+			std::size_t size;
+			FreeBlock* next;
+		};
+
+		FreeBlock* _freeBlocks;
+
+	public:
+		/**
+		 * @brief Constructor
+		 * @param size Size of memory to allocate
+		 */
+		FreeListAllocator(void* ptr, std::size_t size) noexcept;
+		~FreeListAllocator() override;
+
+		/**
+		 * @brief Allocate memory from allocator
+		 * @param size Size of memory to allocate
+		 * @return Pointer to allocated memory
+		 */
+		[[nodiscard]] void* Allocate(std::size_t size, std::size_t alignment) noexcept override;
+		/**
+		 * @brief Deallocate memory from allocator
+		 * @param ptr Pointer to memory to deallocate
+		 */
+		void Deallocate(void* ptr) noexcept override;
+	};
 }
