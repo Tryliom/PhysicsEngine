@@ -85,103 +85,19 @@ namespace Physics
 
 	void* ProxyAllocator::Allocate(std::size_t size, std::size_t alignment) noexcept
 	{
-		return _allocator.Allocate(size, alignment);
+		auto ptr = _allocator.Allocate(size, alignment);
+
+		// Update the number of allocations
+		if (ptr != nullptr)
+		{
+			_allocations++;
+		}
+
+		return ptr;
 	}
 
 	void ProxyAllocator::Deallocate(void* ptr) noexcept
 	{
 		_allocator.Deallocate(ptr);
-	}
-
-	// FreeListAllocator implementation
-
-	FreeListAllocator::FreeListAllocator(void* ptr, std::size_t size) noexcept :
-		Allocator(ptr, size), _freeBlocks(reinterpret_cast<FreeBlock*>(ptr))
-	{
-		_freeBlocks->size = size;
-		_freeBlocks->next = nullptr;
-	}
-
-	FreeListAllocator::~FreeListAllocator()
-	{
-		_freeBlocks = nullptr;
-	}
-
-	void* FreeListAllocator::Allocate(std::size_t size, std::size_t alignment) noexcept
-	{
-		// Find the best free block
-		FreeBlock* prevBlock = nullptr;
-		FreeBlock* freeBlock = _freeBlocks;
-		while (freeBlock != nullptr)
-		{
-			// Calculate padding
-			std::size_t padding = 0;
-			std::size_t alignedAddress = reinterpret_cast<std::size_t>(freeBlock) + sizeof(FreeBlock);
-			if (alignment != 0 && alignedAddress % alignment != 0)
-			{
-				padding = alignment - (alignedAddress % alignment);
-			}
-
-			// Calculate total size
-			std::size_t totalSize = size + padding;
-
-			// Check if there is enough memory
-			if (freeBlock->size < totalSize)
-			{
-				prevBlock = freeBlock;
-				freeBlock = freeBlock->next;
-				continue;
-			}
-
-			// Check if the block is large enough to split
-			if (freeBlock->size - totalSize <= sizeof(FreeBlock))
-			{
-				// Remove the block from the list
-				if (prevBlock != nullptr)
-				{
-					prevBlock->next = freeBlock->next;
-				}
-				else
-				{
-					_freeBlocks = freeBlock->next;
-				}
-			}
-			else
-			{
-				// Split the block
-				FreeBlock* nextBlock = reinterpret_cast<FreeBlock*>(reinterpret_cast<std::size_t>(freeBlock) + totalSize);
-				nextBlock->size = freeBlock->size - totalSize;
-				nextBlock->next = freeBlock->next;
-
-				// Remove the block from the list
-				if (prevBlock != nullptr)
-				{
-					prevBlock->next = nextBlock;
-				}
-				else
-				{
-					_freeBlocks = nextBlock;
-				}
-			}
-
-			// Update the number of allocations
-			_allocations++;
-
-			return reinterpret_cast<void*>(reinterpret_cast<std::size_t>(freeBlock) + padding);
-		}
-
-		// No free block found
-		return nullptr;
-	}
-
-	void FreeListAllocator::Deallocate(void* ptr) noexcept
-	{
-		// Add the block to the list
-		auto* freeBlock = reinterpret_cast<FreeBlock*>(reinterpret_cast<std::size_t>(ptr) - sizeof(FreeBlock));
-		freeBlock->next = _freeBlocks;
-		_freeBlocks = freeBlock;
-
-		// Update the number of allocations
-		_allocations--;
 	}
 }

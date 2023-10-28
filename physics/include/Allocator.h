@@ -123,39 +123,4 @@ namespace Physics
 		 */
 		void Deallocate(void* ptr) noexcept override;
 	};
-
-	/**
-	 * @brief Freelist allocator
-	 */
-	class FreeListAllocator final : public Allocator
-	{
-	private:
-		struct FreeBlock
-		{
-			std::size_t size;
-			FreeBlock* next;
-		};
-
-		FreeBlock* _freeBlocks;
-
-	public:
-		/**
-		 * @brief Constructor
-		 * @param size Size of memory to allocate
-		 */
-		FreeListAllocator(void* ptr, std::size_t size) noexcept;
-		~FreeListAllocator() override;
-
-		/**
-		 * @brief Allocate memory from allocator
-		 * @param size Size of memory to allocate
-		 * @return Pointer to allocated memory
-		 */
-		[[nodiscard]] void* Allocate(std::size_t size, std::size_t alignment) noexcept override;
-		/**
-		 * @brief Deallocate memory from allocator
-		 * @param ptr Pointer to memory to deallocate
-		 */
-		void Deallocate(void* ptr) noexcept override;
-	};
 }
