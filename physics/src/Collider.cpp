@@ -29,12 +29,12 @@ namespace Physics
 
 	bool Collider::IsFree() const noexcept
 	{
-		return _isFree;
+		return _shapeType == Math::ShapeType::None;
 	}
 
 	bool Collider::IsEnabled() const noexcept
 	{
-		return !_isFree && _isEnabled;
+		return !IsFree() && _isEnabled;
 	}
 
 	void Collider::SetBodyRef(BodyRef bodyRef) noexcept
@@ -84,7 +84,6 @@ namespace Physics
 	void Collider::Enable() noexcept
 	{
 		_isEnabled = true;
-		_isFree = false;
 	}
 
 	void Collider::Disable() noexcept
@@ -98,7 +97,7 @@ namespace Physics
 		_bounciness = 0.f;
 		_friction = 0.f;
 		_isTrigger = false;
-		_isFree = true;
+		_shapeType = Math::ShapeType::None;
 	}
 
 	Math::CircleF Collider::GetCircle() const noexcept

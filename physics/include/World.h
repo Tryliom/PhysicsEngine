@@ -19,11 +19,12 @@ namespace Physics
         explicit World(std::size_t defaultBodySize = 500) noexcept;
 
     private:
-        std::vector<Body> _bodies;
-        std::vector<std::size_t> _bodyGenerations;
+		std::unordered_set<ColliderPair, ColliderPairHash> _colliderPairs;
+
 		std::vector<Collider> _colliders;
 	    std::vector<std::size_t> _colliderGenerations;
-		std::unordered_set<ColliderPair, ColliderPairHash> _colliderPairs;
+        std::vector<Body> _bodies;
+        std::vector<std::size_t> _bodyGenerations;
 
         ContactListener* _contactListener { nullptr };
 

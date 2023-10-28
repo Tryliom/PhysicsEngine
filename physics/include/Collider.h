@@ -16,18 +16,16 @@ namespace Physics
 		constexpr Collider() noexcept = default;
 
 	private:
-		BodyRef _bodyRef {};
-		Math::ShapeType _shapeType { Math::ShapeType::Circle };
         std::variant<Math::CircleF, Math::RectangleF, Math::PolygonF> _shape { Math::CircleF(Math::Vec2F::Zero(), 1.f) };
-
+		BodyRef _bodyRef {};
         Math::Vec2F _offset { Math::Vec2F::Zero() };
+		Math::ShapeType _shapeType { Math::ShapeType::None };
 
 		float _bounciness { 0.f };
 		float _friction { 0.f };
-		bool _isTrigger { false };
 
+		bool _isTrigger { false };
 		bool _isEnabled { false };
-		bool _isFree { true };
 
 	public:
         /**

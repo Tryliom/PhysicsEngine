@@ -128,6 +128,7 @@ namespace Physics
 
                         return Math::Intersect(circleA, polyB);
                     }
+	                case Math::ShapeType::None:break;
                 }
             }
             break;
@@ -156,6 +157,7 @@ namespace Physics
 
                         return Math::Intersect(rectA, polyB);
                     }
+	                case Math::ShapeType::None:break;
                 }
             }
             break;
@@ -184,6 +186,7 @@ namespace Physics
 
                         return Math::Intersect(polyA, polyB);
                     }
+	                case Math::ShapeType::None:break;
                 }
             }
             break;
