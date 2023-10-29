@@ -25,5 +25,5 @@ void Sample::Init() noexcept
 void Sample::Deinit() noexcept
 {
     onDeinit();
-    _world = Physics::World();
+    _world = Physics::World(1);
 }

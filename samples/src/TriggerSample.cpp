@@ -2,13 +2,14 @@
 
 #include "Random.h"
 #include "Display.h"
+#include "Input.h"
 
 void TriggerSample::onInit() noexcept
 {
     Display::SetTitle("Trigger Sample");
     _world.SetContactListener(this);
 
-	constexpr static int TriggerObjectCount = 10;
+	constexpr static int TriggerObjectCount = 20;
 
 	_objects.resize(TriggerObjectCount * 3);
 
@@ -18,6 +19,16 @@ void TriggerSample::onInit() noexcept
         createBox();
         createPolygon();
 	}
+
+	_mouseObject.BodyRef = _world.CreateBody();
+	_mouseObject.ColliderRef = _world.CreateCollider(_mouseObject.BodyRef);
+
+	auto& collider = _world.GetCollider(_mouseObject.ColliderRef);
+
+	collider.SetCircle({ {0.f, 0.f}, 20.f });
+	collider.SetIsTrigger(true);
+
+	_world.GetBody(_mouseObject.BodyRef).SetPosition({ 0.f, 0.f });
 }
 
 void TriggerSample::onDeinit() noexcept
@@ -29,6 +40,55 @@ void TriggerSample::onUpdate(float deltaTime) noexcept
 {
     const auto screenWidth = static_cast<float>(Display::GetWidth());
     const auto screenHeight = static_cast<float>(Display::GetHeight());
+	const auto mouseWheelDelta = Input::GetMouseWheelDelta();
+
+	if (mouseWheelDelta != 0)
+	{
+		Math::Vec2F target = Display::GetMousePosition();
+
+		Display::SetCameraZoom(Display::GetCameraZoom() + mouseWheelDelta * 0.05f, target);
+	}
+
+	auto mouseDelta = Display::GetMouseDelta();
+
+	// Move camera when holding right mouse button.
+	if (Input::IsMouseButtonHeld(SDL_BUTTON_RIGHT) && mouseDelta != Math::Vec2F::Zero())
+	{
+		Display::MoveCamera(mouseDelta);
+	}
+
+	// Toggle freeze/unfreeze of all objects by pressing space.
+	if (Input::IsKeyPressed(SDL_SCANCODE_SPACE))
+	{
+		_stop = !_stop;
+
+		for (auto& object : _objects)
+		{
+			auto& body = _world.GetBody(object.BodyRef);
+			auto velocity = Math::Vec2F::Zero();
+
+			if (!_stop)
+			{
+				const auto directionToCenter = Math::Vec2F{ screenWidth / 2.f, screenHeight / 2.f } - body.Position();
+
+				velocity = directionToCenter.Normalized() * Math::Random::Range(100.f, 300.f);
+			}
+
+			body.SetVelocity(velocity);
+		}
+	}
+
+	// Toggle boxes by pressing B.
+	if (Input::IsKeyPressed(SDL_SCANCODE_B))
+	{
+		_showBoxes = !_showBoxes;
+	}
+
+	// Toggle quad trees by pressing Q.
+	if (Input::IsKeyPressed(SDL_SCANCODE_Q))
+	{
+		_showQuadTrees = !_showQuadTrees;
+	}
 
     // Check if the object is outside the screen, and if so, teleport it to the other side
     // Set up also his color to normal
@@ -72,10 +132,25 @@ void TriggerSample::onUpdate(float deltaTime) noexcept
             object.TriggerExitTimer = 0.f;
         }
     }
+
+	// Update the mouse object
+	auto& mouseBody = _world.GetBody(_mouseObject.BodyRef);
+
+	mouseBody.SetPosition(Display::GetMousePosition());
 }
 
 void TriggerSample::onRender() noexcept
 {
+	if (_showQuadTrees)
+	{
+		const auto quadTreeBoundaries = _world.GetQuadTreeBoundaries();
+
+		for (const auto& boundary: quadTreeBoundaries)
+		{
+			Display::DrawBorder(boundary, Color::White(), 2.f);
+		}
+	}
+
     for (auto& object : _objects)
     {
         const auto& body = _world.GetBody(object.BodyRef);
@@ -137,7 +212,16 @@ void TriggerSample::onRender() noexcept
             }
             case Math::ShapeType::None: break;
         }
+
+		if (_showBoxes) Display::DrawBorder(collider.GetBounds(), Color::White(), 2.f);
     }
+
+	// Draw the mouse object
+	const auto& mouseBody = _world.GetBody(_mouseObject.BodyRef);
+	const auto& mouseCollider = _world.GetCollider(_mouseObject.ColliderRef);
+
+	Display::Draw(mouseCollider.GetCircle() + mouseBody.Position(), Color::White());
+	if (_showBoxes) Display::DrawBorder(mouseCollider.GetBounds(), Color::White(), 2.f);
 
     // Clear object color
     for (auto& object : _objects)
@@ -235,7 +319,7 @@ void TriggerSample::createPolygon() noexcept
 
 void TriggerSample::OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
 {
-    for (auto & _object : _objects)
+    for (auto& _object : _objects)
     {
         if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
         {
@@ -246,7 +330,7 @@ void TriggerSample::OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::Co
 
 void TriggerSample::OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
 {
-    for (auto & _object : _objects)
+    for (auto& _object : _objects)
     {
         if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
         {
@@ -257,7 +341,7 @@ void TriggerSample::OnTriggerExit(Physics::ColliderRef colliderRef, Physics::Col
 
 void TriggerSample::OnTriggerStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
 {
-    for (auto & _object : _objects)
+    for (auto& _object : _objects)
     {
         if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
         {

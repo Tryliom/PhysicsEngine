@@ -7,10 +7,20 @@ namespace Physics
 		return _bodyRef;
 	}
 
+	ColliderRef Collider::GetColliderRef() const noexcept
+	{
+		return _colliderRef;
+	}
+
     Math::Vec2F Collider::GetOffset() const noexcept
     {
         return _offset;
     }
+
+	Math::Vec2F Collider::GetPosition() const noexcept
+	{
+		return _position;
+	}
 
     float Collider::GetBounciness() const noexcept
 	{
@@ -42,11 +52,20 @@ namespace Physics
 		_bodyRef = bodyRef;
 	}
 
+	void Collider::SetColliderRef(ColliderRef colliderRef) noexcept
+	{
+		_colliderRef = colliderRef;
+	}
 
     void Collider::SetOffset(Math::Vec2F offset) noexcept
     {
         _offset = offset;
     }
+
+	void Collider::SetPosition(Math::Vec2F position) noexcept
+	{
+		_position = position;
+	}
 
 	void Collider::SetBounciness(float bounciness) noexcept
 	{
@@ -118,5 +137,42 @@ namespace Physics
 	Math::ShapeType Collider::GetShapeType() const noexcept
 	{
 		return _shapeType;
+	}
+
+	Math::RectangleF Collider::GetBounds() const noexcept
+	{
+		switch (_shapeType)
+		{
+			case Math::ShapeType::Circle:
+			{
+				auto circle = GetCircle();
+				return Math::RectangleF::FromCenter(circle.Center(), {circle.Radius(), circle.Radius()}) + _position;
+			}
+			case Math::ShapeType::Rectangle:
+			{
+				return GetRectangle() + _position;
+			}
+			case Math::ShapeType::Polygon:
+			{
+				float minX = std::numeric_limits<float>::max();
+				float minY = std::numeric_limits<float>::max();
+				float maxX = std::numeric_limits<float>::min();
+				float maxY = std::numeric_limits<float>::min();
+				Math::PolygonF polygon = GetPolygon();
+
+				for (auto& vertex : polygon.Vertices())
+				{
+					minX = std::min(minX, vertex.X);
+					minY = std::min(minY, vertex.Y);
+					maxX = std::max(maxX, vertex.X);
+					maxY = std::max(maxY, vertex.Y);
+				}
+
+				return Math::RectangleF{Math::Vec2F{minX, minY}, Math::Vec2F{maxX, maxY}} + _position;
+			}
+			case Math::ShapeType::None: break;
+		}
+
+		return {_position, _position};
 	}
 }

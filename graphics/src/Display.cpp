@@ -279,6 +279,40 @@ namespace Display
 		}
 	}
 
+	void DrawBorder(Math::RectangleF rectangle, Color color, float width) noexcept
+	{
+		if (!IsVisible(rectangle)) return;
+
+		rectangle = Math::RectangleF{ rectangle.MinBound() - Math::Vec2F{ width / 2.f, width / 2.f }, rectangle.MaxBound() + Math::Vec2F{ width / 2.f, width / 2.f }};
+
+		const auto rectWidth = Math::Abs(rectangle.MaxBound().X - rectangle.MinBound().X);
+		const auto rectHeight = Math::Abs(rectangle.MaxBound().Y - rectangle.MinBound().Y);
+
+		const Math::Vec2F pointA = rectangle.MinBound();
+		const Math::Vec2F pointB = rectangle.MinBound() + Math::Vec2F{ rectWidth, 0.f };
+		const Math::Vec2F pointC = rectangle.MinBound() + Math::Vec2F{ rectWidth, rectHeight };
+		const Math::Vec2F pointD = rectangle.MinBound() + Math::Vec2F{ 0.f, rectHeight };
+
+		DrawLine(pointA + Math::Vec2F{ width / 2.f, 0.f }, pointB - Math::Vec2F{ width / 2.f, 0.f }, width, color);
+		DrawLine(pointB + Math::Vec2F{ 0.f, width / 2.f }, pointC - Math::Vec2F{ 0.f, width / 2.f }, width, color);
+		DrawLine(pointD - Math::Vec2F{ width / 2.f, width }, pointC + Math::Vec2F{ width / 2.f, -width }, width, color);
+		DrawLine(pointA + Math::Vec2F{ 0.f, width / 2.f }, pointD - Math::Vec2F{ 0.f, width / 2.f }, width, color);
+	}
+
+	void DrawLine(Math::Vec2F start, Math::Vec2F end, float width, Color color) noexcept
+	{
+		if (!IsVisible(Math::RectangleF{ start, end })) return;
+
+		// Apply width
+		const auto direction = (end - start).Normalized();
+		const auto perpendicular = Math::Vec2F{ -direction.Y, direction.X };
+
+		start += perpendicular * width / 2.f;
+		end -= perpendicular * width / 2.f;
+
+		Draw(Math::RectangleF{ start, end }, color);
+	}
+
     bool IsVisible(Math::CircleF circle) noexcept
     {
 	    const float radius = circle.Radius();

@@ -18,6 +18,11 @@ class TriggerSample final : public Sample, Physics::ContactListener
 {
 private:
 	std::vector<Object> _objects;
+	Object _mouseObject;
+
+	bool _stop {};
+	bool _showBoxes {};
+	bool _showQuadTrees {};
 
     static constexpr Color _color = Color(100, 100, 100);
     static constexpr Color _triggerEnterColor = Color(100, 255, 100);

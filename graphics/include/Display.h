@@ -140,6 +140,24 @@ namespace Display
      */
 	void Draw(const Math::PolygonF& polygon, Color color, Math::Vec2F scale = Math::Vec2F::One()) noexcept;
 
+	/**
+	 * @brief Draw a border around a rectangle.
+	 * @param rectangle  The rectangle to draw
+	 * @param color  The color of the border
+	 * @param width  The width of the border
+	 * @param scale  The scale of the border
+	 */
+	void DrawBorder(Math::RectangleF rectangle, Color color, float width) noexcept;
+
+	/**
+	 * @brief Draw a line.
+	 * @param start The start point of the line
+	 * @param end The end point of the line
+	 * @param width The width of the line
+	 * @param color The color of the line
+	 */
+	void DrawLine(Math::Vec2F start, Math::Vec2F end, float width, Color color) noexcept;
+
     /**
      * @brief Check if the circle is visible on the screen (with the camera).
      * @param circle The circle to check

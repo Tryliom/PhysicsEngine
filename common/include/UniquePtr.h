@@ -10,6 +10,8 @@ template<typename T>
 class UniquePtr
 {
 public:
+	UniquePtr() noexcept = default;
+
     constexpr explicit UniquePtr(T* ptr) noexcept
     {
         _ptr = ptr;
@@ -43,7 +45,6 @@ private:
     T* _ptr = nullptr;
 
 public:
-    UniquePtr() noexcept = delete;
 
     [[nodiscard]] constexpr T* operator->() noexcept
     {

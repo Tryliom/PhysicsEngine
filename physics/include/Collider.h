@@ -18,7 +18,9 @@ namespace Physics
 	private:
         std::variant<Math::CircleF, Math::RectangleF, Math::PolygonF> _shape { Math::CircleF(Math::Vec2F::Zero(), 1.f) };
 		BodyRef _bodyRef {};
+		ColliderRef _colliderRef {};
         Math::Vec2F _offset { Math::Vec2F::Zero() };
+		Math::Vec2F _position { Math::Vec2F::Zero() };
 		Math::ShapeType _shapeType { Math::ShapeType::None };
 
 		float _bounciness { 0.f };
@@ -33,11 +35,21 @@ namespace Physics
          * @return the body reference
          */
 		[[nodiscard]] BodyRef GetBodyRef() const noexcept;
-        /**
-         * @brief Get the offset position of the collider
-         * @return the offset position
-         */
+		/**
+		 * @brief Get the collider reference of the collider
+		 * @return the collider reference
+		 */
+		[[nodiscard]] ColliderRef GetColliderRef() const noexcept;
+		/**
+		 * @brief Get the offset position of the collider
+		 * @return the offset position
+		 */
         [[nodiscard]] Math::Vec2F GetOffset() const noexcept;
+		/**
+		 * @brief Get the position of the collider
+		 * @return the position
+		 */
+		[[nodiscard]] Math::Vec2F GetPosition() const noexcept;
         /**
          * @brief Get the bounciness of the collider
          * @return the bounciness
@@ -70,11 +82,24 @@ namespace Physics
          * @param bodyRef the body reference
          */
 		void SetBodyRef(BodyRef bodyRef) noexcept;
+		/**
+		 * @brief Set the collider reference of the collider
+		 * @param colliderRef the collider reference
+		 */
+		void SetColliderRef(ColliderRef colliderRef) noexcept;
+
         /**
          * @brief Set the offset position of the collider
          * @param offset the offset position
          */
         void SetOffset(Math::Vec2F offset) noexcept;
+
+		/**
+		 * @brief Set the position of the collider
+		 * @param position the position
+		 */
+		void SetPosition(Math::Vec2F position) noexcept;
+
         /**
          * @brief Set the bounciness of the collider
          * @param bounciness the bounciness
@@ -141,5 +166,10 @@ namespace Physics
          * @return the polygon
          */
 		[[nodiscard]] Math::PolygonF GetPolygon() const noexcept;
+		/**
+		 * @brief Get the shape of the collider with the correct position
+		 * @return the shape
+		 */
+		[[nodiscard]] Math::RectangleF GetBounds() const noexcept;
 	};
 }
