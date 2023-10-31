@@ -315,10 +315,11 @@ namespace Physics
 
 		// No free colliders found, create a new one, and increase the size of the vector
 		const std::size_t oldSize = _colliders.size();
-		const ColliderRef colliderRef = { oldSize, _colliderGenerations[oldSize] };
 
 		_colliders.resize(_colliders.size() * 2);
 		_colliderGenerations.resize(_colliderGenerations.size() * 2);
+
+		const ColliderRef colliderRef = { oldSize, _colliderGenerations[oldSize] };
 
 		_colliders[oldSize].SetBodyRef(bodyRef);
 		_colliders[oldSize].Enable();

@@ -53,10 +53,20 @@ namespace Physics
 		void ClearColliders() noexcept;
 
 		/**
-		 * @brief Get all the boundaries of the quadtree nodes
+		 * @brief Get all the boundaries of the quadtree nodes that are not nullptr or empty
 		 * @return All the boundaries of the quadtree nodes
 		 */
 		[[nodiscard]] std::vector<Math::RectangleF> GetBoundaries() const noexcept;
+		/**
+		 * @brief Get the number of colliders in the quadtree
+		 * @return The number of colliders in the quadtree
+		 */
+		[[nodiscard]] std::size_t GetCollidersCount() const noexcept { return _colliders.size(); }
+		/**
+		 * @brief Get the number of colliders in the quadtree and all its nodes
+		 * @return The number of colliders in the quadtree and all its nodes
+		 */
+		[[nodiscard]] std::size_t GetAllCollidersCount() const noexcept;
 
 		static constexpr std::size_t MaxDepth() noexcept { return _maxDepth; }
 		static constexpr std::size_t MaxCapacity() noexcept { return _maxCapacity; }

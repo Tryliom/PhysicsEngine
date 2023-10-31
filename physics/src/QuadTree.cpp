@@ -34,8 +34,7 @@ namespace Physics
 	{
 		std::vector<const Collider*> colliders;
 
-		// Need to have body position for GetBounds
-		if (!Math::Intersect(_boundary, collider->GetBounds())) return colliders;
+		if (_colliders.empty() || !Math::Intersect(_boundary, collider->GetBounds())) return colliders;
 
 		for (auto& node : _nodes)
 		{
@@ -93,13 +92,27 @@ namespace Physics
 
 		for (auto& node : _nodes)
 		{
-			if (node == nullptr) continue;
+			if (node == nullptr || node->_colliders.empty()) continue;
 
 			auto nodeBoundaries = node->GetBoundaries();
 			boundaries.insert(boundaries.end(), nodeBoundaries.begin(), nodeBoundaries.end());
 		}
 
 		return boundaries;
+	}
+
+	std::size_t QuadTree::GetAllCollidersCount() const noexcept
+	{
+		std::size_t count = _colliders.size();
+
+		for (auto& node : _nodes)
+		{
+			if (node == nullptr) continue;
+
+			count += node->GetAllCollidersCount();
+		}
+
+		return count;
 	}
 
 	void QuadTree::subdivide(bool update) noexcept

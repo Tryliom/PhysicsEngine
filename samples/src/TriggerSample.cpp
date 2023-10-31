@@ -9,7 +9,7 @@ void TriggerSample::onInit() noexcept
     Display::SetTitle("Trigger Sample");
     _world.SetContactListener(this);
 
-	constexpr static int TriggerObjectCount = 20;
+	constexpr static int TriggerObjectCount = 25;
 
 	_objects.resize(TriggerObjectCount * 3);
 
