@@ -25,7 +25,7 @@ void TriggerSample::onInit() noexcept
 
 	auto& collider = _world.GetCollider(_mouseObject.ColliderRef);
 
-	collider.SetCircle({ {0.f, 0.f}, 20.f });
+	collider.SetCircle({ {0.f, 0.f}, 3.f });
 	collider.SetIsTrigger(true);
 
 	_world.GetBody(_mouseObject.BodyRef).SetPosition({ 0.f, 0.f });

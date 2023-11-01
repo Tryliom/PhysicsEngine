@@ -254,14 +254,15 @@ namespace Math
             return !operator<(radian);
         }
     };
+
+    inline Degree::operator Radian() const noexcept
+    {
+        return Radian(_value);
+    }
+
+    inline Degree::Degree(Radian radian) noexcept
+    {
+        _value = static_cast<float>(radian) * 180.0f / Math::Pi;
+    }
 }
 
-inline Math::Degree::operator Radian() const noexcept
-{
-    return Radian(_value);
-}
-
-inline Math::Degree::Degree(Radian radian) noexcept
-{
-    _value = static_cast<float>(radian) * 180.0f / Math::Pi;
-}

@@ -15,7 +15,7 @@ namespace Physics
 		_bodyGenerations.resize(defaultBodySize, 0);
 		_colliders.resize(defaultBodySize);
 		_colliderGenerations.resize(defaultBodySize, 0);
-		_quadTrees.Preallocate();
+		_quadTree.Preallocate();
 	}
 
 	void World::updateColliders() noexcept
@@ -46,17 +46,17 @@ namespace Physics
 		}
 
 		// Clear all colliders from the quadtree
-		_quadTrees.ClearColliders();
+		_quadTree.ClearColliders();
 
 		// Update the boundary of the quadtree
-		_quadTrees.UpdateBoundary(Math::RectangleF({ minX, minY }, { maxX, maxY }));
+		_quadTree.UpdateBoundary(Math::RectangleF({ minX, minY }, { maxX, maxY }));
 
 		// Insert all colliders into the quadtree
 		for (auto& collider : _colliders)
 		{
 			if (!collider.IsEnabled() || collider.IsFree()) continue;
 
-			_quadTrees.Insert(&collider);
+			_quadTree.Insert(&collider);
 		}
 
 		// Check for collisions
@@ -65,7 +65,7 @@ namespace Physics
 			if (!collider.IsEnabled() || collider.IsFree()) continue;
 
 			// Get all colliders that overlap with the collider
-			auto colliders = _quadTrees.GetColliders(&collider);
+			auto colliders = _quadTree.GetColliders(&collider);
 
 			for (auto& otherCollider : colliders)
 			{
@@ -351,6 +351,6 @@ namespace Physics
 
 	std::vector<Math::RectangleF> World::GetQuadTreeBoundaries() const noexcept
 	{
-		return _quadTrees.GetBoundaries();
+		return _quadTree.GetBoundaries();
 	}
 }

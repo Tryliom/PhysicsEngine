@@ -6,6 +6,24 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(SDL2 REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 
+OPTION(ENABLE_SANITIZERS "Enable sanitizers" OFF)
+
+IF(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2 /Oi /Oy-")
+
+    IF (ENABLE_SANITIZERS)
+        add_compile_options(/fsanitize=address /fno-omit-frame-pointer)
+        add_link_options(/fsanitize=address)
+    ENDIF()
+else()
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -save-temps -march=haswell -ffast-math")
+
+    IF (ENABLE_SANITIZERS)
+        add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=address)
+    ENDIF()
+ENDIF()
+
 # Common library
 file(GLOB_RECURSE COMMON_FILES common/include/*.h common/src/*.cpp)
 add_library(CommonLib ${COMMON_FILES})
@@ -22,12 +40,6 @@ foreach(test_file ${COMMON_TEST_FILES} )
 
     target_link_libraries(${test_name} PUBLIC CommonLib)
     target_link_libraries(${test_name} PRIVATE GTest::gtest GTest::gtest_main)
-
-    IF(MSVC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2 /Oi /Oy-")
-    else()
-        set_target_properties(${test_name} PROPERTIES COMPILE_FLAGS "-save-temps -march=haswell -ffast-math -fno-omit-frame-pointer")
-    ENDIF()
 endforeach()
 
 # Physics library
@@ -47,12 +59,6 @@ foreach(test_file ${PHYSICS_TEST_FILES} )
 
     target_link_libraries(${test_name} PUBLIC PhysicsEngineLib)
     target_link_libraries(${test_name} PRIVATE GTest::gtest GTest::gtest_main)
-
-    IF(MSVC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2 /Oi /Oy-")
-    else()
-        set_target_properties(${test_name} PROPERTIES COMPILE_FLAGS "-save-temps -march=haswell -ffast-math -fno-omit-frame-pointer")
-    ENDIF()
 endforeach()
 
 # Graphics library
@@ -79,9 +85,3 @@ target_include_directories(SamplesLib PUBLIC libs/Math/)
 target_link_libraries(SamplesLib PUBLIC PhysicsEngineLib SDL2::SDL2 GraphicsLib CommonLib)
 
 target_link_libraries(Samples PUBLIC SamplesLib)
-
-IF(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2 /Oi /Oy-")
-else()
-    set_target_properties(Samples PROPERTIES COMPILE_FLAGS "-save-temps -march=haswell -ffast-math -fno-omit-frame-pointer")
-ENDIF()
