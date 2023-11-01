@@ -7,6 +7,7 @@
 
 #include "Exception.h"
 #include "Definition.h"
+#include "Const.h"
 
 #include <stdexcept>
 
@@ -262,5 +263,5 @@ constexpr Math::Degree::operator Radian() const noexcept
 
 constexpr Math::Degree::Degree(Radian radian) noexcept
 {
-    _value = static_cast<float>(radian) * 180.0f / 3.14159265358979323846f;
+    _value = static_cast<float>(radian) * 180.0f / Math::Pi;
 }

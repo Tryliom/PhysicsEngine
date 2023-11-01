@@ -16,7 +16,7 @@ namespace Physics
 
 	private:
 		std::vector<const Collider*> _colliders;
-		std::array<QuadTree*, 4> _nodes { nullptr, nullptr, nullptr, nullptr };
+		std::array<QuadTree*, 4> _nodes { nullptr, nullptr, nullptr, nullptr }; // Use uniquePtr
 		Math::RectangleF _boundary {Math::Vec2F::Zero(), Math::Vec2F::One()};
 
 		static constexpr std::size_t _maxDepth = 4;
@@ -73,9 +73,8 @@ namespace Physics
 
 	private:
 		/**
-		 * @brief Subdivide the quadtree
-		 * @param update If true, the boundary of the nodes will be set to the correct position without creating new nodes
+		 * @brief Subdivide the quadtree, create them if nullptr, apply the new boundaries to the nodes
 		 */
-		void subdivide(bool update) noexcept;
+		void subdivide() noexcept;
 	};
 }

@@ -213,7 +213,10 @@ void TriggerSample::onRender() noexcept
             case Math::ShapeType::None: break;
         }
 
-		if (_showBoxes) Display::DrawBorder(collider.GetBounds(), Color::White(), 2.f);
+		if (_showBoxes)
+        {
+            Display::DrawBorder(collider.GetBounds(), Color::White(), 2.f);
+        }
     }
 
 	// Draw the mouse object

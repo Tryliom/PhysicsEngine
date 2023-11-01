@@ -54,10 +54,7 @@ namespace Physics
 	{
 		if (depth >= _maxDepth) return;
 
-		if (_nodes[0] == nullptr)
-		{
-			subdivide(false);
-		}
+        subdivide();
 
 		for (auto& node : _nodes)
 		{
@@ -69,7 +66,7 @@ namespace Physics
 	{
 		_boundary = boundary;
 
-		subdivide(true);
+		subdivide();
 	}
 
 	void QuadTree::ClearColliders() noexcept
@@ -115,26 +112,30 @@ namespace Physics
 		return count;
 	}
 
-	void QuadTree::subdivide(bool update) noexcept
+	void QuadTree::subdivide() noexcept
 	{
 		const auto minBound = _boundary.MinBound();
 		const auto halfSize = _boundary.Size() / 2.f;
 
-		if (update)
+        if (_nodes[0] == nullptr)
+        {
+            _nodes[0] = new QuadTree(Math::RectangleF(minBound, _boundary.Center()));
+            _nodes[1] = new QuadTree(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y),
+                                                      Math::Vec2F(minBound.X + halfSize.X, minBound.Y) + halfSize));
+            _nodes[2] = new QuadTree(Math::RectangleF(Math::Vec2F(minBound.X, minBound.Y + halfSize.Y),
+                                                      Math::Vec2F(minBound.X, minBound.Y + halfSize.Y) + halfSize));
+            _nodes[3] = new QuadTree(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y),
+                                                      Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y) + halfSize));
+        }
+        else
 		{
-			if (_nodes[0] == nullptr) return;
-
 			_nodes[0]->UpdateBoundary(Math::RectangleF(minBound, _boundary.Center()));
-			_nodes[1]->UpdateBoundary(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y), Math::Vec2F(minBound.X + halfSize.X, minBound.Y) + halfSize));
-			_nodes[2]->UpdateBoundary(Math::RectangleF(Math::Vec2F(minBound.X, minBound.Y + halfSize.Y), Math::Vec2F(minBound.X, minBound.Y + halfSize.Y) + halfSize));
-			_nodes[3]->UpdateBoundary(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y), Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y) + halfSize));
-		}
-		else
-		{
-			_nodes[0] = new QuadTree(Math::RectangleF(minBound, _boundary.Center()));
-			_nodes[1] = new QuadTree(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y), Math::Vec2F(minBound.X + halfSize.X, minBound.Y) + halfSize));
-			_nodes[2] = new QuadTree(Math::RectangleF(Math::Vec2F(minBound.X, minBound.Y + halfSize.Y), Math::Vec2F(minBound.X, minBound.Y + halfSize.Y) + halfSize));
-			_nodes[3] = new QuadTree(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y), Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y) + halfSize));
+			_nodes[1]->UpdateBoundary(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y),
+                                                       Math::Vec2F(minBound.X + halfSize.X, minBound.Y) + halfSize));
+			_nodes[2]->UpdateBoundary(Math::RectangleF(Math::Vec2F(minBound.X, minBound.Y + halfSize.Y),
+                                                       Math::Vec2F(minBound.X, minBound.Y + halfSize.Y) + halfSize));
+			_nodes[3]->UpdateBoundary(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y),
+                                                       Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y) + halfSize));
 		}
 	}
 }
