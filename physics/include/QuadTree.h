@@ -74,7 +74,8 @@ namespace Physics
 	private:
 		/**
 		 * @brief Subdivide the quadtree, create them if nullptr, apply the new boundaries to the nodes
+		 * @param update If true, apply the new boundaries to the nodes without creating them
 		 */
-		void subdivide() noexcept;
+		void subdivide(bool update) noexcept;
 	};
 }

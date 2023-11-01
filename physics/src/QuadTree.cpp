@@ -54,7 +54,7 @@ namespace Physics
 	{
 		if (depth >= _maxDepth) return;
 
-        subdivide();
+        subdivide(false);
 
 		for (auto& node : _nodes)
 		{
@@ -66,7 +66,7 @@ namespace Physics
 	{
 		_boundary = boundary;
 
-		subdivide();
+		subdivide(true);
 	}
 
 	void QuadTree::ClearColliders() noexcept
@@ -112,12 +112,12 @@ namespace Physics
 		return count;
 	}
 
-	void QuadTree::subdivide() noexcept
+	void QuadTree::subdivide(bool update) noexcept
 	{
 		const auto minBound = _boundary.MinBound();
 		const auto halfSize = _boundary.Size() / 2.f;
 
-        if (_nodes[0] == nullptr)
+        if (!update)
         {
             _nodes[0] = new QuadTree(Math::RectangleF(minBound, _boundary.Center()));
             _nodes[1] = new QuadTree(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y),
@@ -129,6 +129,8 @@ namespace Physics
         }
         else
 		{
+            if (_nodes[0] == nullptr) return;
+
 			_nodes[0]->UpdateBoundary(Math::RectangleF(minBound, _boundary.Center()));
 			_nodes[1]->UpdateBoundary(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y),
                                                        Math::Vec2F(minBound.X + halfSize.X, minBound.Y) + halfSize));

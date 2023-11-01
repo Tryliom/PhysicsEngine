@@ -34,9 +34,9 @@ namespace Math
             return _value;
         }
 
-        NOALIAS constexpr operator Radian() const noexcept;
+        NOALIAS operator Radian() const noexcept;
 
-        NOALIAS constexpr Degree(Radian radian) noexcept;
+        NOALIAS Degree(Radian radian) noexcept;
 
         [[nodiscard]] NOALIAS constexpr Degree operator+(const Degree degree) const noexcept
         {
@@ -256,12 +256,12 @@ namespace Math
     };
 }
 
-constexpr Math::Degree::operator Radian() const noexcept
+inline Math::Degree::operator Radian() const noexcept
 {
     return Radian(_value);
 }
 
-constexpr Math::Degree::Degree(Radian radian) noexcept
+inline Math::Degree::Degree(Radian radian) noexcept
 {
     _value = static_cast<float>(radian) * 180.0f / Math::Pi;
 }
