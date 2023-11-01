@@ -6,8 +6,8 @@
 #include "Display.h"
 
 SampleManager::SampleManager() noexcept : _timer(), _samples({
-    UniquePtr<Sample>(new TriggerSample()),
-    UniquePtr<Sample>(new PlanetSystemSample())
+    MakeUnique<Sample, TriggerSample>(),
+    MakeUnique<Sample, PlanetSystemSample>()
 })
 {
     Display::Init(SCREEN_WIDTH, SCREEN_HEIGHT, "Samples selection");

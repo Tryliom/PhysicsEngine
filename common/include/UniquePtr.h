@@ -86,3 +86,16 @@ public:
         return UniquePtr<U>(static_cast<U*>(_ptr));
     }
 };
+
+// MakeUnique
+template<typename T>
+constexpr UniquePtr<T> MakeUnique() noexcept
+{
+    return UniquePtr<T>(new T());
+}
+
+template<typename T, typename U>
+constexpr UniquePtr<T> MakeUnique() noexcept
+{
+    return UniquePtr<T>(new U());
+}

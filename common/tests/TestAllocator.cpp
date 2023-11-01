@@ -23,7 +23,7 @@ TEST_P(TestAllocator, LinearConstructor)
 	std::size_t size = GetParam();
 	void* ptr = std::malloc(size);
 
-	Physics::LinearAllocator allocator = Physics::LinearAllocator(ptr, size);
+	LinearAllocator allocator = LinearAllocator(ptr, size);
 
 	EXPECT_EQ(allocator.GetRootPtr(), ptr);
 	EXPECT_EQ(allocator.GetCurrentPtr(), ptr);
@@ -37,7 +37,7 @@ TEST_P(TestAllocatorWithAlignment, LinearAllocate)
 	std::size_t alignment = GetParam().second;
 	void* ptr = std::malloc(size);
 
-	Physics::LinearAllocator allocator = Physics::LinearAllocator(ptr, size);
+	LinearAllocator allocator = LinearAllocator(ptr, size);
 
 	void* allocatedPtr = allocator.Allocate(size, alignment);
 
@@ -51,7 +51,7 @@ TEST_P(TestAllocatorWithAlignment, LinearAllocateMultiple)
 	std::size_t alignment = GetParam().second;
 	void* ptr = std::malloc(size * 2);
 
-	Physics::LinearAllocator allocator = Physics::LinearAllocator(ptr, size * 2);
+	LinearAllocator allocator = LinearAllocator(ptr, size * 2);
 
 	EXPECT_EQ(allocator.GetAllocations(), 0);
 	EXPECT_EQ(allocator.GetSize(), size * 2);
@@ -78,7 +78,7 @@ TEST_P(TestAllocatorWithAlignment, LinearAllocateOverflow)
 	std::size_t alignment = GetParam().second;
 	void* ptr = std::malloc(size);
 
-	Physics::LinearAllocator allocator = Physics::LinearAllocator(ptr, size);
+	LinearAllocator allocator = LinearAllocator(ptr, size);
 
 	void* allocatedPtr = allocator.Allocate(size + 1, alignment);
 
@@ -92,7 +92,7 @@ TEST_P(TestAllocatorWithAlignment, LinearAllocateOverflowMultiple)
 	std::size_t alignment = GetParam().second;
 	void* ptr = std::malloc(size * 2);
 
-	Physics::LinearAllocator allocator = Physics::LinearAllocator(ptr, size * 2);
+	LinearAllocator allocator = LinearAllocator(ptr, size * 2);
 
 	EXPECT_EQ(allocator.GetAllocations(), 0);
 	EXPECT_EQ(allocator.GetSize(), size * 2);
@@ -112,8 +112,8 @@ TEST_P(TestAllocator, ProxyConstructor)
 	std::size_t size = GetParam();
 	void* ptr = std::malloc(size);
 
-	Physics::LinearAllocator allocator = Physics::LinearAllocator(ptr, size);
-	Physics::ProxyAllocator proxy = Physics::ProxyAllocator(allocator);
+	LinearAllocator allocator = LinearAllocator(ptr, size);
+	ProxyAllocator proxy = ProxyAllocator(allocator);
 
 	EXPECT_EQ(proxy.GetRootPtr(), ptr);
 	EXPECT_EQ(proxy.GetCurrentPtr(), ptr);
@@ -127,8 +127,8 @@ TEST_P(TestAllocatorWithAlignment, ProxyAllocate)
 	std::size_t alignment = GetParam().second;
 	void* ptr = std::malloc(size);
 
-	Physics::LinearAllocator allocator = Physics::LinearAllocator(ptr, size);
-	Physics::ProxyAllocator proxy = Physics::ProxyAllocator(allocator);
+	LinearAllocator allocator = LinearAllocator(ptr, size);
+	ProxyAllocator proxy = ProxyAllocator(allocator);
 
 	void* allocatedPtr = proxy.Allocate(size, alignment);
 
@@ -142,8 +142,8 @@ TEST_P(TestAllocatorWithAlignment, ProxyAllocateMultiple)
 	std::size_t alignment = GetParam().second;
 	void* ptr = std::malloc(size * 2);
 
-	Physics::LinearAllocator allocator = Physics::LinearAllocator(ptr, size * 2);
-	Physics::ProxyAllocator proxy = Physics::ProxyAllocator(allocator);
+	LinearAllocator allocator = LinearAllocator(ptr, size * 2);
+	ProxyAllocator proxy = ProxyAllocator(allocator);
 
 	EXPECT_EQ(proxy.GetAllocations(), 0);
 	EXPECT_EQ(proxy.GetSize(), size * 2);
@@ -170,8 +170,8 @@ TEST_P(TestAllocatorWithAlignment, ProxyAllocateOverflow)
 	std::size_t alignment = GetParam().second;
 	void* ptr = std::malloc(size);
 
-	Physics::LinearAllocator allocator = Physics::LinearAllocator(ptr, size);
-	Physics::ProxyAllocator proxy = Physics::ProxyAllocator(allocator);
+	LinearAllocator allocator = LinearAllocator(ptr, size);
+	ProxyAllocator proxy = ProxyAllocator(allocator);
 
 	void* allocatedPtr = proxy.Allocate(size + 1, alignment);
 
@@ -185,8 +185,8 @@ TEST_P(TestAllocatorWithAlignment, ProxyAllocateOverflowMultiple)
 	std::size_t alignment = GetParam().second;
 	void* ptr = std::malloc(size * 2);
 
-	Physics::LinearAllocator allocator = Physics::LinearAllocator(ptr, size * 2);
-	Physics::ProxyAllocator proxy = Physics::ProxyAllocator(allocator);
+	LinearAllocator allocator = LinearAllocator(ptr, size * 2);
+	ProxyAllocator proxy = ProxyAllocator(allocator);
 
 	EXPECT_EQ(proxy.GetAllocations(), 0);
 	EXPECT_EQ(proxy.GetSize(), size * 2);

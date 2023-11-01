@@ -48,6 +48,7 @@ add_library(PhysicsEngineLib ${SRC_FILES})
 set_target_properties(PhysicsEngineLib PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(PhysicsEngineLib PUBLIC physics/include/)
 target_include_directories(PhysicsEngineLib PUBLIC libs/Math/)
+target_link_libraries(PhysicsEngineLib PUBLIC CommonLib)
 
 # Physics tests
 SET(PHYSICS_TEST_DIR ${CMAKE_SOURCE_DIR}/physics/tests)
