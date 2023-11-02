@@ -11,7 +11,7 @@
 struct Planet
 {
     Physics::BodyRef BodyRef {};
-    Color Color;
+    Color PlanetColor;
     float Radius {};
 };
 
@@ -21,7 +21,7 @@ struct Follow
     Physics::BodyRef Ref;
 };
 
-class PlanetSystemSample final : public Sample
+class PlanetSystemSample final : public Sample, Physics::ContactListener
 {
 private:
     const float _mouseRandomRadius = 15.f;

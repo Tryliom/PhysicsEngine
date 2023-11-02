@@ -9,16 +9,26 @@ void TriggerSample::onInit() noexcept
     Display::SetTitle("Trigger Sample");
     _world.SetContactListener(this);
 
-	constexpr static int TriggerObjectCount = 20;
+	constexpr static int Circles = 10;
+    constexpr static int Boxes = 10;
+    constexpr static int Polygons = 10;
 
-	_objects.resize(TriggerObjectCount * 3);
+	_objects.resize(Circles + Boxes + Polygons);
 
-	for (int i = 0; i < TriggerObjectCount; ++i)
+	for (int i = 0; i < Circles; ++i)
 	{
         createBall();
-        createBox();
-        createPolygon();
 	}
+
+    for (int i = 0; i < Boxes; ++i)
+    {
+        createBox();
+    }
+
+    for (int i = 0; i < Polygons; ++i)
+    {
+        createPolygon();
+    }
 
 	_mouseObject.BodyRef = _world.CreateBody();
 	_mouseObject.ColliderRef = _world.CreateCollider(_mouseObject.BodyRef);
@@ -172,7 +182,7 @@ void TriggerSample::onRender() noexcept
                     Display::Draw({circle.Center(), circle.Radius() * 1.2f}, _triggerExitColor);
                 }
 
-                Display::Draw(circle, object.Color);
+                Display::Draw(circle, object.ObjectColor);
             }
                 break;
 
@@ -190,7 +200,7 @@ void TriggerSample::onRender() noexcept
                     Display::Draw(rect, _triggerExitColor, Math::Vec2F(1.2f, 1.2f));
                 }
 
-                Display::Draw(rect, object.Color);
+                Display::Draw(rect, object.ObjectColor);
             }
                 break;
 
@@ -208,7 +218,7 @@ void TriggerSample::onRender() noexcept
                     Display::Draw(poly, _triggerExitColor, Math::Vec2F(1.2f, 1.2f));
                 }
 
-                Display::Draw(poly, object.Color);
+                Display::Draw(poly, object.ObjectColor);
             }
             case Math::ShapeType::None: break;
         }
@@ -229,7 +239,7 @@ void TriggerSample::onRender() noexcept
     // Clear object color
     for (auto& object : _objects)
     {
-        object.Color = _color;
+        object.ObjectColor = _color;
     }
 }
 
@@ -348,7 +358,7 @@ void TriggerSample::OnTriggerStay(Physics::ColliderRef colliderRef, Physics::Col
     {
         if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
         {
-            _object.Color = _triggerStayColor;
+            _object.ObjectColor = _triggerStayColor;
         }
     }
 }

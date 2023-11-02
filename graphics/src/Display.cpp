@@ -3,9 +3,11 @@
 #include "Exception.h"
 
 #include "SDL.h"
-#include "Mat4x4.h"
 
 #include <vector>
+#include <imgui.h>
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_sdlrenderer2.h"
 
 namespace Display
 {
@@ -58,6 +60,12 @@ namespace Display
             throw SDLRendererNotCreatedException();
         }
 
+        // Initialize ImGui
+        ImGui::CreateContext();
+        ImGui_ImplSDL2_InitForSDLRenderer(_window, _renderer);
+        ImGui_ImplSDLRenderer2_Init(_renderer);
+        ImGui::StyleColorsDark();
+
         ClearRender();
 	}
 
@@ -72,10 +80,16 @@ namespace Display
             static_cast<int>(_indices.size())
         );
         SDL_RenderPresent(_renderer);
+
+        ImGui::Render();
+        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
 	}
 
 	void Shutdown() noexcept
 	{
+        ImGui_ImplSDL2_Shutdown();
+        ImGui_ImplSDLRenderer2_Shutdown();
+
 		SDL_DestroyRenderer(_renderer);
 		SDL_DestroyWindow(_window);
 		SDL_Quit();
@@ -267,6 +281,10 @@ namespace Display
 			_vertices.push_back({{ vertexX, vertexY }, polygonColor, { 1.f, 1.f }});
 			_vertices.push_back({{ nextVertexX, nextVertexY }, polygonColor, { 1.f, 1.f }});
 
+            /**
+             * @brief Draw the polygon as a triangle fan by connecting the first vertex with the next two vertices and so on
+             * @note The first vertex is connected with the last vertex to close the polygon and the last vertex is connected with the second vertex
+             */
 			if (i > 0)
 			{
 				_indices.push_back(static_cast<int>(_vertices.size()) - 4);

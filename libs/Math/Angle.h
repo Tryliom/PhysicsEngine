@@ -36,7 +36,7 @@ namespace Math
 
         NOALIAS operator Radian() const noexcept;
 
-        NOALIAS Degree(Radian radian) noexcept;
+        Degree(Radian radian) noexcept;
 
         [[nodiscard]] NOALIAS constexpr Degree operator+(const Degree degree) const noexcept
         {

@@ -163,7 +163,7 @@ void PlanetSystemSample::onRender() noexcept
     {
         auto& body = _world.GetBody(planet.BodyRef);
 
-	    Display::Draw(Math::CircleF{{body.Position().X, body.Position().Y}, planet.Radius}, planet.Color);
+	    Display::Draw(Math::CircleF{{body.Position().X, body.Position().Y}, planet.Radius}, planet.PlanetColor);
     }
 
     for (auto& sun : _suns)

@@ -232,7 +232,9 @@ namespace Physics
 			body.SetForce(Math::Vec2F(0, 0));
 		}
 
-		for (auto& collider : _colliders)
+        if (_colliders.empty()) return;
+
+        for (auto& collider : _colliders)
 		{
 			if (!collider.IsEnabled()) continue;
 

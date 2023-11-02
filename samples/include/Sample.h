@@ -31,6 +31,11 @@ public:
      */
     void Deinit() noexcept;
 
+    /**
+     * @brief Draw the ImGui of the sample.
+     */
+    void DrawImGui() noexcept;
+
 protected:
     /**
      * @brief Called when the sample is updated. This is where you should update your sample. The world is updated first.

@@ -11,7 +11,7 @@ struct Object
 
     float TriggerEnterTimer{};
     float TriggerExitTimer{};
-    Color Color;
+    Color ObjectColor;
 };
 
 class TriggerSample final : public Sample, Physics::ContactListener

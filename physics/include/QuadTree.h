@@ -15,7 +15,7 @@ namespace Physics
 		~QuadTree() noexcept;
 
 	private:
-		std::vector<const Collider*> _colliders;
+		std::vector<const Collider*> _colliders {};
         //TODO: Use uniquePtr and make it a vector with all the nodes instead of recursive
 		std::array<QuadTree*, 4> _nodes { nullptr, nullptr, nullptr, nullptr };
 		Math::RectangleF _boundary {Math::Vec2F::Zero(), Math::Vec2F::One()};

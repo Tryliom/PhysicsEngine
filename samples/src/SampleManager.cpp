@@ -5,6 +5,10 @@
 #include "Input.h"
 #include "Display.h"
 
+#include <imgui.h>
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_sdlrenderer2.h"
+
 SampleManager::SampleManager() noexcept : _timer(), _samples({
     MakeUnique<Sample, TriggerSample>(),
     MakeUnique<Sample, PlanetSystemSample>()
@@ -31,6 +35,10 @@ void SampleManager::Run() noexcept
             if (Input::IsKeyPressed(SDL_SCANCODE_LEFT)) switchSample(static_cast<int>(_currentSample) - 1);
             if (Input::IsKeyPressed(SDL_SCANCODE_RIGHT)) switchSample(static_cast<int>(_currentSample) + 1);
         }
+
+        ImGui_ImplSDLRenderer2_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
 
         _timer.Update();
         _samples[_currentSample]->Update(_timer.DeltaTime());
