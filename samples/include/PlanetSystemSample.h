@@ -21,7 +21,7 @@ struct Follow
     Physics::BodyRef Ref;
 };
 
-class PlanetSystemSample final : public Sample, Physics::ContactListener
+class PlanetSystemSample final : public Sample
 {
 private:
     const float _mouseRandomRadius = 15.f;

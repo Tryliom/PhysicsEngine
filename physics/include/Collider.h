@@ -17,6 +17,7 @@ namespace Physics
 
 	private:
         std::variant<Math::CircleF, Math::RectangleF, Math::PolygonF> _shape { Math::CircleF(Math::Vec2F::Zero(), 1.f) };
+        Math::RectangleF _bounds { Math::Vec2F::Zero(), Math::Vec2F::One() };
 		BodyRef _bodyRef {};
 		ColliderRef _colliderRef {};
         Math::Vec2F _offset { Math::Vec2F::Zero() };
@@ -28,6 +29,12 @@ namespace Physics
 
 		bool _isTrigger { false };
 		bool _isEnabled { false };
+
+        /**
+		 * @brief Convert your shape into a rectangle
+		 * @return the shape
+		 */
+        [[nodiscard]] Math::RectangleF getBounds() const noexcept;
 
 	public:
         /**

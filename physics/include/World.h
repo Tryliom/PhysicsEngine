@@ -27,7 +27,7 @@ namespace Physics
 	    std::vector<std::size_t> _colliderGenerations;
         std::vector<Body> _bodies;
         std::vector<std::size_t> _bodyGenerations;
-		QuadTree _quadTree {};
+		QuadTree _quadTree {Math::RectangleF(Math::Vec2F::Zero(), Math::Vec2F::One())};
 
         ContactListener* _contactListener { nullptr };
 

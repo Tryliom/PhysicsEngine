@@ -86,18 +86,23 @@ namespace Physics
 	{
 		_shapeType = Math::ShapeType::Circle;
 		_shape = circle;
+        _bounds = getBounds();
 	}
 
 	void Collider::SetRectangle(Math::RectangleF rectangle) noexcept
 	{
 		_shapeType = Math::ShapeType::Rectangle;
 		_shape = rectangle;
+
+        _bounds = getBounds();
 	}
 
 	void Collider::SetPolygon(Math::PolygonF polygon) noexcept
 	{
 		_shapeType = Math::ShapeType::Polygon;
 		_shape = polygon;
+
+        _bounds = getBounds();
 	}
 
 	void Collider::Enable() noexcept
@@ -139,18 +144,18 @@ namespace Physics
 		return _shapeType;
 	}
 
-	Math::RectangleF Collider::GetBounds() const noexcept
+	Math::RectangleF Collider::getBounds() const noexcept
 	{
 		switch (_shapeType)
 		{
 			case Math::ShapeType::Circle:
 			{
 				auto circle = GetCircle();
-				return Math::RectangleF::FromCenter(circle.Center(), {circle.Radius(), circle.Radius()}) + _position;
+				return Math::RectangleF::FromCenter(circle.Center(), {circle.Radius(), circle.Radius()});
 			}
 			case Math::ShapeType::Rectangle:
 			{
-				return GetRectangle() + _position;
+				return GetRectangle();
 			}
 			case Math::ShapeType::Polygon:
 			{
@@ -168,11 +173,16 @@ namespace Physics
 					maxY = std::max(maxY, vertex.Y);
 				}
 
-				return Math::RectangleF{Math::Vec2F{minX, minY}, Math::Vec2F{maxX, maxY}} + _position;
+				return Math::RectangleF{Math::Vec2F{minX, minY}, Math::Vec2F{maxX, maxY}};
 			}
 			case Math::ShapeType::None: break;
 		}
 
-		return {_position, _position};
+		return {Math::Vec2F::Zero(), Math::Vec2F::Zero()};
 	}
+
+    Math::RectangleF Collider::GetBounds() const noexcept
+    {
+        return _bounds + _position;
+    }
 }

@@ -2,142 +2,234 @@
 
 namespace Physics
 {
-	QuadTree::QuadTree(const Math::RectangleF& boundary) noexcept : _boundary(boundary) {}
+	QuadTree::QuadTree(const Math::RectangleF& boundary) noexcept
+    {
+        _nodes.resize(getMaxNodes());
+        UpdateBoundary(boundary);
+    }
 
-	QuadTree::~QuadTree() noexcept
+    constexpr std::size_t QuadTree::getMaxNodes() noexcept
+    {
+        std::size_t nodes = 0;
+
+        for (auto i = 0; i <= _maxDepth; i++)
+        {
+            nodes += static_cast<std::size_t>(Math::Pow(4, i));
+        }
+
+        return nodes;
+    }
+
+    constexpr std::size_t QuadTree::getDepth(std::size_t index) noexcept
+    {
+        std::size_t depth = 0;
+
+        while (index > 0)
+        {
+            index /= 4;
+            depth++;
+        }
+
+        return depth;
+    }
+
+    constexpr std::size_t QuadTree::getDivision(std::size_t index) noexcept
+    {
+        std::size_t division = 0;
+
+        while (index > 0)
+        {
+            index /= 4;
+            division = index % 4;
+        }
+
+        return division;
+    }
+
+    void QuadTree::subdivide(std::size_t index) noexcept
+    {
+        auto& node = _nodes[index];
+
+        if (node.Divided) return;
+
+        _nodes[index].Divided = true;
+
+        // Distribute colliders to children, when a collider is distributed, remove it from the parent. If it collides with more than one child, keep it in the parent.
+        const auto colliders = node.Colliders;
+
+        node.Colliders.clear();
+
+        for (auto collider : colliders)
+        {
+            std::size_t targetIndex = 0;
+
+            for (auto i = 1; i <= 4; i++)
+            {
+                const auto& child = _nodes[index * 4 + i];
+
+                if (Math::Intersect(child.Boundary, collider.Bounds))
+                {
+                    if (targetIndex != 0)
+                    {
+                        targetIndex = index;
+                        break;
+                    }
+
+                    targetIndex = index * 4 + i;
+                }
+            }
+
+            _nodes[targetIndex].Colliders.push_back(collider);
+        }
+    }
+
+    std::vector<ColliderRef> QuadTree::getColliders(std::size_t index, SimplifiedCollider collider) const noexcept
+    {
+        std::vector<ColliderRef> colliders;
+
+        const auto& node = _nodes[index];
+
+        for (auto& childCollider: node.Colliders)
+        {
+            if (!Math::Intersect(childCollider.Bounds, collider.Bounds)) continue;
+
+            colliders.push_back(childCollider.Ref);
+        }
+
+        if (node.Divided)
+        {
+            for (auto i = 1; i <= 4; i++)
+            {
+                const auto& child = _nodes[index * 4 + i];
+
+                if (!Math::Intersect(child.Boundary, collider.Bounds)) continue;
+
+                const auto childColliders = getColliders(index * 4 + i, collider);
+
+                colliders.insert(colliders.end(), childColliders.begin(), childColliders.end());
+            }
+        }
+
+        return colliders;
+    }
+
+	void QuadTree::Insert(SimplifiedCollider collider) noexcept
 	{
-		for (auto* node : _nodes)
-		{
-			if (node == nullptr) continue;
+        std::size_t parentIndex = 0;
 
-			delete node;
-		}
+        while (true)
+        {
+            auto& node = _nodes[parentIndex];
+
+            if (node.Divided)
+            {
+                // Check if it collides with more than one child
+                // True -> Push it in the parent
+                // False -> If parentIndex is at max depth, put it in, if not, set parentIndex to it
+                std::size_t targetIndex = 0;
+
+                for (auto i = 1; i <= 4; i++)
+                {
+                    const auto& child = _nodes[parentIndex * 4 + i];
+
+                    if (Math::Intersect(child.Boundary, collider.Bounds))
+                    {
+                        if (targetIndex != 0)
+                        {
+                            targetIndex = parentIndex;
+                            break;
+                        }
+
+                        targetIndex = parentIndex * 4 + i;
+                    }
+                }
+
+                if (targetIndex != parentIndex)
+                {
+                    parentIndex = targetIndex;
+                }
+                else
+                {
+                    _nodes[targetIndex].Colliders.push_back(collider);
+                    break;
+                }
+            }
+            else
+            {
+                node.Colliders.push_back(collider);
+
+                if (node.Colliders.size() >= _maxCapacity && getDepth(parentIndex) < _maxDepth)
+                {
+                    subdivide(parentIndex);
+                }
+
+                break;
+            }
+        }
 	}
 
-	void QuadTree::Insert(const Collider* collider, int depth) noexcept
+	std::vector<ColliderRef> QuadTree::GetColliders(SimplifiedCollider collider) const noexcept
 	{
-		if (!Math::Intersect(_boundary, collider->GetBounds())) return;
-
-		if (_colliders.size() < _maxCapacity || depth >= _maxDepth)
-		{
-			_colliders.push_back(collider);
-			return;
-		}
-
-		for (auto& node : _nodes)
-		{
-			node->Insert(collider, depth + 1);
-		}
-	}
-
-	std::vector<const Collider*> QuadTree::GetColliders(const Collider* collider) const noexcept
-	{
-		std::vector<const Collider*> colliders;
-
-		if (_colliders.empty() || !Math::Intersect(_boundary, collider->GetBounds())) return colliders;
-
-		for (auto& node : _nodes)
-		{
-			if (node == nullptr) continue;
-
-			auto nodeColliders = node->GetColliders(collider);
-
-			colliders.insert(colliders.end(), nodeColliders.begin(), nodeColliders.end());
-		}
-
-		colliders.insert(colliders.end(), _colliders.begin(), _colliders.end());
-
-		return colliders;
-	}
-
-	void QuadTree::Preallocate(int depth) noexcept
-	{
-		if (depth >= _maxDepth) return;
-
-        subdivide(false);
-
-		for (auto& node : _nodes)
-		{
-			node->Preallocate(depth + 1);
-		}
+        return getColliders(0, collider);
 	}
 
 	void QuadTree::UpdateBoundary(const Math::RectangleF& boundary) noexcept
 	{
-		_boundary = boundary;
+        _nodes[0].Boundary = boundary;
+        std::size_t index = 1;
 
-		subdivide(true);
+        for (std::size_t i = 0; index < getMaxNodes(); i++)
+        {
+            const auto bounds = _nodes[i].Boundary;
+            const auto minBound = bounds.MinBound();
+            const auto halfSize = bounds.Size() / 2.f;
+
+            _nodes[index].Boundary = Math::RectangleF(minBound, bounds.Center());
+            _nodes[index+1].Boundary = Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y),
+                                                    Math::Vec2F(minBound.X + halfSize.X, minBound.Y) + halfSize);
+            _nodes[index+2].Boundary = Math::RectangleF(Math::Vec2F(minBound.X, minBound.Y + halfSize.Y),
+                                                      Math::Vec2F(minBound.X, minBound.Y + halfSize.Y) + halfSize);
+            _nodes[index+3].Boundary = Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y),
+                                                      Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y) + halfSize);
+
+            index += 4;
+        }
 	}
 
 	void QuadTree::ClearColliders() noexcept
 	{
-		_colliders.clear();
-
 		for (auto& node : _nodes)
-		{
-			if (node == nullptr) continue;
-
-			node->ClearColliders();
-		}
+        {
+            node.Colliders.clear();
+            node.Divided = false;
+        }
 	}
 
 	std::vector<Math::RectangleF> QuadTree::GetBoundaries() const noexcept
 	{
 		std::vector<Math::RectangleF> boundaries;
 
-		boundaries.push_back(_boundary);
+		boundaries.reserve(_nodes.size());
 
-		for (auto& node : _nodes)
-		{
-			if (node == nullptr || node->_colliders.empty()) continue;
+        for (auto& node : _nodes)
+        {
+            if (node.Colliders.empty()) continue;
 
-			auto nodeBoundaries = node->GetBoundaries();
-			boundaries.insert(boundaries.end(), nodeBoundaries.begin(), nodeBoundaries.end());
-		}
+            boundaries.push_back(node.Boundary);
+        }
 
 		return boundaries;
 	}
 
 	std::size_t QuadTree::GetAllCollidersCount() const noexcept
 	{
-		std::size_t count = _colliders.size();
+		std::size_t count = 0;
 
 		for (auto& node : _nodes)
-		{
-			if (node == nullptr) continue;
-
-			count += node->GetAllCollidersCount();
-		}
+        {
+            count += node.Colliders.size();
+        }
 
 		return count;
-	}
-
-	void QuadTree::subdivide(bool update) noexcept
-	{
-		const auto minBound = _boundary.MinBound();
-		const auto halfSize = _boundary.Size() / 2.f;
-
-        if (!update)
-        {
-            _nodes[0] = new QuadTree(Math::RectangleF(minBound, _boundary.Center()));
-            _nodes[1] = new QuadTree(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y),
-                                                      Math::Vec2F(minBound.X + halfSize.X, minBound.Y) + halfSize));
-            _nodes[2] = new QuadTree(Math::RectangleF(Math::Vec2F(minBound.X, minBound.Y + halfSize.Y),
-                                                      Math::Vec2F(minBound.X, minBound.Y + halfSize.Y) + halfSize));
-            _nodes[3] = new QuadTree(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y),
-                                                      Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y) + halfSize));
-        }
-        else
-		{
-            if (_nodes[0] == nullptr) return;
-
-			_nodes[0]->UpdateBoundary(Math::RectangleF(minBound, _boundary.Center()));
-			_nodes[1]->UpdateBoundary(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y),
-                                                       Math::Vec2F(minBound.X + halfSize.X, minBound.Y) + halfSize));
-			_nodes[2]->UpdateBoundary(Math::RectangleF(Math::Vec2F(minBound.X, minBound.Y + halfSize.Y),
-                                                       Math::Vec2F(minBound.X, minBound.Y + halfSize.Y) + halfSize));
-			_nodes[3]->UpdateBoundary(Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y),
-                                                       Math::Vec2F(minBound.X + halfSize.X, minBound.Y + halfSize.Y) + halfSize));
-		}
 	}
 }

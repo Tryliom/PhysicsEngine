@@ -9,9 +9,9 @@ void TriggerSample::onInit() noexcept
     Display::SetTitle("Trigger Sample");
     _world.SetContactListener(this);
 
-	constexpr static int Circles = 10;
-    constexpr static int Boxes = 10;
-    constexpr static int Polygons = 10;
+	constexpr static int Circles = 300;
+    constexpr static int Boxes = 0;
+    constexpr static int Polygons = 0;
 
 	_objects.resize(Circles + Boxes + Polygons);
 
@@ -106,22 +106,16 @@ void TriggerSample::onUpdate(float deltaTime) noexcept
     {
         auto& body = _world.GetBody(object.BodyRef);
 
-        if (body.Position().X < 0.f)
+        if (body.Position().X < 0.f || body.Position().X > screenWidth)
         {
-            body.SetPosition({ screenWidth, body.Position().Y });
-        }
-        else if (body.Position().X > screenWidth)
-        {
-            body.SetPosition({ 0.f, body.Position().Y });
+            const auto velocity = body.Velocity();
+            body.SetVelocity({ -velocity.X, velocity.Y });
         }
 
-        if (body.Position().Y < 0.f)
+        if (body.Position().Y < 0.f || body.Position().Y > screenHeight)
         {
-            body.SetPosition({ body.Position().X, screenHeight });
-        }
-        else if (body.Position().Y > screenHeight)
-        {
-            body.SetPosition({ body.Position().X, 0.f });
+            const auto velocity = body.Velocity();
+            body.SetVelocity({ velocity.X, -velocity.Y });
         }
 
         if (object.TriggerEnterTimer > 0.f)
@@ -332,24 +326,24 @@ void TriggerSample::createPolygon() noexcept
 
 void TriggerSample::OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
 {
-    for (auto& _object : _objects)
+    /*for (auto& _object : _objects)
     {
         if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
         {
             _object.TriggerEnterTimer = _blinkTimer;
         }
-    }
+    }*/
 }
 
 void TriggerSample::OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
 {
-    for (auto& _object : _objects)
+    /*for (auto& _object : _objects)
     {
         if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
         {
             _object.TriggerExitTimer = _blinkTimer;
         }
-    }
+    }*/
 }
 
 void TriggerSample::OnTriggerStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept

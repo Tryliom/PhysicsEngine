@@ -15,7 +15,6 @@ namespace Physics
 		_bodyGenerations.resize(defaultBodySize, 0);
 		_colliders.resize(defaultBodySize);
 		_colliderGenerations.resize(defaultBodySize, 0);
-		_quadTree.Preallocate();
 	}
 
 	void World::updateColliders() noexcept
@@ -56,7 +55,7 @@ namespace Physics
 		{
 			if (!collider.IsEnabled() || collider.IsFree()) continue;
 
-			_quadTree.Insert(&collider);
+			_quadTree.Insert({collider.GetColliderRef(), collider.GetBounds()});
 		}
 
 		// Check for collisions
@@ -65,16 +64,18 @@ namespace Physics
 			if (!collider.IsEnabled() || collider.IsFree()) continue;
 
 			// Get all colliders that overlap with the collider
-			auto colliders = _quadTree.GetColliders(&collider);
+			auto colliders = _quadTree.GetColliders({ collider.GetColliderRef(), collider.GetBounds() });
 
-			for (auto& otherCollider : colliders)
+			for (auto& otherColliderRef : colliders)
 			{
-				if (otherCollider->GetBodyRef() == collider.GetBodyRef()) continue;
+                const auto& otherCollider = GetCollider(otherColliderRef);
+
+				if (otherCollider.GetBodyRef() == collider.GetBodyRef()) continue;
 
 				// Check if the colliders overlap
-				if (overlap(collider, *otherCollider))
+				if (overlap(collider, otherCollider))
 				{
-					newColliderPairs.insert(ColliderPair{ collider.GetColliderRef(), otherCollider->GetColliderRef() });
+					newColliderPairs.insert(ColliderPair{ collider.GetColliderRef(), otherColliderRef });
 				}
 			}
 		}
