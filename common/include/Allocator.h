@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdlib>
+#include <vector>
 
 /**
  * @brief Allocator interface
@@ -121,3 +123,40 @@ public:
      */
     void Deallocate(void* ptr) noexcept override;
 };
+
+class HeapAllocator final : public Allocator
+{
+public:
+	/**
+	 * @brief Allocate memory from allocator
+	 * @param size Size of memory to allocate
+	 * @return Pointer to allocated memory
+	 */
+	[[nodiscard]] void* Allocate(std::size_t size, std::size_t alignment) noexcept override;
+	/**
+	 * @brief Deallocate memory from allocator
+	 * @param ptr Pointer to memory to deallocate
+	 */
+	void Deallocate(void* ptr) noexcept override;
+};
+
+template<typename T>
+class StandardAllocator : public std::allocator<T>
+{
+protected:
+	Allocator& _allocator;
+
+public:
+	typedef T value_type;
+	explicit StandardAllocator(Allocator& allocator) noexcept : std::allocator<T>(), _allocator(allocator) {}
+	template <class U>
+	explicit StandardAllocator(const StandardAllocator<U>& allocator) noexcept : _allocator(allocator.GetAllocator()) {}
+
+	T* allocate(std::size_t n);
+	void deallocate(T* ptr, std::size_t n);
+
+	[[nodiscard]] Allocator& GetAllocator() const { return _allocator; }
+};
+
+template<typename T>
+using AllocVector = std::vector<T, StandardAllocator<T>>;

@@ -10,8 +10,8 @@ namespace Physics
 {
     struct SimplifiedCollider
     {
-        ColliderRef Ref;
-        Math::RectangleF Bounds;
+        ColliderRef Ref {};
+        Math::RectangleF Bounds {Math::Vec2F::Zero(), Math::Vec2F::One()};
     };
 
     struct QuadNode
@@ -37,12 +37,10 @@ namespace Physics
 		static constexpr std::size_t _maxCapacity = 8;
 
         static constexpr std::size_t getMaxNodes() noexcept;
-
         static constexpr std::size_t getDepth(std::size_t index) noexcept;
-        static constexpr std::size_t getDivision(std::size_t index) noexcept;
 
         void subdivide(std::size_t index) noexcept;
-        std::vector<ColliderRef> getColliders(std::size_t index, SimplifiedCollider collider) const noexcept;
+        [[nodiscard]] std::vector<ColliderRef> getColliders(std::size_t index, SimplifiedCollider collider) const noexcept;
 
     public:
 		/**

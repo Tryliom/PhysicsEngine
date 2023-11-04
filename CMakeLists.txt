@@ -8,6 +8,7 @@ find_package(GTest CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 
 OPTION(ENABLE_SANITIZERS "Enable sanitizers" OFF)
+OPTION(USE_TRACY "Enable Tracy profiling" OFF)
 
 IF(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2 /Oi /Oy-")
@@ -94,3 +95,12 @@ target_include_directories(SamplesLib PUBLIC libs/Math/)
 target_link_libraries(SamplesLib PUBLIC PhysicsEngineLib SDL2::SDL2 GraphicsLib CommonLib imgui::imgui)
 
 target_link_libraries(Samples PUBLIC SamplesLib)
+
+if (USE_TRACY)
+    add_subdirectory(libs/tracy-0.10) # target: TracyClient or alias Tracy::TracyClient
+    # Link Tracy::TracyClient to any target where you use Tracy for profiling:
+    target_link_libraries(PhysicsEngineLib PUBLIC Tracy::TracyClient)
+    target_link_libraries(CommonLib PUBLIC Tracy::TracyClient)
+    target_link_libraries(GraphicsLib PUBLIC Tracy::TracyClient)
+    target_link_libraries(SamplesLib PUBLIC Tracy::TracyClient)
+endif()

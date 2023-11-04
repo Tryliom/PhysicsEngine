@@ -2,6 +2,10 @@
 
 #include "Exception.h"
 
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
+
 namespace Physics
 {
 	World::World(std::size_t defaultBodySize) noexcept
@@ -19,6 +23,10 @@ namespace Physics
 
 	void World::updateColliders() noexcept
 	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(UpdateColliders, "Update colliders", true);
+#endif
+
 		std::unordered_set<ColliderPair, ColliderPairHash> newColliderPairs;
 
         if (_contactListener == nullptr) return;
@@ -126,6 +134,10 @@ namespace Physics
 
 	bool World::overlap(const Collider& colliderA, const Collider& colliderB) noexcept
 	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(Overlap, "Overlap", true);
+#endif
+
 		if (colliderA.GetBodyRef() == colliderB.GetBodyRef()) return false;
 
         switch (colliderA.GetShapeType())
@@ -224,6 +236,10 @@ namespace Physics
 
 	void World::Update(float deltaTime) noexcept
 	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(Update, "Update", true);
+#endif
+
 		for (auto& body : _bodies)
 		{
 			if (!body.IsEnabled()) continue;

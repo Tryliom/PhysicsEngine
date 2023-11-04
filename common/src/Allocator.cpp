@@ -1,6 +1,10 @@
-#include "../include/Allocator.h"
+#include "Allocator.h"
 
 #include <cstdlib>
+
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
 
 Allocator::Allocator(void* ptr, std::size_t size) noexcept :
     _rootPtr(ptr), _currentPtr(ptr), _size(size), _allocations(0) {}
@@ -85,6 +89,10 @@ void* ProxyAllocator::Allocate(std::size_t size, std::size_t alignment) noexcept
 {
     auto ptr = _allocator.Allocate(size, alignment);
 
+#ifdef TRACY_ENABLE
+	TracyAlloc(ptr, size * alignment);
+#endif
+
     // Update the number of allocations
     if (ptr != nullptr)
     {
@@ -96,5 +104,73 @@ void* ProxyAllocator::Allocate(std::size_t size, std::size_t alignment) noexcept
 
 void ProxyAllocator::Deallocate(void* ptr) noexcept
 {
+#ifdef TRACY_ENABLE
+	TracyFree(ptr);
+#endif
+
     _allocator.Deallocate(ptr);
+}
+
+void* HeapAllocator::Allocate(std::size_t size, std::size_t alignment) noexcept
+{
+	if (size == 0)
+	{
+		return nullptr;
+	}
+
+	const auto space = size * alignment;
+	auto* ptr = std::malloc(space);
+
+#ifdef TRACY_ENABLE
+	TracyAlloc(ptr, space);
+#endif
+
+	return ptr;
+}
+
+void HeapAllocator::Deallocate(void* ptr) noexcept
+{
+	if (ptr == nullptr)
+	{
+		return;
+	}
+
+#ifdef TRACY_ENABLE
+	TracyFree(ptr);
+#endif
+
+	std::free(ptr);
+}
+
+template <typename T>
+T* StandardAllocator<T>::allocate(std::size_t n)
+{
+	if (n == 0)
+	{
+		return nullptr;
+	}
+
+	const auto space = n * sizeof(T);
+	auto* ptr = static_cast<T*>(_allocator.Allocate(space, alignof(T)));
+
+#ifdef TRACY_ENABLE
+	TracyAlloc(ptr, space);
+#endif
+
+	return ptr;
+}
+
+template <typename T>
+void StandardAllocator<T>::deallocate(T* ptr, std::size_t n)
+{
+	if (ptr == nullptr)
+	{
+		return;
+	}
+
+#ifdef TRACY_ENABLE
+	TracyFree(ptr);
+#endif
+
+	_allocator.Deallocate(ptr);
 }
