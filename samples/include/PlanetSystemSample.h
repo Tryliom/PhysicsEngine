@@ -23,6 +23,9 @@ struct Follow
 
 class PlanetSystemSample final : public Sample
 {
+public:
+	PlanetSystemSample() noexcept;
+
 private:
     const float _mouseRandomRadius = 15.f;
     const float _sunMass = 10000.f;
@@ -38,6 +41,7 @@ private:
     void onInit() noexcept override;
     void onDeinit() noexcept override;
 
+	void onInput() noexcept override;
     void onUpdate(float deltaTime) noexcept override;
     void onRender() noexcept override;
 

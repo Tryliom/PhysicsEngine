@@ -4,6 +4,20 @@
 #include "Input.h"
 #include "Display.h"
 
+PlanetSystemSample::PlanetSystemSample() noexcept :
+	Sample(
+		"Planet System",
+		"A simple planet system simulation. Planets are attracted by the suns. Suns are attracted by all the other suns.\n"
+		"Controls:\n"
+		"Left click -> Create planet\n"
+		"Shift + Left click -> Create planet with bigger mass\n"
+		"Middle click -> Create sun\n"
+		"F -> Follow the nearest sun\n"
+		"Right click -> Move camera\n"
+		"Mouse wheel -> Zoom\n"
+	)
+{}
+
 void PlanetSystemSample::onInit() noexcept
 {
     Display::SetTitle("Planet System Sample");
@@ -38,89 +52,92 @@ void PlanetSystemSample::onDeinit() noexcept
     _suns.clear();
 }
 
+void PlanetSystemSample::onInput() noexcept
+{
+	if (Input::IsKeyPressed(SDL_SCANCODE_F))
+	{
+		if (_followedRef.Enable)
+		{
+			_followedRef.Enable = false;
+		}
+		else
+		{
+			_followedRef.Enable = true;
+
+			// Get the nearest sun.
+			auto nearestSun = _suns[0];
+			auto mousePosition = Display::GetMousePosition();
+
+			for (auto& sun : _suns)
+			{
+				auto sunBody = _world.GetBody(sun);
+				auto nearestSunBody = _world.GetBody(nearestSun);
+
+				if ((sunBody.Position() - mousePosition).Length() < (nearestSunBody.Position() - mousePosition).Length())
+				{
+					nearestSun = sun;
+				}
+			}
+
+			_followedRef.Ref = nearestSun;
+
+			Display::LookAt(_world.GetBody(_followedRef.Ref).Position());
+		}
+	}
+
+	auto mouseWheelDelta = Input::GetMouseWheelDelta();
+
+	if (mouseWheelDelta != 0)
+	{
+		Math::Vec2F target = Display::GetMousePosition();
+
+		if (_followedRef.Enable)
+		{
+			target = _world.GetBody(_followedRef.Ref).Position();
+		}
+
+		Display::SetCameraZoom(Display::GetCameraZoom() + mouseWheelDelta * 0.05f, target);
+	}
+
+	auto mouseDelta = Display::GetMouseDelta();
+
+	// Move camera when holding right mouse button.
+	if (Input::IsMouseButtonHeld(SDL_BUTTON_RIGHT) && mouseDelta != Math::Vec2F::Zero())
+	{
+		Display::MoveCamera(mouseDelta);
+
+		_followedRef.Enable = false;
+	}
+
+	if (_followedRef.Enable)
+	{
+		auto& followedSunBody = _world.GetBody(_followedRef.Ref);
+
+		Display::LookAt(followedSunBody.Position());
+	}
+
+	if (Input::IsKeyHeld(SDL_SCANCODE_LSHIFT))
+	{
+		if (Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
+		{
+			createPlanet(Display::GetMousePosition(), Math::Random::Range(1000.f, 3000.f));
+		}
+	}
+	else if (Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
+	{
+		createPlanet(Display::GetMousePosition() +
+		             Math::Vec2F(Math::Random::Range(-_mouseRandomRadius, _mouseRandomRadius), Math::Random::Range(-_mouseRandomRadius, _mouseRandomRadius)));
+	}
+
+	if (Input::IsMouseButtonPressed(SDL_BUTTON_MIDDLE))
+	{
+		createSun(Display::GetMousePosition());
+	}
+}
+
 void PlanetSystemSample::onUpdate(float deltaTime) noexcept
 {
-    if (Input::IsKeyPressed(SDL_SCANCODE_F))
-    {
-        if (_followedRef.Enable)
-        {
-            _followedRef.Enable = false;
-        }
-        else
-        {
-            _followedRef.Enable = true;
-
-            // Get the nearest sun.
-            auto nearestSun = _suns[0];
-            auto mousePosition = Display::GetMousePosition();
-
-            for (auto& sun : _suns)
-            {
-                auto sunBody = _world.GetBody(sun);
-                auto nearestSunBody = _world.GetBody(nearestSun);
-
-                if ((sunBody.Position() - mousePosition).Length() < (nearestSunBody.Position() - mousePosition).Length())
-                {
-                    nearestSun = sun;
-                }
-            }
-
-            _followedRef.Ref = nearestSun;
-
-            Display::LookAt(_world.GetBody(_followedRef.Ref).Position());
-        }
-    }
-
-    auto mouseWheelDelta = Input::GetMouseWheelDelta();
-
-    if (mouseWheelDelta != 0)
-    {
-        Math::Vec2F target = Display::GetMousePosition();
-
-        if (_followedRef.Enable)
-        {
-            target = _world.GetBody(_followedRef.Ref).Position();
-        }
-
-        Display::SetCameraZoom(Display::GetCameraZoom() + mouseWheelDelta * 0.05f, target);
-    }
-
-    auto mouseDelta = Display::GetMouseDelta();
-
-    // Move camera when holding right mouse button.
-    if (Input::IsMouseButtonHeld(SDL_BUTTON_RIGHT) && mouseDelta != Math::Vec2F::Zero())
-    {
-        Display::MoveCamera(mouseDelta);
-
-        _followedRef.Enable = false;
-    }
-
-    if (_followedRef.Enable)
-    {
-        auto& followedSunBody = _world.GetBody(_followedRef.Ref);
-
-        Display::LookAt(followedSunBody.Position());
-    }
-
-    if (Input::IsKeyHeld(SDL_SCANCODE_LSHIFT))
-    {
-        if (Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
-        {
-            createPlanet(Display::GetMousePosition(), Math::Random::Range(1000.f, 3000.f));
-        }
-    }
-    else if (Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
-    {
-        createPlanet(Display::GetMousePosition() +
-                     Math::Vec2F(Math::Random::Range(-_mouseRandomRadius, _mouseRandomRadius), Math::Random::Range(-_mouseRandomRadius, _mouseRandomRadius)));
-    }
-
-    if (Input::IsMouseButtonPressed(SDL_BUTTON_MIDDLE))
-    {
-        createSun(Display::GetMousePosition());
-    }
-
-    for (auto& planet : _planets)
+	for (auto& planet : _planets)
     {
         auto& body = _world.GetBody(planet.BodyRef);
 

@@ -84,6 +84,11 @@ namespace Display
      * @return Mouse wheel delta
      */
 	Math::Vec2F GetCameraPosition() noexcept;
+	/**
+	 * @brief Check if the mouse is on an ImGui window.
+	 * @return True if the mouse is on an ImGui window, false otherwise
+	 */
+	bool IsMouseOnAnImGuiWindow() noexcept;
 
     /**
      * @brief Move the camera.

@@ -16,6 +16,9 @@ struct Object
 
 class TriggerSample final : public Sample, Physics::ContactListener
 {
+public:
+	TriggerSample() noexcept;
+
 private:
 	std::vector<Object> _objects;
 	Object _mouseObject;
@@ -35,6 +38,7 @@ private:
 
 	void onUpdate(float deltaTime) noexcept override;
 	void onRender() noexcept override;
+	void onInput() noexcept override;
 
     void createBall() noexcept;
 	void createBox() noexcept;

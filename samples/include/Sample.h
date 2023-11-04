@@ -1,17 +1,25 @@
 #pragma once
 
+#include <string>
 #include "World.h"
 
 class Sample
 {
 public:
-    Sample() noexcept = default;
+    Sample(std::string name, std::string description) noexcept;
     virtual ~Sample() noexcept = default;
+
+private:
+	std::string _name;
+	std::string _description;
 
 protected:
     Physics::World _world;
 
 public:
+	[[nodiscard]] constexpr std::string GetName() const noexcept { return _name; }
+	[[nodiscard]] constexpr std::string GetDescription() const noexcept { return _description; }
+
     /**
      * @brief Update the sample.
      * @param deltaTime The time since the last update.
@@ -31,12 +39,11 @@ public:
      */
     void Deinit() noexcept;
 
-    /**
-     * @brief Draw the ImGui of the sample.
-     */
-    void DrawImGui() noexcept;
-
 protected:
+	/**
+	 * @brief Called before onUpdate. This is where you should handle mouse and keyboard inputs. This will be ignored if the ImGui context is hovered.
+	 */
+	virtual void onInput() noexcept = 0;
     /**
      * @brief Called when the sample is updated. This is where you should update your sample. The world is updated first.
      * @param deltaTime The time since the last update.

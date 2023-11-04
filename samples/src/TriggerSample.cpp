@@ -4,13 +4,26 @@
 #include "Display.h"
 #include "Input.h"
 
+TriggerSample::TriggerSample() noexcept :
+	Sample(
+		"Triggers",
+		"Sample showing how to use triggers with circles and boxes.\n"
+		"Controls:\n"
+		"Space -> Freeze/unfreeze all objects\n"
+		"B -> Toggle boxes around objects\n"
+		"Q -> Toggle quad trees\n"
+		"Right click -> Move camera\n"
+		"Mouse wheel -> Zoom\n"
+	)
+{}
+
 void TriggerSample::onInit() noexcept
 {
     Display::SetTitle("Trigger Sample");
     _world.SetContactListener(this);
 
-	constexpr static int Circles = 300;
-    constexpr static int Boxes = 0;
+	constexpr static int Circles = 100;
+    constexpr static int Boxes = 100;
     constexpr static int Polygons = 0;
 
 	_objects.resize(Circles + Boxes + Polygons);
@@ -46,10 +59,11 @@ void TriggerSample::onDeinit() noexcept
     _objects.clear();
 }
 
-void TriggerSample::onUpdate(float deltaTime) noexcept
+
+void TriggerSample::onInput() noexcept
 {
-    const auto screenWidth = static_cast<float>(Display::GetWidth());
-    const auto screenHeight = static_cast<float>(Display::GetHeight());
+	const auto screenWidth = static_cast<float>(Display::GetWidth());
+	const auto screenHeight = static_cast<float>(Display::GetHeight());
 	const auto mouseWheelDelta = Input::GetMouseWheelDelta();
 
 	if (mouseWheelDelta != 0)
@@ -99,9 +113,14 @@ void TriggerSample::onUpdate(float deltaTime) noexcept
 	{
 		_showQuadTrees = !_showQuadTrees;
 	}
+}
 
-    // Check if the object is outside the screen, and if so, teleport it to the other side
-    // Set up also his color to normal
+void TriggerSample::onUpdate(float deltaTime) noexcept
+{
+	const auto screenWidth = static_cast<float>(Display::GetWidth());
+	const auto screenHeight = static_cast<float>(Display::GetHeight());
+
+    // Check if the object is outside the screen and if so, bounce it back
     for (auto& object : _objects)
     {
         auto& body = _world.GetBody(object.BodyRef);

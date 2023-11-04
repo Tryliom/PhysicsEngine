@@ -21,7 +21,10 @@ namespace Display
     static std::size_t _height = 0;
     static float _meterPerPixel = 1.f;
 
-    static Camera _camera;
+	static ImGuiIO* _imGuiIO;
+
+	static Camera _camera;
+
 
 	void Init(size_t width, size_t height, const std::string& name)
 	{
@@ -65,6 +68,7 @@ namespace Display
         ImGui_ImplSDL2_InitForSDLRenderer(_window, _renderer);
         ImGui_ImplSDLRenderer2_Init(_renderer);
         ImGui::StyleColorsDark();
+		_imGuiIO = &ImGui::GetIO();
 
         ClearRender();
 	}
@@ -143,6 +147,11 @@ namespace Display
 	Math::Vec2F GetCameraPosition() noexcept
 	{
 		return _camera.Position;
+	}
+
+	bool IsMouseOnAnImGuiWindow() noexcept
+	{
+		return _imGuiIO->WantCaptureMouse;
 	}
 
 	void MoveCamera(Math::Vec2F delta) noexcept
