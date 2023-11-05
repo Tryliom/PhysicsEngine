@@ -29,6 +29,9 @@ IF(MSVC)
 
         add_compile_options(/fsanitize=address /fno-omit-frame-pointer)
     ENDIF()
+
+    # Define ON_MSVC to use MSVC specific code
+    add_compile_definitions(ON_MSVC)
 else()
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fno-rtti -fno-exceptions -save-temps -flto -ffast-math -march=haswell-")
 ENDIF()

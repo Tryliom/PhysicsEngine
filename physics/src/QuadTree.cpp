@@ -4,13 +4,19 @@
 #include <tracy/Tracy.hpp>
 #endif
 
+#ifdef ON_MSVC
+#define MULTIPLIER 2
+#else
+#define MULTIPLIER 1
+#endif
+
 namespace Physics
 {
 	QuadNode::QuadNode(HeapAllocator& allocator) noexcept :
 		Colliders {StandardAllocator<SimplifiedCollider> {allocator}} {}
 
 	QuadTree::QuadTree(const Math::RectangleF& boundary) noexcept :
-		_nodesAllocator(std::malloc((getMaxNodes()) * sizeof(QuadNode) * 2), (getMaxNodes()) * sizeof(QuadNode) * 2),
+		_nodesAllocator(std::malloc((getMaxNodes()) * sizeof(QuadNode) * MULTIPLIER), (getMaxNodes()) * sizeof(QuadNode) * MULTIPLIER),
 		_colliderAllocator(std::malloc(1 * sizeof(int)), 1 * sizeof(int))
     {
 		_nodes.resize(getMaxNodes(), QuadNode {_heapAllocator});

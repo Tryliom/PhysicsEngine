@@ -4,7 +4,7 @@
  * @author Constantin
  */
 
-#ifdef _MSC_VER
+#ifdef ON_MSVC
 #define NOALIAS __declspec(noalias)
 #define FORCE_INLINE __forceinline
 #else
