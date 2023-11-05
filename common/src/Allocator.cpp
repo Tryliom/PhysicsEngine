@@ -1,6 +1,5 @@
+#include <cassert>
 #include "Allocator.h"
-
-#include <cstdlib>
 
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
@@ -29,6 +28,42 @@ std::size_t Allocator::GetAllocations() const noexcept
     return _allocations;
 }
 
+std::size_t Allocator::calculateAlignForwardAdjustment(const void* address, std::size_t alignment)
+{
+	assert((alignment & (alignment - 1)) == 0 && "Alignement needs to be a power of two");
+	const std::size_t adjustment = alignment - (reinterpret_cast<std::uintptr_t>(address) & (alignment - 1));
+
+	if (adjustment == alignment) return 0;
+	return adjustment;
+}
+
+std::size_t Allocator::calculateAlignForwardAdjustmentWithHeader(const void* address, std::size_t alignment,
+                                                                       std::size_t headerSize)
+{
+	auto adjustment = calculateAlignForwardAdjustment(address, alignment);
+	std::size_t neededSpace = headerSize;
+
+	if (adjustment < neededSpace)
+	{
+		neededSpace -= adjustment;
+		adjustment += alignment * (neededSpace / alignment);
+
+		if (neededSpace % alignment > 0) adjustment += alignment;
+	}
+
+	return adjustment;
+}
+
+void* Allocator::alignForward(void* address, std::size_t alignment)
+{
+	return reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(address) + calculateAlignForwardAdjustment(address, alignment));
+}
+
+void* Allocator::alignForwardWithHeader(void* address, std::size_t alignment, std::size_t headerSize)
+{
+	return reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(address) + calculateAlignForwardAdjustmentWithHeader(address, alignment, headerSize));
+}
+
 // LinearAllocator implementation
 
 LinearAllocator::LinearAllocator(void* ptr, std::size_t size) noexcept :
@@ -39,33 +74,33 @@ LinearAllocator::~LinearAllocator()
     std::free(_rootPtr);
 }
 
+void LinearAllocator::Init(void* ptr, std::size_t size) noexcept
+{
+	if (_rootPtr != nullptr)
+	{
+		std::free(_rootPtr);
+	}
+
+	_rootPtr = ptr;
+	_currentPtr = ptr;
+	_size = size;
+	_offset = 0;
+	_allocations = 0;
+}
+
 void* LinearAllocator::Allocate(std::size_t size, std::size_t alignment) noexcept
 {
-    // Align the current pointer
-    std::size_t padding = 0;
-    std::size_t alignedAddress = reinterpret_cast<std::size_t>(_currentPtr) + _offset;
+	assert(size != 0 && "Linear Allocator cannot allocated nothing");
+	const auto adjustment = calculateAlignForwardAdjustment(_currentPtr, alignment);
 
-    if (alignment != 0 && alignedAddress % alignment != 0)
-    {
-        padding = alignment - (alignedAddress % alignment);
-    }
+	assert(_offset + adjustment + size < _size && "Linear Allocator has not enough space for this allocation");
 
-    // Check if there is enough memory
-    if (_offset + padding + size > _size)
-    {
-        return nullptr;
-    }
+	auto* alignedAddress = reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(_currentPtr) + adjustment);
+	_currentPtr = reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(alignedAddress) + size);
+	_offset += size + adjustment;
+	_allocations++;
 
-    // Update the current pointer
-    _offset += padding;
-    void* alignedPtr = reinterpret_cast<void*>(alignedAddress + padding);
-    _offset += size;
-    _currentPtr = alignedPtr;
-
-    // Update the number of allocations
-    _allocations++;
-
-    return alignedPtr;
+	return alignedAddress;
 }
 
 void LinearAllocator::Deallocate(void* ptr) noexcept
@@ -113,10 +148,7 @@ void ProxyAllocator::Deallocate(void* ptr) noexcept
 
 void* HeapAllocator::Allocate(std::size_t size, std::size_t alignment) noexcept
 {
-	if (size == 0)
-	{
-		return nullptr;
-	}
+	if (size == 0) return nullptr;
 
 	const auto space = size * alignment;
 	auto* ptr = std::malloc(space);
@@ -130,47 +162,11 @@ void* HeapAllocator::Allocate(std::size_t size, std::size_t alignment) noexcept
 
 void HeapAllocator::Deallocate(void* ptr) noexcept
 {
-	if (ptr == nullptr)
-	{
-		return;
-	}
+	if (ptr == nullptr) return;
 
 #ifdef TRACY_ENABLE
 	TracyFree(ptr);
 #endif
 
 	std::free(ptr);
-}
-
-template <typename T>
-T* StandardAllocator<T>::allocate(std::size_t n)
-{
-	if (n == 0)
-	{
-		return nullptr;
-	}
-
-	const auto space = n * sizeof(T);
-	auto* ptr = static_cast<T*>(_allocator.Allocate(space, alignof(T)));
-
-#ifdef TRACY_ENABLE
-	TracyAlloc(ptr, space);
-#endif
-
-	return ptr;
-}
-
-template <typename T>
-void StandardAllocator<T>::deallocate(T* ptr, std::size_t n)
-{
-	if (ptr == nullptr)
-	{
-		return;
-	}
-
-#ifdef TRACY_ENABLE
-	TracyFree(ptr);
-#endif
-
-	_allocator.Deallocate(ptr);
 }

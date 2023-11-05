@@ -2,6 +2,7 @@
 
 #include "Collider.h"
 #include "UniquePtr.h"
+#include "Allocator.h"
 
 #include <vector>
 #include <memory>
@@ -16,7 +17,9 @@ namespace Physics
 
     struct QuadNode
     {
-        std::vector<SimplifiedCollider> Colliders {};
+		explicit QuadNode(HeapAllocator& allocator) noexcept : Colliders { StandardAllocator<SimplifiedCollider> {allocator} } {}
+
+	    StandardVector<SimplifiedCollider> Colliders;
         Math::RectangleF Boundary {Math::Vec2F::Zero(), Math::Vec2F::One()};
         bool Divided {false};
     };
@@ -31,7 +34,9 @@ namespace Physics
 		explicit QuadTree(const Math::RectangleF& boundary) noexcept;
 
 	private:
-		std::vector<QuadNode> _nodes {};
+		HeapAllocator _heapAllocator {};
+		LinearAllocator _linearAllocator;
+		StandardVector<QuadNode> _nodes { StandardAllocator<QuadNode> {_linearAllocator} };
 
         static constexpr std::size_t _maxDepth = 5;
 		static constexpr std::size_t _maxCapacity = 8;

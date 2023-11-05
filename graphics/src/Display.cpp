@@ -9,6 +9,10 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_sdlrenderer2.h"
 
+#ifdef TRACY_ENABLE
+#include "tracy/Tracy.hpp"
+#endif
+
 namespace Display
 {
     static SDL_Window* _window = nullptr;
@@ -75,7 +79,10 @@ namespace Display
 
 	void Render() noexcept
 	{
-        SDL_RenderGeometry(
+#ifdef TRACY_ENABLE
+		ZoneNamedN(render, "Display::Render", true);
+#endif
+		SDL_RenderGeometry(
             _renderer,
             nullptr,
             _vertices.data(),
@@ -83,10 +90,11 @@ namespace Display
             _indices.data(),
             static_cast<int>(_indices.size())
         );
-        SDL_RenderPresent(_renderer);
 
-        ImGui::Render();
+		ImGui::Render();
         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
+
+        SDL_RenderPresent(_renderer);
 	}
 
 	void Shutdown() noexcept

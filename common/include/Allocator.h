@@ -60,6 +60,12 @@ public:
      * @brief Get the number of allocations
      */
     [[nodiscard]] std::size_t GetAllocations() const noexcept;
+
+protected:
+	static std::size_t calculateAlignForwardAdjustment(const void* address, std::size_t alignment);
+	static std::size_t calculateAlignForwardAdjustmentWithHeader(const void* address, std::size_t alignment, std::size_t headerSize);
+	static void* alignForward(void* address, std::size_t alignment);
+	static void* alignForwardWithHeader(void* address, std::size_t alignment, std::size_t headerSize);
 };
 
 /**
@@ -77,6 +83,8 @@ public:
      */
     LinearAllocator(void* ptr, std::size_t size) noexcept;
     ~LinearAllocator() override;
+
+	void Init(void* ptr, std::size_t size) noexcept;
 
     /**
      * @brief Allocate memory from allocator
@@ -140,23 +148,52 @@ public:
 	void Deallocate(void* ptr) noexcept override;
 };
 
+/**
+ * \brief Custom proxy allocator respecting allocator_traits
+ */
 template<typename T>
-class StandardAllocator : public std::allocator<T>
+class StandardAllocator final
 {
-protected:
-	Allocator& _allocator;
-
 public:
 	typedef T value_type;
-	explicit StandardAllocator(Allocator& allocator) noexcept : std::allocator<T>(), _allocator(allocator) {}
+	explicit StandardAllocator(Allocator& allocator);
 	template <class U>
 	explicit StandardAllocator(const StandardAllocator<U>& allocator) noexcept : _allocator(allocator.GetAllocator()) {}
-
 	T* allocate(std::size_t n);
 	void deallocate(T* ptr, std::size_t n);
-
 	[[nodiscard]] Allocator& GetAllocator() const { return _allocator; }
+protected:
+	Allocator& _allocator;
 };
 
+// Forced to define these things in .h because otherwise the linker complains about undefined symbols
+
+template <class T, class U>
+constexpr bool operator== (const StandardAllocator<T>&, const StandardAllocator<U>&) noexcept
+{
+	return true;
+}
+
+template <class T, class U>
+constexpr bool operator!= (const StandardAllocator<T>&, const StandardAllocator<U>&) noexcept
+{
+	return false;
+}
+
+template <typename T>
+StandardAllocator<T>::StandardAllocator(Allocator& allocator) : _allocator(allocator) {}
+
+template <typename T>
+T* StandardAllocator<T>::allocate(std::size_t n)
+{
+	return static_cast<T*>(_allocator.Allocate(n * sizeof(T), alignof(T)));
+}
+
+template <typename T>
+void StandardAllocator<T>::deallocate(T* ptr, std::size_t n)
+{
+	_allocator.Deallocate(ptr);
+}
+
 template<typename T>
-using AllocVector = std::vector<T, StandardAllocator<T>>;
+using StandardVector = std::vector<T, StandardAllocator<T>>;

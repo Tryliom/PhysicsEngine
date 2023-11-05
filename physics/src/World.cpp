@@ -24,7 +24,7 @@ namespace Physics
 	void World::updateColliders() noexcept
 	{
 #ifdef TRACY_ENABLE
-		ZoneNamedN(UpdateColliders, "Update colliders", true);
+		ZoneNamedN(updateColliders, "World::updateColliders", true);
 #endif
 
 		std::unordered_set<ColliderPair, ColliderPairHash> newColliderPairs;
@@ -135,7 +135,7 @@ namespace Physics
 	bool World::overlap(const Collider& colliderA, const Collider& colliderB) noexcept
 	{
 #ifdef TRACY_ENABLE
-		ZoneNamedN(Overlap, "Overlap", true);
+		ZoneNamedN(overlap, "World::overlap", true);
 #endif
 
 		if (colliderA.GetBodyRef() == colliderB.GetBodyRef()) return false;
@@ -237,7 +237,7 @@ namespace Physics
 	void World::Update(float deltaTime) noexcept
 	{
 #ifdef TRACY_ENABLE
-		ZoneNamedN(Update, "Update", true);
+		ZoneNamedN(update, "World::Update", true);
 #endif
 
 		for (auto& body : _bodies)

@@ -30,7 +30,7 @@ IF(MSVC)
         add_compile_options(/fsanitize=address /fno-omit-frame-pointer)
     ENDIF()
 else()
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -save-temps -march=haswell -ffast-math")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fno-rtti -fno-exceptions -save-temps -flto -ffast-math -march=haswell-")
 ENDIF()
 
 # Common library

@@ -5,6 +5,10 @@
 #include "Display.h"
 #include "Timer.h"
 
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
+
 Sample::Sample(std::string name, std::string description) noexcept
 {
 	_name = std::move(name);
@@ -13,6 +17,10 @@ Sample::Sample(std::string name, std::string description) noexcept
 
 void Sample::Update(float deltaTime) noexcept
 {
+#ifdef TRACY_ENABLE
+	ZoneNamedN(sampleUpdate, "Sample::Update", true);
+#endif
+
     _world.Update(deltaTime);
 
 	if (!Display::IsMouseOnAnImGuiWindow())
@@ -26,7 +34,6 @@ void Sample::Update(float deltaTime) noexcept
 void Sample::Render() noexcept
 {
     onRender();
-    Display::Render();
 }
 
 void Sample::Init() noexcept

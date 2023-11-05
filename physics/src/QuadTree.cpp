@@ -6,9 +6,11 @@
 
 namespace Physics
 {
-	QuadTree::QuadTree(const Math::RectangleF& boundary) noexcept
+	QuadTree::QuadTree(const Math::RectangleF& boundary) noexcept :
+		_linearAllocator(std::malloc((getMaxNodes()) * sizeof(QuadNode)), (getMaxNodes()) * sizeof(QuadNode))
     {
-		_nodes.resize(getMaxNodes());
+		_nodes.resize(getMaxNodes(), QuadNode {_heapAllocator});
+
         UpdateBoundary(boundary);
     }
 
@@ -40,7 +42,7 @@ namespace Physics
     void QuadTree::subdivide(std::size_t index) noexcept
     {
 #ifdef TRACY_ENABLE
-	    ZoneNamedN(quadTreeSubdivide, "QuadTree::subdivide", true);
+	    ZoneNamedN(subdivide, "QuadTree::subdivide", true);
 #endif
 
         auto& node = _nodes[index];
@@ -111,7 +113,7 @@ namespace Physics
 	void QuadTree::Insert(SimplifiedCollider collider) noexcept
 	{
 #ifdef TRACY_ENABLE
-		ZoneNamedN(quadTreeInsert, "QuadTree::Insert", true);
+		ZoneNamedN(insert, "QuadTree::Insert", true);
 #endif
 
         std::size_t parentIndex = 0;
@@ -170,16 +172,15 @@ namespace Physics
 	std::vector<ColliderRef> QuadTree::GetColliders(SimplifiedCollider collider) const noexcept
 	{
 #ifdef TRACY_ENABLE
-		ZoneNamedN(quadTreeGetColliders, "QuadTree::GetColliders", true);
+		ZoneNamedN(GetColliders, "QuadTree::GetColliders", true);
 #endif
-
         return getColliders(0, collider);
 	}
 
 	void QuadTree::UpdateBoundary(const Math::RectangleF& boundary) noexcept
 	{
 #ifdef TRACY_ENABLE
-		ZoneNamedN(quadTreeUpdateBoundary, "QuadTree::UpdateBoundary", true);
+		ZoneNamedN(updateBoundary, "QuadTree::UpdateBoundary", true);
 #endif
 
         _nodes[0].Boundary = boundary;

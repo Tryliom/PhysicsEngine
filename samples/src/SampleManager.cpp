@@ -36,10 +36,6 @@ void SampleManager::Run() noexcept
 {
     while (true)
     {
-#ifdef TRACY_ENABLE
-		ZoneNamedN(mainLoop, "Main loop", true);
-#endif
-
         Input::Update();
 
         SDL_Event e;
@@ -58,21 +54,13 @@ void SampleManager::Run() noexcept
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-#ifdef TRACY_ENABLE
-	    ZoneNamedN(sampleUpdate, "Sample update", true);
-#endif
-
         _timer.Update();
         _samples[_currentSample]->Update(_timer.DeltaTime());
-
-#ifdef TRACY_ENABLE
-	    ZoneNamedN(sampleRender, "Sample render", true);
-#endif
 
         Display::ClearRender();
 		drawImGui();
         _samples[_currentSample]->Render();
-        Display::Render();
+	    Display::Render();
 
 #ifdef TRACY_ENABLE
 	    FrameMark;
