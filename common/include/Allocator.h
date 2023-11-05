@@ -196,4 +196,4 @@ void StandardAllocator<T>::deallocate(T* ptr, std::size_t n)
 }
 
 template<typename T>
-using StandardVector = std::vector<T, StandardAllocator<T>>;
+using MyVector = std::vector<T, StandardAllocator<T>>;

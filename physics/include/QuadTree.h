@@ -17,9 +17,9 @@ namespace Physics
 
     struct QuadNode
     {
-		explicit QuadNode(HeapAllocator& allocator) noexcept : Colliders { StandardAllocator<SimplifiedCollider> {allocator} } {}
+		explicit QuadNode(HeapAllocator& allocator) noexcept;
 
-	    StandardVector<SimplifiedCollider> Colliders;
+	    MyVector<SimplifiedCollider> Colliders;
         Math::RectangleF Boundary {Math::Vec2F::Zero(), Math::Vec2F::One()};
         bool Divided {false};
     };
@@ -35,8 +35,9 @@ namespace Physics
 
 	private:
 		HeapAllocator _heapAllocator {};
-		LinearAllocator _linearAllocator;
-		StandardVector<QuadNode> _nodes { StandardAllocator<QuadNode> {_linearAllocator} };
+		LinearAllocator _nodesAllocator;
+		LinearAllocator _colliderAllocator;
+		MyVector<QuadNode> _nodes { StandardAllocator <QuadNode> {_nodesAllocator} };
 
         static constexpr std::size_t _maxDepth = 5;
 		static constexpr std::size_t _maxCapacity = 8;
@@ -45,7 +46,7 @@ namespace Physics
         static constexpr std::size_t getDepth(std::size_t index) noexcept;
 
         void subdivide(std::size_t index) noexcept;
-        [[nodiscard]] std::vector<ColliderRef> getColliders(std::size_t index, SimplifiedCollider collider) const noexcept;
+        [[nodiscard]] MyVector<ColliderRef> getColliders(std::size_t index, SimplifiedCollider collider) noexcept;
 
     public:
 		/**
@@ -59,7 +60,7 @@ namespace Physics
 		 * @param collider The collider to check for overlap
 		 * @return All colliders that overlap with the collider
 		 */
-		[[nodiscard]] std::vector<ColliderRef> GetColliders(SimplifiedCollider collider) const noexcept;
+		[[nodiscard]] MyVector<ColliderRef> GetColliders(SimplifiedCollider collider) noexcept;
 
 		/**
 		 * @brief Set the new boundary of the quadtree, applies to all nodes

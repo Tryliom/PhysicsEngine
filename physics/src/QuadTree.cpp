@@ -6,8 +6,12 @@
 
 namespace Physics
 {
+	QuadNode::QuadNode(HeapAllocator& allocator) noexcept :
+		Colliders {StandardAllocator<SimplifiedCollider> {allocator}} {}
+
 	QuadTree::QuadTree(const Math::RectangleF& boundary) noexcept :
-		_linearAllocator(std::malloc((getMaxNodes()) * sizeof(QuadNode)), (getMaxNodes()) * sizeof(QuadNode))
+		_nodesAllocator(std::malloc((getMaxNodes()) * sizeof(QuadNode) * 2), (getMaxNodes()) * sizeof(QuadNode) * 2),
+		_colliderAllocator(std::malloc(1 * sizeof(int)), 1 * sizeof(int))
     {
 		_nodes.resize(getMaxNodes(), QuadNode {_heapAllocator});
 
@@ -80,9 +84,9 @@ namespace Physics
         }
     }
 
-    std::vector<ColliderRef> QuadTree::getColliders(std::size_t index, SimplifiedCollider collider) const noexcept
+	MyVector<ColliderRef> QuadTree::getColliders(std::size_t index, SimplifiedCollider collider) noexcept
     {
-        std::vector<ColliderRef> colliders;
+        MyVector<ColliderRef> colliders { StandardAllocator<ColliderRef> {_colliderAllocator} };
 
         const auto& node = _nodes[index];
 
@@ -169,11 +173,15 @@ namespace Physics
         }
 	}
 
-	std::vector<ColliderRef> QuadTree::GetColliders(SimplifiedCollider collider) const noexcept
+	MyVector<ColliderRef> QuadTree::GetColliders(SimplifiedCollider collider) noexcept
 	{
 #ifdef TRACY_ENABLE
 		ZoneNamedN(GetColliders, "QuadTree::GetColliders", true);
 #endif
+		const std::size_t size = GetAllCollidersCount() * sizeof(ColliderRef) * 2;
+
+		_colliderAllocator.Init(std::malloc(size), size);
+
         return getColliders(0, collider);
 	}
 
