@@ -36,12 +36,30 @@ namespace Physics
 		 */
 		void updateColliders() noexcept;
 		/**
+		 * @brief Check the collisions and triggers of the colliders in the quadtree
+		 */
+		void insertColliders() noexcept;
+		/**
+		 * @brief Check the collisions and triggers of the colliders in the quadtree
+		 */
+		void processColliders() noexcept;
+		/**
 		 * @brief Check if the colliders overlap
 		 * @param colliderA	 The first collider
 		 * @param colliderB  The second collider
 		 * @return True if the colliders overlap
 		 */
 		[[nodiscard]] static bool overlap(const Collider& colliderA, const Collider& colliderB) noexcept;
+
+		/**
+		 * @brief Update the bodies
+		 * @param deltaTime The time since the last update
+		 */
+		void updateBodies(float deltaTime) noexcept;
+		/**
+		 * @brief Update the quadtree
+		 */
+		void updateQuadTree() noexcept;
 
     public:
 		/**

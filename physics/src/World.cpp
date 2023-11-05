@@ -26,9 +26,6 @@ namespace Physics
 #ifdef TRACY_ENABLE
 		ZoneNamedN(updateColliders, "World::updateColliders", true);
 #endif
-
-		std::unordered_set<ColliderPair, ColliderPairHash> newColliderPairs;
-
         if (_contactListener == nullptr) return;
 
 		// Calculate minimum and maximum bounds of all colliders
@@ -59,12 +56,33 @@ namespace Physics
 		_quadTree.UpdateBoundary(Math::RectangleF({ minX, minY }, { maxX, maxY }));
 
 		// Insert all colliders into the quadtree
+		insertColliders();
+
+		// Check for collisions and triggers
+		processColliders();
+	}
+
+	void World::insertColliders() noexcept
+	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(insertColliders, "World::insertColliders", true);
+#endif
+
+		// Insert all colliders into the quadtree
 		for (auto& collider : _colliders)
 		{
 			if (!collider.IsEnabled() || collider.IsFree()) continue;
 
 			_quadTree.Insert({collider.GetColliderRef(), collider.GetBounds()});
 		}
+	}
+
+	void World::processColliders() noexcept
+	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(processColliders, "World::processColliders", true);
+#endif
+		std::unordered_set<ColliderPair, ColliderPairHash> newColliderPairs;
 
 		// Check for collisions
 		for (auto& collider : _colliders)
@@ -76,7 +94,7 @@ namespace Physics
 
 			for (auto& otherColliderRef : colliders)
 			{
-                const auto& otherCollider = GetCollider(otherColliderRef);
+				const auto& otherCollider = GetCollider(otherColliderRef);
 
 				if (otherCollider.GetBodyRef() == collider.GetBodyRef()) continue;
 
@@ -101,15 +119,15 @@ namespace Physics
 					_contactListener->OnTriggerEnter(colliderPair.A, colliderPair.B);
 				}
 			}
-			// TriggerInfo stay
+				// TriggerInfo stay
 			else
 			{
 				Collider& colliderA = GetCollider(colliderPair.A);
 				Collider& colliderB = GetCollider(colliderPair.B);
 
-                if (colliderA.IsTrigger() || colliderB.IsTrigger())
-                {
-                    _contactListener->OnTriggerStay(colliderPair.A, colliderPair.B);
+				if (colliderA.IsTrigger() || colliderB.IsTrigger())
+				{
+					_contactListener->OnTriggerStay(colliderPair.A, colliderPair.B);
 				}
 			}
 		}
@@ -122,9 +140,9 @@ namespace Physics
 				Collider& colliderA = GetCollider(colliderPair.A);
 				Collider& colliderB = GetCollider(colliderPair.B);
 
-                if (colliderA.IsTrigger() || colliderB.IsTrigger())
-                {
-                    _contactListener->OnTriggerExit(colliderPair.A, colliderPair.B);
+				if (colliderA.IsTrigger() || colliderB.IsTrigger())
+				{
+					_contactListener->OnTriggerExit(colliderPair.A, colliderPair.B);
 				}
 			}
 		}
@@ -234,12 +252,11 @@ namespace Physics
 		return false;
 	}
 
-	void World::Update(float deltaTime) noexcept
+	void World::updateBodies(float deltaTime) noexcept
 	{
 #ifdef TRACY_ENABLE
-		ZoneNamedN(update, "World::Update", true);
+		ZoneNamedN(updateBodies, "World::updateBodies", true);
 #endif
-
 		for (auto& body : _bodies)
 		{
 			if (!body.IsEnabled()) continue;
@@ -249,9 +266,9 @@ namespace Physics
 			body.SetForce(Math::Vec2F(0, 0));
 		}
 
-        if (_colliders.empty()) return;
+		if (_colliders.empty()) return;
 
-        for (auto& collider : _colliders)
+		for (auto& collider : _colliders)
 		{
 			if (!collider.IsEnabled()) continue;
 
@@ -259,7 +276,14 @@ namespace Physics
 
 			collider.SetPosition(body.Position() + collider.GetOffset());
 		}
+	}
 
+	void World::Update(float deltaTime) noexcept
+	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(update, "World::Update", true);
+#endif
+		updateBodies(deltaTime);
         updateColliders();
 	}
 
