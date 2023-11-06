@@ -56,10 +56,6 @@ namespace Physics
 		 * @param deltaTime The time since the last update
 		 */
 		void updateBodies(float deltaTime) noexcept;
-		/**
-		 * @brief Update the quadtree
-		 */
-		void updateQuadTree() noexcept;
 
     public:
 		/**

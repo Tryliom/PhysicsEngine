@@ -90,12 +90,15 @@ TEST(World, Collider)
 	auto colliderRef = world.CreateCollider(bodyRef);
 	auto& collider = world.GetCollider(colliderRef);
 
+	EXPECT_FALSE(collider.IsEnabled());
+
+	collider.SetCircle(CircleF({0.1f, 0.1f}, 1.f));
+
 	EXPECT_EQ(colliderRef.Index, 0);
 	EXPECT_EQ(colliderRef.Generation, 0);
 	EXPECT_EQ(collider.GetBodyRef(), bodyRef);
 	EXPECT_TRUE(collider.IsEnabled());
 	EXPECT_FALSE(collider.IsTrigger());
-	EXPECT_EQ(collider.GetContactListener(), nullptr);
 	EXPECT_EQ(collider.GetBounciness(), 0.f);
 	EXPECT_EQ(collider.GetFriction(), 0.f);
 
@@ -104,6 +107,9 @@ TEST(World, Collider)
 	EXPECT_THROW(world.GetCollider(colliderRef), InvalidColliderRefException);
 
 	colliderRef = world.CreateCollider(bodyRef);
+	collider = world.GetCollider(colliderRef);
+
+	collider.SetCircle(CircleF({0.1f, 0.1f}, 1.f));
 
 	EXPECT_EQ(colliderRef.Index, 0);
 	EXPECT_EQ(colliderRef.Generation, 1);
@@ -155,7 +161,7 @@ TEST(World, UpdateCollisionCircle)
 	auto interactionCount = 0;
 	auto* contactListener = new TestContactListener(interaction, interactionCount);
 
-	collider2.SetContactListener(contactListener);
+	world.SetContactListener(contactListener);
 	collider2.SetCircle(CircleF({0.1f, 0.1f}, 1.f));
 	collider2.SetIsTrigger(true);
 
@@ -167,10 +173,7 @@ TEST(World, UpdateCollisionCircle)
 	auto bodyRef3 = world.CreateBody();
 	auto colliderRef3 = world.CreateCollider(bodyRef3);
 	auto& collider3 = world.GetCollider(colliderRef3);
-	auto interaction2 = Interaction::None;
-	auto interactionCount2 = 0;
 
-	collider3.SetContactListener(new TestContactListener(interaction2, interactionCount2));
 	collider3.SetCircle(CircleF({0.f, 0.f}, 1.f));
 
 	EXPECT_EQ(colliderRef3.Index, 1);
@@ -208,7 +211,7 @@ TEST(World, UpdateCollisionRectangle)
 	auto interactionCount = 0;
 	auto* contactListener = new TestContactListener(interaction, interactionCount);
 
-	collider2.SetContactListener(contactListener);
+	world.SetContactListener(contactListener);
 	collider2.SetRectangle(RectangleF({0.1f, 0.1f}, {1.f, 1.f}));
 	collider2.SetIsTrigger(true);
 
@@ -220,10 +223,7 @@ TEST(World, UpdateCollisionRectangle)
 	auto bodyRef3 = world.CreateBody();
 	auto colliderRef3 = world.CreateCollider(bodyRef3);
 	auto& collider3 = world.GetCollider(colliderRef3);
-	auto interaction2 = Interaction::None;
-	auto interactionCount2 = 0;
 
-	collider3.SetContactListener(new TestContactListener(interaction2, interactionCount2));
 	collider3.SetRectangle(RectangleF({0.f, 0.f}, {1.f, 1.f}));
 
 	EXPECT_EQ(colliderRef3.Index, 1);
@@ -261,7 +261,7 @@ TEST(World, UpdateCollisionPolygon)
 	auto interactionCount = 0;
 	auto* contactListener = new TestContactListener(interaction, interactionCount);
 
-	collider2.SetContactListener(contactListener);
+	world.SetContactListener(contactListener);
 	collider2.SetPolygon(PolygonF({ {0.1f, 0.1f}, {0.8f, 0.1f}, {0.8f, 0.8f} }));
 	collider2.SetIsTrigger(true);
 
@@ -273,10 +273,7 @@ TEST(World, UpdateCollisionPolygon)
 	auto bodyRef3 = world.CreateBody();
 	auto colliderRef3 = world.CreateCollider(bodyRef3);
 	auto& collider3 = world.GetCollider(colliderRef3);
-	auto interaction2 = Interaction::None;
-	auto interactionCount2 = 0;
 
-	collider3.SetContactListener(new TestContactListener(interaction2, interactionCount2));
 	collider3.SetPolygon(PolygonF({ {0.f, 0.f}, {8.f, 0.f}, {8.f, 8.f} }));
 
 	EXPECT_EQ(colliderRef3.Index, 1);
