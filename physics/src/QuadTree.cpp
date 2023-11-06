@@ -179,7 +179,7 @@ namespace Physics
 #ifdef TRACY_ENABLE
 		ZoneNamedN(GetColliders, "QuadTree::GetColliders", true);
 #endif
-		const std::size_t size = (GetAllCollidersCount() - 1) * sizeof(ColliderRef) * sizeof(AllocationHeader);
+		const std::size_t size = GetAllCollidersCount() * sizeof(ColliderRef) * sizeof(AllocationHeader);
 
 		_colliderAllocator.Init(std::malloc(size), size);
 

@@ -10,7 +10,7 @@
 class SampleManager
 {
 private:
-    std::array<UniquePtr<Sample>, 2> _samples;
+    std::array<UniquePtr<Sample>, 3> _samples;
     std::size_t _currentSample = 0;
     Timer _timer;
 

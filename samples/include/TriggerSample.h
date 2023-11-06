@@ -4,18 +4,18 @@
 #include "Sample.h"
 #include "Color.h"
 
-struct Object
-{
-	Physics::BodyRef BodyRef{};
-	Physics::ColliderRef ColliderRef{};
-
-    float TriggerEnterTimer{};
-    float TriggerExitTimer{};
-    Color ObjectColor;
-};
-
 class TriggerSample final : public Sample, Physics::ContactListener
 {
+	struct Object
+	{
+		Physics::BodyRef BodyRef{};
+		Physics::ColliderRef ColliderRef{};
+
+	    float TriggerEnterTimer{};
+	    float TriggerExitTimer{};
+	    Color ObjectColor;
+	};
+
 public:
 	TriggerSample() noexcept;
 

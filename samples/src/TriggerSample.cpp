@@ -164,16 +164,6 @@ void TriggerSample::onUpdate(float deltaTime) noexcept
 
 void TriggerSample::onRender() noexcept
 {
-	if (_showQuadTrees)
-	{
-		const auto quadTreeBoundaries = _world.GetQuadTreeBoundaries();
-
-		for (const auto& boundary: quadTreeBoundaries)
-		{
-			Display::DrawBorder(boundary, Color::White(), 2.f);
-		}
-	}
-
     for (auto& object : _objects)
     {
         const auto& body = _world.GetBody(object.BodyRef);
@@ -254,6 +244,16 @@ void TriggerSample::onRender() noexcept
     {
         object.ObjectColor = _color;
     }
+
+	if (_showQuadTrees)
+	{
+		const auto quadTreeBoundaries = _world.GetQuadTreeBoundaries();
+
+		for (const auto& boundary: quadTreeBoundaries)
+		{
+			Display::DrawBorder(boundary, Color::White(), 2.f);
+		}
+	}
 }
 
 void TriggerSample::createBall() noexcept
