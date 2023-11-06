@@ -22,11 +22,11 @@ namespace Physics
 
     private:
 		std::unordered_set<ColliderPair, ColliderPairHash> _colliderPairs;
-
-		std::vector<Collider> _colliders;
-	    std::vector<std::size_t> _colliderGenerations;
-        std::vector<Body> _bodies;
-        std::vector<std::size_t> _bodyGenerations;
+	    HeapAllocator _heapAllocator {};
+	    MyVector<Body> _bodies;
+		MyVector<Collider> _colliders;
+	    MyVector<std::size_t> _colliderGenerations;
+	    MyVector<std::size_t> _bodyGenerations;
 		QuadTree _quadTree {Math::RectangleF(Math::Vec2F::Zero(), Math::Vec2F::One())};
 
         ContactListener* _contactListener { nullptr };

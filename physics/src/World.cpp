@@ -8,7 +8,11 @@
 
 namespace Physics
 {
-	World::World(std::size_t defaultBodySize) noexcept
+	World::World(std::size_t defaultBodySize) noexcept :
+		_bodies { StandardAllocator<Body> {_heapAllocator} },
+		_colliders { StandardAllocator<Collider> {_heapAllocator} },
+		_colliderGenerations { StandardAllocator<std::size_t> {_heapAllocator} },
+		_bodyGenerations { StandardAllocator<std::size_t> {_heapAllocator} }
 	{
 		if (defaultBodySize == 0)
 		{
