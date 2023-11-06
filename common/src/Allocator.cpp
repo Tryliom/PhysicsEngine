@@ -181,6 +181,22 @@ FreeListAllocator::FreeListAllocator(void* ptr, std::size_t size) noexcept
 	_allocations = 0;
 }
 
+void FreeListAllocator::Init(void* ptr, std::size_t size) noexcept
+{
+	if (_rootPtr != nullptr)
+	{
+		std::free(_rootPtr);
+	}
+
+	_rootPtr = ptr;
+	_size = size;
+	_freeBlocks = static_cast<FreeBlock*>(_rootPtr);
+	_freeBlocks->size = _size;
+	_freeBlocks->next = nullptr;
+	_currentPtr = _rootPtr;
+	_allocations = 0;
+}
+
 void* FreeListAllocator::Allocate(std::size_t size, std::size_t alignment) noexcept
 {
 	assert(size != 0 && "FreeListAllocator cannot allocated nothing");
@@ -240,6 +256,10 @@ void* FreeListAllocator::Allocate(std::size_t size, std::size_t alignment) noexc
 		_currentPtr = reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(alignedAddress) + size);
 		_allocations++;
 
+#ifdef TRACY_ENABLE
+		TracyAlloc(alignedAddress, size * alignment);
+#endif
+
 		return alignedAddress;
 	}
 
@@ -295,6 +315,10 @@ void FreeListAllocator::Deallocate(void* ptr) noexcept
 	}
 
 	_allocations--;
+
+#ifdef TRACY_ENABLE
+	TracyFree(ptr);
+#endif
 }
 
 void FreeListAllocator::Clear() noexcept

@@ -36,7 +36,7 @@ namespace Physics
 	private:
 		HeapAllocator _heapAllocator {};
 		LinearAllocator _nodesAllocator;
-		LinearAllocator _colliderAllocator;
+		FreeListAllocator _colliderAllocator;
 		MyVector<QuadNode> _nodes { StandardAllocator <QuadNode> {_nodesAllocator} };
 
         static constexpr std::size_t _maxDepth = 5;

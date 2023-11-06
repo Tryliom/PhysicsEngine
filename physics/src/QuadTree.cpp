@@ -4,20 +4,14 @@
 #include <tracy/Tracy.hpp>
 #endif
 
-#ifdef ON_MSVC
-#define MULTIPLIER 2
-#else
-#define MULTIPLIER 1
-#endif
-
 namespace Physics
 {
 	QuadNode::QuadNode(HeapAllocator& allocator) noexcept :
 		Colliders {StandardAllocator<SimplifiedCollider> {allocator}} {}
 
 	QuadTree::QuadTree(const Math::RectangleF& boundary) noexcept :
-		_nodesAllocator(std::malloc((getMaxNodes()) * sizeof(QuadNode) * MULTIPLIER), (getMaxNodes()) * sizeof(QuadNode) * MULTIPLIER),
-		_colliderAllocator(std::malloc(1 * sizeof(int)), 1 * sizeof(int))
+		_nodesAllocator(std::malloc((getMaxNodes()) * sizeof(QuadNode) * 2), (getMaxNodes()) * sizeof(QuadNode) * 2),
+		_colliderAllocator(std::malloc(16), 16)
     {
 		_nodes.resize(getMaxNodes(), QuadNode {_heapAllocator});
 
@@ -98,9 +92,10 @@ namespace Physics
 
         for (auto& childCollider: node.Colliders)
         {
+			if (childCollider.Ref == collider.Ref) continue;
             if (!Math::Intersect(childCollider.Bounds, collider.Bounds)) continue;
 
-            colliders.push_back(childCollider.Ref);
+            colliders.emplace_back(childCollider.Ref);
         }
 
         if (node.Divided)
@@ -169,7 +164,7 @@ namespace Physics
             {
                 node.Colliders.push_back(collider);
 
-                if (node.Colliders.size() >= _maxCapacity && getDepth(parentIndex) < _maxDepth)
+                if (node.Colliders.size() > _maxCapacity && getDepth(parentIndex) < _maxDepth)
                 {
                     subdivide(parentIndex);
                 }
@@ -184,7 +179,7 @@ namespace Physics
 #ifdef TRACY_ENABLE
 		ZoneNamedN(GetColliders, "QuadTree::GetColliders", true);
 #endif
-		const std::size_t size = GetAllCollidersCount() * sizeof(ColliderRef) * 2;
+		const std::size_t size = (GetAllCollidersCount() - 1) * sizeof(ColliderRef) * sizeof(AllocationHeader);
 
 		_colliderAllocator.Init(std::malloc(size), size);
 
@@ -225,6 +220,8 @@ namespace Physics
             node.Colliders.clear();
             node.Divided = false;
         }
+
+		_colliderAllocator.Init(std::malloc(16), 16);
 	}
 
 	std::vector<Math::RectangleF> QuadTree::GetBoundaries() const noexcept

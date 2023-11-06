@@ -163,6 +163,7 @@ class FreeListAllocator final : public Allocator
 		std::size_t size {};
 		FreeBlock* next {nullptr};
 	};
+
 	FreeBlock* _freeBlocks;
 
 public:
@@ -172,6 +173,8 @@ public:
 	 */
 	FreeListAllocator(void* ptr, std::size_t size) noexcept;
 	~FreeListAllocator() override = default;
+
+	void Init(void* ptr, std::size_t size) noexcept;
 
 	/**
 	 * @brief Allocate memory from allocator
@@ -186,6 +189,7 @@ public:
 	void Deallocate(void* ptr) noexcept override;
 
 	void Clear() noexcept;
+
 };
 
 /**
