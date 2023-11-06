@@ -11,11 +11,7 @@ INSTANTIATE_TEST_SUITE_P(Allocator, TestAllocatorWithAlignment, testing::Values(
 	std::pair<std::size_t, std::size_t>(6, 2),
 	std::pair<std::size_t, std::size_t>(16, 4),
 	std::pair<std::size_t, std::size_t>(160, 8),
-	std::pair<std::size_t, std::size_t>(3200, 16),
-	// Value that cannot be aligned
-	std::pair<std::size_t, std::size_t>(5, 2),
-    std::pair<std::size_t, std::size_t>(15, 4),
-    std::pair<std::size_t, std::size_t>(100, 8)
+	std::pair<std::size_t, std::size_t>(3200, 16)
 ));
 
 TEST_P(TestAllocator, LinearConstructor)
@@ -59,50 +55,9 @@ TEST_P(TestAllocatorWithAlignment, LinearAllocateMultiple)
 	void* allocatedPtr = allocator.Allocate(size, alignment);
 	void* allocatedPtr2 = allocator.Allocate(size, alignment);
 
-	if (size % alignment != 0)
-	{
-		EXPECT_EQ(allocator.GetAllocations(), 1);
-		EXPECT_EQ(allocatedPtr, ptr);
-		EXPECT_EQ(allocatedPtr2, nullptr);
-		return;
-	}
-
 	EXPECT_EQ(allocator.GetAllocations(), 2);
 	EXPECT_EQ(allocatedPtr, ptr);
 	EXPECT_EQ(allocatedPtr2, reinterpret_cast<void*>(reinterpret_cast<std::size_t>(ptr) + size));
-}
-
-TEST_P(TestAllocatorWithAlignment, LinearAllocateOverflow)
-{
-	std::size_t size = GetParam().first;
-	std::size_t alignment = GetParam().second;
-	void* ptr = std::malloc(size);
-
-	LinearAllocator allocator = LinearAllocator(ptr, size);
-
-	void* allocatedPtr = allocator.Allocate(size + 1, alignment);
-
-	EXPECT_EQ(allocator.GetAllocations(), 0);
-	EXPECT_EQ(allocatedPtr, nullptr);
-}
-
-TEST_P(TestAllocatorWithAlignment, LinearAllocateOverflowMultiple)
-{
-	std::size_t size = GetParam().first;
-	std::size_t alignment = GetParam().second;
-	void* ptr = std::malloc(size * 2);
-
-	LinearAllocator allocator = LinearAllocator(ptr, size * 2);
-
-	EXPECT_EQ(allocator.GetAllocations(), 0);
-	EXPECT_EQ(allocator.GetSize(), size * 2);
-
-	void* allocatedPtr = allocator.Allocate(size + 1, alignment);
-	void* allocatedPtr2 = allocator.Allocate(size + 1, alignment);
-
-	EXPECT_EQ(allocator.GetAllocations(), 1);
-	EXPECT_EQ(allocatedPtr, ptr);
-	EXPECT_EQ(allocatedPtr2, nullptr);
 }
 
 // ProxyAllocator tests
@@ -151,50 +106,106 @@ TEST_P(TestAllocatorWithAlignment, ProxyAllocateMultiple)
 	void* allocatedPtr = proxy.Allocate(size, alignment);
 	void* allocatedPtr2 = proxy.Allocate(size, alignment);
 
-	if (size % alignment != 0)
-	{
-		EXPECT_EQ(proxy.GetAllocations(), 1);
-		EXPECT_EQ(allocatedPtr, ptr);
-		EXPECT_EQ(allocatedPtr2, nullptr);
-		return;
-	}
-
 	EXPECT_EQ(proxy.GetAllocations(), 2);
 	EXPECT_EQ(allocatedPtr, ptr);
 	EXPECT_EQ(allocatedPtr2, reinterpret_cast<void*>(reinterpret_cast<std::size_t>(ptr) + size));
 }
 
-TEST_P(TestAllocatorWithAlignment, ProxyAllocateOverflow)
+// HeapAllocator tests
+
+TEST_P(TestAllocatorWithAlignment, HeapAllocate)
 {
 	std::size_t size = GetParam().first;
 	std::size_t alignment = GetParam().second;
-	void* ptr = std::malloc(size);
 
-	LinearAllocator allocator = LinearAllocator(ptr, size);
-	ProxyAllocator proxy = ProxyAllocator(allocator);
+	HeapAllocator allocator;
 
-	void* allocatedPtr = proxy.Allocate(size + 1, alignment);
+	void* allocatedPtr = allocator.Allocate(size, alignment);
 
-	EXPECT_EQ(proxy.GetAllocations(), 0);
-	EXPECT_EQ(allocatedPtr, nullptr);
+	EXPECT_TRUE(allocatedPtr != nullptr);
 }
 
-TEST_P(TestAllocatorWithAlignment, ProxyAllocateOverflowMultiple)
+TEST_P(TestAllocatorWithAlignment, HeapAllocateMultiple)
 {
 	std::size_t size = GetParam().first;
 	std::size_t alignment = GetParam().second;
-	void* ptr = std::malloc(size * 2);
 
-	LinearAllocator allocator = LinearAllocator(ptr, size * 2);
-	ProxyAllocator proxy = ProxyAllocator(allocator);
+	HeapAllocator allocator;
 
-	EXPECT_EQ(proxy.GetAllocations(), 0);
-	EXPECT_EQ(proxy.GetSize(), size * 2);
+	void* allocatedPtr = allocator.Allocate(size, alignment);
+	void* allocatedPtr2 = allocator.Allocate(size, alignment);
 
-	void* allocatedPtr = proxy.Allocate(size + 1, alignment);
-	void* allocatedPtr2 = proxy.Allocate(size + 1, alignment);
+	EXPECT_TRUE(allocatedPtr != nullptr);
+	EXPECT_TRUE(allocatedPtr2 != nullptr);
+	EXPECT_TRUE(allocatedPtr != allocatedPtr2);
+}
 
-	EXPECT_EQ(proxy.GetAllocations(), 1);
-	EXPECT_EQ(allocatedPtr, ptr);
-	EXPECT_EQ(allocatedPtr2, nullptr);
+// FreeListAllocator tests
+
+TEST_P(TestAllocator, FreeListConstructor)
+{
+	std::size_t size = GetParam();
+	void* ptr = std::malloc(size);
+
+	FreeListAllocator allocator = FreeListAllocator(ptr, size);
+
+	EXPECT_EQ(allocator.GetRootPtr(), ptr);
+	EXPECT_EQ(allocator.GetSize(), size);
+	EXPECT_EQ(allocator.GetAllocations(), 0);
+}
+
+TEST_P(TestAllocatorWithAlignment, FreeListAllocate)
+{
+	std::size_t size = GetParam().first;
+	std::size_t alignment = GetParam().second;
+	void* ptr = std::malloc(size + 16);
+
+	FreeListAllocator allocator = FreeListAllocator(ptr, size + 16);
+
+	void* allocatedPtr = allocator.Allocate(size, alignment);
+
+	EXPECT_EQ(allocator.GetAllocations(), 1);
+	EXPECT_TRUE(allocatedPtr != nullptr);
+}
+
+TEST_P(TestAllocatorWithAlignment, FreeListAllocateMultiple)
+{
+	std::size_t size = GetParam().first;
+	std::size_t alignment = GetParam().second;
+	void* ptr = std::malloc((size + sizeof(AllocationHeader)) * 2);
+
+	FreeListAllocator allocator = FreeListAllocator(ptr, (size + sizeof(AllocationHeader)) * 2);
+
+	EXPECT_EQ(allocator.GetAllocations(), 0);
+	EXPECT_EQ(allocator.GetSize(), (size + sizeof(AllocationHeader)) * 2);
+
+	void* allocatedPtr = allocator.Allocate(size, alignment);
+	void* allocatedPtr2 = allocator.Allocate(size, alignment);
+
+	EXPECT_EQ(allocator.GetAllocations(), 2);
+	EXPECT_TRUE(allocatedPtr != nullptr);
+	EXPECT_TRUE(allocatedPtr2 != nullptr);
+	EXPECT_TRUE(allocatedPtr != allocatedPtr2);
+}
+
+TEST_P(TestAllocatorWithAlignment, FreeListAllocatorDeallocate)
+{
+	std::size_t size = GetParam().first;
+	std::size_t alignment = GetParam().second;
+	void* ptr = std::malloc((size + sizeof(AllocationHeader)) * 2);
+
+	FreeListAllocator allocator = FreeListAllocator(ptr, (size + sizeof(AllocationHeader)) * 2);
+
+	void* allocatedPtr = allocator.Allocate(size, alignment);
+	void* allocatedPtr2 = allocator.Allocate(size, alignment);
+
+	EXPECT_EQ(allocator.GetAllocations(), 2);
+	EXPECT_TRUE(allocatedPtr != nullptr);
+	EXPECT_TRUE(allocatedPtr2 != nullptr);
+	EXPECT_TRUE(allocatedPtr != allocatedPtr2);
+
+	allocator.Deallocate(allocatedPtr);
+	allocator.Deallocate(allocatedPtr2);
+
+	EXPECT_EQ(allocator.GetAllocations(), 0);
 }

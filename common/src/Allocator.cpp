@@ -37,8 +37,7 @@ std::size_t Allocator::calculateAlignForwardAdjustment(const void* address, std:
 	return adjustment;
 }
 
-std::size_t Allocator::calculateAlignForwardAdjustmentWithHeader(const void* address, std::size_t alignment,
-                                                                       std::size_t headerSize)
+std::size_t Allocator::calculateAlignForwardAdjustmentWithHeader(const void* address, std::size_t alignment, std::size_t headerSize)
 {
 	auto adjustment = calculateAlignForwardAdjustment(address, alignment);
 	std::size_t neededSpace = headerSize;
@@ -93,7 +92,7 @@ void* LinearAllocator::Allocate(std::size_t size, std::size_t alignment) noexcep
 	assert(size != 0 && "Linear Allocator cannot allocated nothing");
 	const auto adjustment = calculateAlignForwardAdjustment(_currentPtr, alignment);
 
-	assert(_offset + adjustment + size < _size && "Linear Allocator has not enough space for this allocation");
+	assert(_offset + adjustment + size <= _size && "Linear Allocator has not enough space for this allocation");
 
 	auto* alignedAddress = reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(_currentPtr) + adjustment);
 	_currentPtr = reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(alignedAddress) + size);
@@ -169,4 +168,141 @@ void HeapAllocator::Deallocate(void* ptr) noexcept
 #endif
 
 	std::free(ptr);
+}
+
+FreeListAllocator::FreeListAllocator(void* ptr, std::size_t size) noexcept
+{
+	_rootPtr = ptr;
+	_size = size;
+	_freeBlocks = static_cast<FreeBlock*>(_rootPtr);
+	_freeBlocks->size = _size;
+	_freeBlocks->next = nullptr;
+	_currentPtr = _rootPtr;
+	_allocations = 0;
+}
+
+void* FreeListAllocator::Allocate(std::size_t size, std::size_t alignment) noexcept
+{
+	assert(size != 0 && "FreeListAllocator cannot allocated nothing");
+
+	FreeBlock* prevFreeBlock = nullptr;
+	FreeBlock* freeBlock = _freeBlocks;
+
+	while (freeBlock != nullptr)
+	{
+		const auto adjustment = calculateAlignForwardAdjustmentWithHeader(freeBlock, alignment, sizeof(AllocationHeader));
+		auto totalSize = size + adjustment;
+
+		if (freeBlock->size < totalSize)
+		{
+			prevFreeBlock = freeBlock;
+			freeBlock = freeBlock->next;
+			continue;
+		}
+
+		static_assert(sizeof(AllocationHeader) >= sizeof(FreeBlock), "sizeof(AllocationHeader) < sizeof(FreeBlock)");
+
+		if (freeBlock->size - totalSize <= sizeof(AllocationHeader))
+		{
+			totalSize = freeBlock->size;
+
+			if (prevFreeBlock != nullptr)
+			{
+				prevFreeBlock->next = freeBlock->next;
+			}
+			else
+			{
+				_freeBlocks = freeBlock->next;
+			}
+		}
+		else
+		{
+			auto* nextBlock = reinterpret_cast<FreeBlock*>(reinterpret_cast<std::uintptr_t>(freeBlock) + totalSize);
+			nextBlock->size = freeBlock->size - totalSize;
+			nextBlock->next = freeBlock->next;
+
+			if (prevFreeBlock != nullptr)
+			{
+				prevFreeBlock->next = nextBlock;
+			}
+			else
+			{
+				_freeBlocks = nextBlock;
+			}
+		}
+
+		const auto alignedAddress = reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(freeBlock) + adjustment);
+
+		auto* header = reinterpret_cast<AllocationHeader*>(reinterpret_cast<std::uintptr_t>(alignedAddress) - sizeof(AllocationHeader));
+		header->size = totalSize;
+		header->adjustment = adjustment;
+
+		_currentPtr = reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(alignedAddress) + size);
+		_allocations++;
+
+		return alignedAddress;
+	}
+
+	return nullptr;
+}
+
+void FreeListAllocator::Deallocate(void* ptr) noexcept
+{
+	if (ptr == nullptr) return;
+
+	const auto* header = reinterpret_cast<const AllocationHeader*>(reinterpret_cast<std::uintptr_t>(ptr) - sizeof(AllocationHeader));
+	const auto blockStart = reinterpret_cast<std::uintptr_t>(ptr) - header->adjustment;
+	const auto blockSize = header->size;
+	const auto blockEnd = blockStart + blockSize;
+
+	FreeBlock* prevFreeBlock = nullptr;
+	FreeBlock* freeBlock = _freeBlocks;
+
+	while (freeBlock != nullptr)
+	{
+		if (reinterpret_cast<std::uintptr_t>(freeBlock) >= blockEnd) break;
+
+		prevFreeBlock = freeBlock;
+		freeBlock = freeBlock->next;
+	}
+
+	if (prevFreeBlock == nullptr)
+	{
+		prevFreeBlock = reinterpret_cast<FreeBlock*>(blockStart);
+		prevFreeBlock->size = blockSize;
+		prevFreeBlock->next = _freeBlocks;
+
+		_freeBlocks = prevFreeBlock;
+	}
+	else if (reinterpret_cast<std::uintptr_t>(prevFreeBlock) + prevFreeBlock->size == blockStart)
+	{
+		prevFreeBlock->size += blockSize;
+	}
+	else
+	{
+		auto* temp = reinterpret_cast<FreeBlock*>(blockStart);
+		temp->size = blockSize;
+		temp->next = prevFreeBlock->next;
+
+		prevFreeBlock->next = temp;
+		prevFreeBlock = temp;
+	}
+
+	if (freeBlock != nullptr && reinterpret_cast<std::uintptr_t>(freeBlock) == blockEnd)
+	{
+		prevFreeBlock->size += freeBlock->size;
+		prevFreeBlock->next = freeBlock->next;
+	}
+
+	_allocations--;
+}
+
+void FreeListAllocator::Clear() noexcept
+{
+	_freeBlocks = static_cast<FreeBlock*>(_rootPtr);
+	_freeBlocks->size = _size;
+	_freeBlocks->next = nullptr;
+
+	_currentPtr = _rootPtr;
+	_allocations = 0;
 }
