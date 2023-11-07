@@ -25,7 +25,7 @@ void CollisionSample::onInit() noexcept
 	constexpr static int Circles = 0;
     constexpr static int Boxes = 30;
 
-	_objects.resize(Circles + Boxes + 4);
+	_objects.resize(Circles + Boxes + 4 * _wallSplit);
 
 	for (int i = 0; i < Circles; ++i)
 	{
@@ -229,7 +229,7 @@ void CollisionSample::createBox() noexcept
 
 void CollisionSample::createWalls() noexcept
 {
-	constexpr static float wallThickness = 10.f;
+	constexpr static float wallThickness = 3.f;
 	const auto top = Math::RectangleF{
 		{0.f, -wallThickness * 0.5f},
 		{static_cast<float>(Display::GetWidth()), wallThickness * 0.5f}
@@ -251,20 +251,29 @@ void CollisionSample::createWalls() noexcept
 	// Create walls
 	for (const auto& wall : walls)
 	{
-		_objects.emplace_back();
-		_objects.back().BodyRef = _world.CreateBody();
-		_objects.back().ColliderRef = _world.CreateCollider(_objects.back().BodyRef);
-		_objects.back().ObjectColor = _color;
+		// Separate the wall in _wallSplit smaller walls
+		for (int i = 0; i < _wallSplit; ++i)
+		{
+			const auto partWall = Math::RectangleF{
+				{wall.MinBound().X + wall.Width() / _wallSplit * i,       wall.MinBound().Y},
+				{wall.MinBound().X + wall.Width() / _wallSplit * (i + 1), wall.MaxBound().Y}
+			};
 
-		auto& collider = _world.GetCollider(_objects.back().ColliderRef);
-		auto& body = _world.GetBody(_objects.back().BodyRef);
+			_objects.emplace_back();
+			_objects.back().BodyRef = _world.CreateBody();
+			_objects.back().ColliderRef = _world.CreateCollider(_objects.back().BodyRef);
+			_objects.back().ObjectColor = _color;
 
-		body.SetPosition({ 0.f, 0.f });
-		body.SetVelocity({ 0.f, 0.f });
+			auto& collider = _world.GetCollider(_objects.back().ColliderRef);
+			auto& body = _world.GetBody(_objects.back().BodyRef);
 
-		collider.SetRectangle(wall);
-		collider.SetBounciness(1.f);
-		collider.SetCollisionType(Physics::ColliderCollisionType::Static);
+			body.SetPosition(Math::Vec2F::Zero());
+			body.SetVelocity(Math::Vec2F::Zero());
+
+			collider.SetRectangle(partWall);
+			collider.SetBounciness(1.f);
+			collider.SetCollisionType(Physics::ColliderCollisionType::Static);
+		}
 	}
 }
 
