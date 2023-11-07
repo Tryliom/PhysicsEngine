@@ -76,6 +76,12 @@ namespace Math
     public:
         [[nodiscard]] constexpr Vec2<T> MinBound() const noexcept { return _minBound; }
         [[nodiscard]] constexpr Vec2<T> MaxBound() const noexcept { return _maxBound; }
+		[[nodiscard]] constexpr T Width() const noexcept { return _maxBound.X - _minBound.X; }
+		[[nodiscard]] constexpr T Height() const noexcept { return _maxBound.Y - _minBound.Y; }
+	    [[nodiscard]] constexpr T Top() const noexcept { return _maxBound.Y; }
+	    [[nodiscard]] constexpr T Bottom() const noexcept { return _minBound.Y; }
+	    [[nodiscard]] constexpr T Left() const noexcept { return _minBound.X; }
+	    [[nodiscard]] constexpr T Right() const noexcept { return _maxBound.X; }
 
         void SetMinBound(Vec2<T> minBound) noexcept { _minBound = minBound; }
         void SetMaxBound(Vec2<T> maxBound) noexcept { _maxBound = maxBound; }

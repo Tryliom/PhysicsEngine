@@ -41,6 +41,7 @@ private:
 
     void createBall() noexcept;
 	void createBox() noexcept;
+	void createWalls() noexcept;
 
 	static Color generateRandomColor() noexcept;
 

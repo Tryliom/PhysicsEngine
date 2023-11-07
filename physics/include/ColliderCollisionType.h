@@ -1,7 +1,10 @@
 #pragma once
 
-enum class ColliderCollisionType
+namespace Physics
 {
-	Static,
-	Dynamic
-};
+	enum class ColliderCollisionType
+	{
+		Static,
+		Dynamic
+	};
+}

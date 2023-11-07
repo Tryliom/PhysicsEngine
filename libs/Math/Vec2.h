@@ -150,6 +150,16 @@ namespace Math
             return !operator==(vec);
         }
 
+		constexpr bool operator<(const Vec2<T>& vec) const noexcept
+		{
+			return X < vec.X && Y < vec.Y;
+		}
+
+		constexpr bool operator>(const Vec2<T>& vec) const noexcept
+		{
+			return X > vec.X && Y > vec.Y;
+		}
+
         [[nodiscard]] constexpr T& operator[](const int index)
         {
             switch (index)

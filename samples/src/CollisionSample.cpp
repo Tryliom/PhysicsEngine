@@ -22,10 +22,10 @@ void CollisionSample::onInit() noexcept
     Display::SetTitle("Trigger Sample");
     _world.SetContactListener(this);
 
-	constexpr static int Circles = 100;
-    constexpr static int Boxes = 0;
+	constexpr static int Circles = 0;
+    constexpr static int Boxes = 30;
 
-	_objects.resize(Circles + Boxes);
+	_objects.resize(Circles + Boxes + 4);
 
 	for (int i = 0; i < Circles; ++i)
 	{
@@ -36,6 +36,9 @@ void CollisionSample::onInit() noexcept
     {
         createBox();
     }
+
+	// Create walls
+	createWalls();
 }
 
 void CollisionSample::onDeinit() noexcept
@@ -74,7 +77,7 @@ void CollisionSample::onInput() noexcept
 			auto& body = _world.GetBody(object.BodyRef);
 			auto velocity = Math::Vec2F::Zero();
 
-			if (!_stop)
+			if (!_stop && _world.GetCollider(object.ColliderRef).GetCollisionType() == Physics::ColliderCollisionType::Dynamic)
 			{
 				const auto directionToCenter = Math::Vec2F{ screenWidth / 2.f, screenHeight / 2.f } - body.Position();
 
@@ -100,26 +103,9 @@ void CollisionSample::onInput() noexcept
 
 void CollisionSample::onUpdate(float deltaTime) noexcept
 {
-	const auto screenWidth = static_cast<float>(Display::GetWidth());
-	const auto screenHeight = static_cast<float>(Display::GetHeight());
-
     // Check if the object is outside the screen and if so, bounce it back
     for (auto& object : _objects)
     {
-        auto& body = _world.GetBody(object.BodyRef);
-
-        if (body.Position().X < 0.f || body.Position().X > screenWidth)
-        {
-            const auto velocity = body.Velocity();
-            body.SetVelocity({ -velocity.X, velocity.Y });
-        }
-
-        if (body.Position().Y < 0.f || body.Position().Y > screenHeight)
-        {
-            const auto velocity = body.Velocity();
-            body.SetVelocity({ velocity.X, -velocity.Y });
-        }
-
         if (object.TriggerEnterTimer > 0.f)
         {
             object.TriggerEnterTimer -= deltaTime;
@@ -153,54 +139,19 @@ void CollisionSample::onRender() noexcept
             {
                 const auto circle = collider.GetCircle() + body.Position();
 
-                if (object.TriggerEnterTimer > 0.f)
-                {
-                    Display::Draw({circle.Center(), circle.Radius() * 1.4f}, _triggerEnterColor);
-                }
-
-                if (object.TriggerExitTimer > 0.f)
-                {
-                    Display::Draw({circle.Center(), circle.Radius() * 1.2f}, _triggerExitColor);
-                }
-
                 Display::Draw(circle, object.ObjectColor);
             }
-                break;
+            break;
 
             case Math::ShapeType::Rectangle:
             {
                 const auto rect = collider.GetRectangle() + body.Position();
 
-                if (object.TriggerEnterTimer > 0.f)
-                {
-                    Display::Draw(rect, _triggerEnterColor, Math::Vec2F(1.4f, 1.4f));
-                }
-
-                if (object.TriggerExitTimer > 0.f)
-                {
-                    Display::Draw(rect, _triggerExitColor, Math::Vec2F(1.2f, 1.2f));
-                }
-
                 Display::Draw(rect, object.ObjectColor);
             }
-                break;
+            break;
 
             case Math::ShapeType::Polygon:
-            {
-                auto poly = collider.GetPolygon() + body.Position();
-
-                if (object.TriggerEnterTimer > 0.f)
-                {
-                    Display::Draw(poly, _triggerEnterColor, Math::Vec2F(1.4f, 1.4f));
-                }
-
-                if (object.TriggerExitTimer > 0.f)
-                {
-                    Display::Draw(poly, _triggerExitColor, Math::Vec2F(1.2f, 1.2f));
-                }
-
-                Display::Draw(poly, object.ObjectColor);
-            }
             case Math::ShapeType::None: break;
         }
 
@@ -276,6 +227,47 @@ void CollisionSample::createBox() noexcept
 	collider.SetBounciness(1.f);
 }
 
+void CollisionSample::createWalls() noexcept
+{
+	constexpr static float wallThickness = 10.f;
+	const auto top = Math::RectangleF{
+		{0.f, -wallThickness * 0.5f},
+		{static_cast<float>(Display::GetWidth()), wallThickness * 0.5f}
+	};
+	const auto bottom = Math::RectangleF{
+		{0.f, static_cast<float>(Display::GetHeight()) - wallThickness * 0.5f},
+		{static_cast<float>(Display::GetWidth()), static_cast<float>(Display::GetHeight()) + wallThickness * 0.5f}
+	};
+	const auto left = Math::RectangleF{
+		{-wallThickness * 0.5f, 0.f},
+		{wallThickness * 0.5f, static_cast<float>(Display::GetHeight())}
+	};
+	const auto right = Math::RectangleF{
+		{static_cast<float>(Display::GetWidth()) - wallThickness * 0.5f, 0.f},
+		{static_cast<float>(Display::GetWidth()) + wallThickness * 0.5f, static_cast<float>(Display::GetHeight())}
+	};
+	std::array<Math::RectangleF, 4> walls{ top, bottom, left, right };
+
+	// Create walls
+	for (const auto& wall : walls)
+	{
+		_objects.emplace_back();
+		_objects.back().BodyRef = _world.CreateBody();
+		_objects.back().ColliderRef = _world.CreateCollider(_objects.back().BodyRef);
+		_objects.back().ObjectColor = _color;
+
+		auto& collider = _world.GetCollider(_objects.back().ColliderRef);
+		auto& body = _world.GetBody(_objects.back().BodyRef);
+
+		body.SetPosition({ 0.f, 0.f });
+		body.SetVelocity({ 0.f, 0.f });
+
+		collider.SetRectangle(wall);
+		collider.SetBounciness(1.f);
+		collider.SetCollisionType(Physics::ColliderCollisionType::Static);
+	}
+}
+
 Color CollisionSample::generateRandomColor() noexcept
 {
 	return Color(
@@ -286,16 +278,7 @@ Color CollisionSample::generateRandomColor() noexcept
 	);
 }
 
-void CollisionSample::OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
-{
-    for (auto& object : _objects)
-    {
-        if (object.ColliderRef == colliderRef || object.ColliderRef == otherColliderRef)
-        {
-	        object.TriggerEnterTimer = _blinkTimer;
-        }
-    }
-}
+void CollisionSample::OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept {}
 
 void CollisionSample::OnCollisionExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
 {
@@ -305,7 +288,6 @@ void CollisionSample::OnCollisionExit(Physics::ColliderRef colliderRef, Physics:
     {
         if (object.ColliderRef == colliderRef || object.ColliderRef == otherColliderRef)
         {
-	        object.TriggerExitTimer = _blinkTimer;
 	        object.ObjectColor = randomColor;
         }
     }

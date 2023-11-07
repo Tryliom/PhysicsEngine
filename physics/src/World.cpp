@@ -137,13 +137,12 @@ namespace Physics
 				else
 				{
 					_contactListener->OnCollisionStay(colliderPair.A, colliderPair.B);
-				}
-			}
 
-			if (!colliderA.IsTrigger() && !colliderB.IsTrigger() &&
-				(colliderA.GetCollisionType() == ColliderCollisionType::Dynamic || colliderB.GetCollisionType() == ColliderCollisionType::Dynamic))
-			{
-				onCollision(colliderPair.A, colliderPair.B);
+					if (colliderA.GetCollisionType() == ColliderCollisionType::Dynamic || colliderB.GetCollisionType() == ColliderCollisionType::Dynamic)
+					{
+						onCollision(colliderPair.A, colliderPair.B);
+					}
+				}
 			}
 		}
 
@@ -174,13 +173,12 @@ namespace Physics
 		ZoneNamedN(onCollision, "World::onCollision", true);
 #endif
 
-		// Only check for circles and rectangles
-		const auto& colliderA = GetCollider(colliderRef);
-		const auto& colliderB = GetCollider(otherColliderRef);
+		auto colliderA = GetCollider(colliderRef);
+		auto colliderB = GetCollider(otherColliderRef);
 
 		if (colliderA.GetShapeType() == Math::ShapeType::Polygon || colliderB.GetShapeType() == Math::ShapeType::Polygon) return;
 
-		// 2x circle
+		// 2x circle, overlap already checked
 		if (colliderA.GetShapeType() == Math::ShapeType::Circle && colliderB.GetShapeType() == Math::ShapeType::Circle)
 		{
 			const auto& circleA = colliderA.GetCircle();
@@ -191,13 +189,6 @@ namespace Physics
 
 			const auto& positionA = bodyA.Position() + colliderA.GetOffset();
 			const auto& positionB = bodyB.Position() + colliderB.GetOffset();
-
-			const auto& radiusA = circleA.Radius();
-			const auto& radiusB = circleB.Radius();
-
-			const auto& distance = positionA.Distance(positionB);
-
-			if (distance > radiusA + radiusB) return;
 
 			const auto& normal = (positionA - positionB).Normalized();
 			const auto& relativeVelocity = bodyA.Velocity() - bodyB.Velocity();
@@ -219,21 +210,52 @@ namespace Physics
 				bodyB.SetVelocity(bodyB.Velocity() - impulse * bodyB.InverseMass());
 			}
 		}
-		// 2x rectangle
+		// 2x rectangle, overlap already checked
 		else if (colliderA.GetShapeType() == Math::ShapeType::Rectangle && colliderB.GetShapeType() == Math::ShapeType::Rectangle)
 		{
+			auto& bodyA = GetBody(colliderA.GetBodyRef());
+			auto& bodyB = GetBody(colliderB.GetBodyRef());
 
+			auto velocityA = bodyA.Velocity();
+			auto velocityB = bodyB.Velocity();
+
+			if (velocityA == Math::Vec2F::Zero() && velocityB == Math::Vec2F::Zero()) return;
+
+			const auto& positionA = bodyA.Position() + colliderA.GetOffset() + colliderA.GetRectangle().Center();
+			const auto& positionB = bodyB.Position() + colliderB.GetOffset() + colliderB.GetRectangle().Center();
+
+			const auto& normal = (positionA - positionB).Normalized();
+			const auto& relativeVelocity = bodyA.Velocity() - bodyB.Velocity();
+			const auto& velocityAlongNormal = relativeVelocity.Dot(normal);
+
+			if (velocityAlongNormal > 0) return;
+
+			const auto& restitution = std::max(colliderA.GetBounciness(), colliderB.GetBounciness());
+			const auto& impulseMagnitude = -restitution * velocityAlongNormal;
+			const auto& impulse = impulseMagnitude * normal;
+
+			if (colliderA.GetCollisionType() == ColliderCollisionType::Dynamic)
+			{
+				bodyA.SetVelocity(bodyA.Velocity() + impulse * bodyA.InverseMass());
+			}
+
+			if (colliderB.GetCollisionType() == ColliderCollisionType::Dynamic)
+			{
+				bodyB.SetVelocity(bodyB.Velocity() - impulse * bodyB.InverseMass());
+			}
 		}
-		// 1x circle, 1x rectangle
+		// 1x circle, 1x rectangle, overlap already checked
 		else if (colliderA.GetShapeType() == Math::ShapeType::Circle && colliderB.GetShapeType() == Math::ShapeType::Rectangle ||
 				colliderA.GetShapeType() == Math::ShapeType::Rectangle && colliderB.GetShapeType() == Math::ShapeType::Circle)
 		{
-			std::array<ColliderRef, 2> colliderRefs { colliderRef, otherColliderRef };
+			std::array<ColliderRef, 2> colliderRefs { colliderA.GetColliderRef(), colliderB.GetColliderRef() };
 			std::size_t indexCircle = colliderA.GetShapeType() == Math::ShapeType::Circle ? 0 : 1;
 			std::size_t indexRectangle = colliderA.GetShapeType() == Math::ShapeType::Rectangle ? 0 : 1;
 
 			auto& circle = GetCollider(colliderRefs[indexCircle]);
 			auto& rectangle = GetCollider(colliderRefs[indexRectangle]);
+
+
 		}
 
 	}
