@@ -22,7 +22,7 @@ void CollisionSample::onInit() noexcept
     Display::SetTitle("Trigger Sample");
     _world.SetContactListener(this);
 
-	constexpr static int Circles = 10;
+	constexpr static int Circles = 100;
     constexpr static int Boxes = 0;
 
 	_objects.resize(Circles + Boxes);
@@ -240,10 +240,10 @@ void CollisionSample::createBall() noexcept
 	auto& body = _world.GetBody(_objects.back().BodyRef);
 
 	body.SetPosition({ Math::Random::Range(0.f, screenWidth), Math::Random::Range(0.f, screenHeight) });
-	body.SetVelocity((screenCenter - body.Position()).Normalized() * Math::Random::Range(100.f, 300.f));
+	body.SetVelocity((screenCenter - body.Position()).Normalized() * 100.f);
 
 	collider.SetCircle(circle);
-	collider.SetBounciness(bounciness);
+	collider.SetBounciness(1.f);
 }
 
 void CollisionSample::createBox() noexcept
@@ -270,10 +270,10 @@ void CollisionSample::createBox() noexcept
 	auto& body = _world.GetBody(_objects.back().BodyRef);
 
 	body.SetPosition({ Math::Random::Range(0.f, screenWidth), Math::Random::Range(0.f, screenHeight) });
-	body.SetVelocity((screenCenter - body.Position()).Normalized() * Math::Random::Range(100.f, 300.f));
+	body.SetVelocity((screenCenter - body.Position()).Normalized() * 100.f);
 
 	collider.SetRectangle(rect);
-	collider.SetBounciness(Math::Random::Range(0.1f, 0.9f));
+	collider.SetBounciness(1.f);
 }
 
 Color CollisionSample::generateRandomColor() noexcept
