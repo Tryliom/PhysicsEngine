@@ -19,7 +19,7 @@ CollisionSample::CollisionSample() noexcept :
 
 void CollisionSample::onInit() noexcept
 {
-    Display::SetTitle("Trigger Sample");
+    Display::SetTitle("Collision Sample");
     _world.SetContactListener(this);
 
 	constexpr static int Circles = 0;
