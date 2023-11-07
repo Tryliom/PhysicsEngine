@@ -229,7 +229,7 @@ namespace Physics
 
 			if (velocityAlongNormal > 0) return;
 
-			const auto& restitution = std::max(colliderA.GetBounciness(), colliderB.GetBounciness());
+			const auto& restitution = std::min(colliderA.GetBounciness(), colliderB.GetBounciness());
 			const auto& impulseMagnitude = -restitution * velocityAlongNormal;
 			const auto& impulse = impulseMagnitude * normal;
 
