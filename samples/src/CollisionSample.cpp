@@ -1,13 +1,13 @@
-#include "TriggerSample.h"
+#include "CollisionSample.h"
 
 #include "Random.h"
 #include "Display.h"
 #include "Input.h"
 
-TriggerSample::TriggerSample() noexcept :
+CollisionSample::CollisionSample() noexcept :
 	Sample(
-		"Triggers",
-		"Sample showing how to use triggers with circles and boxes.\n"
+		"Collisions",
+		"Sample showing how to use colliders with circles and boxes.\n"
 		"Controls:\n"
 		"Space -> Freeze/unfreeze all objects\n"
 		"B -> Toggle boxes around objects\n"
@@ -17,16 +17,15 @@ TriggerSample::TriggerSample() noexcept :
 	)
 {}
 
-void TriggerSample::onInit() noexcept
+void CollisionSample::onInit() noexcept
 {
     Display::SetTitle("Trigger Sample");
     _world.SetContactListener(this);
 
 	constexpr static int Circles = 10;
     constexpr static int Boxes = 0;
-    constexpr static int Polygons = 0;
 
-	_objects.resize(Circles + Boxes + Polygons);
+	_objects.resize(Circles + Boxes);
 
 	for (int i = 0; i < Circles; ++i)
 	{
@@ -37,30 +36,14 @@ void TriggerSample::onInit() noexcept
     {
         createBox();
     }
-
-    for (int i = 0; i < Polygons; ++i)
-    {
-        createPolygon();
-    }
-
-	_mouseObject.BodyRef = _world.CreateBody();
-	_mouseObject.ColliderRef = _world.CreateCollider(_mouseObject.BodyRef);
-
-	auto& collider = _world.GetCollider(_mouseObject.ColliderRef);
-
-	collider.SetCircle({ {0.f, 0.f}, 3.f });
-	collider.SetIsTrigger(true);
-
-	_world.GetBody(_mouseObject.BodyRef).SetPosition({ 0.f, 0.f });
 }
 
-void TriggerSample::onDeinit() noexcept
+void CollisionSample::onDeinit() noexcept
 {
     _objects.clear();
 }
 
-
-void TriggerSample::onInput() noexcept
+void CollisionSample::onInput() noexcept
 {
 	const auto screenWidth = static_cast<float>(Display::GetWidth());
 	const auto screenHeight = static_cast<float>(Display::GetHeight());
@@ -115,7 +98,7 @@ void TriggerSample::onInput() noexcept
 	}
 }
 
-void TriggerSample::onUpdate(float deltaTime) noexcept
+void CollisionSample::onUpdate(float deltaTime) noexcept
 {
 	const auto screenWidth = static_cast<float>(Display::GetWidth());
 	const auto screenHeight = static_cast<float>(Display::GetHeight());
@@ -155,14 +138,9 @@ void TriggerSample::onUpdate(float deltaTime) noexcept
             object.TriggerExitTimer = 0.f;
         }
     }
-
-	// Update the mouse object
-	auto& mouseBody = _world.GetBody(_mouseObject.BodyRef);
-
-	mouseBody.SetPosition(Display::GetMousePosition());
 }
 
-void TriggerSample::onRender() noexcept
+void CollisionSample::onRender() noexcept
 {
     for (auto& object : _objects)
     {
@@ -232,19 +210,6 @@ void TriggerSample::onRender() noexcept
         }
     }
 
-	// Draw the mouse object
-	const auto& mouseBody = _world.GetBody(_mouseObject.BodyRef);
-	const auto& mouseCollider = _world.GetCollider(_mouseObject.ColliderRef);
-
-	Display::Draw(mouseCollider.GetCircle() + mouseBody.Position(), Color::White());
-	if (_showBoxes) Display::DrawBorder(mouseCollider.GetBounds(), Color::White(), 2.f);
-
-    // Clear object color
-    for (auto& object : _objects)
-    {
-        object.ObjectColor = _color;
-    }
-
 	if (_showQuadTrees)
 	{
 		const auto quadTreeBoundaries = _world.GetQuadTreeBoundaries();
@@ -256,19 +221,20 @@ void TriggerSample::onRender() noexcept
 	}
 }
 
-void TriggerSample::createBall() noexcept
+void CollisionSample::createBall() noexcept
 {
 	const static auto screenWidth = static_cast<float>(Display::GetWidth());
 	const static auto screenHeight = static_cast<float>(Display::GetHeight());
 	const static auto screenCenter = Math::Vec2F{ screenWidth / 2.f, screenHeight / 2.f };
 	const float minRadius = 10.f;
-	const float maxRadius = 30.f;
+	const float bounciness = Math::Random::Range(0.f, 1.f);
 
-	auto circle = Math::CircleF{ {0.f, 0.f}, Math::Random::Range(minRadius, maxRadius) };
+	auto circle = Math::CircleF{ {0.f, 0.f}, minRadius + bounciness * 20.f };
 
 	_objects.emplace_back();
 	_objects.back().BodyRef = _world.CreateBody();
 	_objects.back().ColliderRef = _world.CreateCollider(_objects.back().BodyRef);
+	_objects.back().ObjectColor = _color;
 
 	auto& collider = _world.GetCollider(_objects.back().ColliderRef);
 	auto& body = _world.GetBody(_objects.back().BodyRef);
@@ -277,10 +243,10 @@ void TriggerSample::createBall() noexcept
 	body.SetVelocity((screenCenter - body.Position()).Normalized() * Math::Random::Range(100.f, 300.f));
 
 	collider.SetCircle(circle);
-	collider.SetIsTrigger(true);
+	collider.SetBounciness(bounciness);
 }
 
-void TriggerSample::createBox() noexcept
+void CollisionSample::createBox() noexcept
 {
 	const static auto screenWidth = static_cast<float>(Display::GetWidth());
 	const static auto screenHeight = static_cast<float>(Display::GetHeight());
@@ -298,6 +264,7 @@ void TriggerSample::createBox() noexcept
 	_objects.emplace_back();
 	_objects.back().BodyRef = _world.CreateBody();
 	_objects.back().ColliderRef = _world.CreateCollider(_objects.back().BodyRef);
+	_objects.back().ObjectColor = _color;
 
 	auto& collider = _world.GetCollider(_objects.back().ColliderRef);
 	auto& body = _world.GetBody(_objects.back().BodyRef);
@@ -306,72 +273,51 @@ void TriggerSample::createBox() noexcept
 	body.SetVelocity((screenCenter - body.Position()).Normalized() * Math::Random::Range(100.f, 300.f));
 
 	collider.SetRectangle(rect);
-	collider.SetIsTrigger(true);
+	collider.SetBounciness(Math::Random::Range(0.1f, 0.9f));
 }
 
-void TriggerSample::createPolygon() noexcept
+Color CollisionSample::generateRandomColor() noexcept
 {
-	const static auto screenWidth = static_cast<float>(Display::GetWidth());
-	const static auto screenHeight = static_cast<float>(Display::GetHeight());
-	const static auto screenCenter = Math::Vec2F{ screenWidth / 2.f, screenHeight / 2.f };
-	const int randomVertices = Math::Random::Range(3, 8);
-	const float min = 10.f;
-	const float max = 70.f;
-
-	std::vector<Math::Vec2F> vertices;
-
-	vertices.resize(randomVertices);
-
-	for (int i = 0; i < randomVertices; ++i)
-	{
-		vertices.emplace_back(Math::Random::Range(min, max), Math::Random::Range(min, max));
-	}
-
-	auto poly = Math::PolygonF{ vertices };
-
-	_objects.emplace_back();
-	_objects.back().BodyRef = _world.CreateBody();
-	_objects.back().ColliderRef = _world.CreateCollider(_objects.back().BodyRef);
-
-	auto& collider = _world.GetCollider(_objects.back().ColliderRef);
-	auto& body = _world.GetBody(_objects.back().BodyRef);
-
-	body.SetPosition({ Math::Random::Range(0.f, screenWidth), Math::Random::Range(0.f, screenHeight) });
-	body.SetVelocity((screenCenter - body.Position()).Normalized() * Math::Random::Range(100.f, 300.f));
-
-	collider.SetPolygon(poly);
-	collider.SetIsTrigger(true);
+	return Color(
+		Math::Random::Range(0, 255),
+		Math::Random::Range(0, 255),
+		Math::Random::Range(0, 255),
+		255
+	);
 }
 
-void TriggerSample::OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
+void CollisionSample::OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
 {
-    /*for (auto& _object : _objects)
+    for (auto& object : _objects)
     {
-        if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
+        if (object.ColliderRef == colliderRef || object.ColliderRef == otherColliderRef)
         {
-            _object.TriggerEnterTimer = _blinkTimer;
-        }
-    }*/
-}
-
-void TriggerSample::OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
-{
-    /*for (auto& _object : _objects)
-    {
-        if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
-        {
-            _object.TriggerExitTimer = _blinkTimer;
-        }
-    }*/
-}
-
-void TriggerSample::OnTriggerStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
-{
-    for (auto& _object : _objects)
-    {
-        if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
-        {
-            _object.ObjectColor = _triggerStayColor;
+	        object.TriggerEnterTimer = _blinkTimer;
         }
     }
+}
+
+void CollisionSample::OnCollisionExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
+{
+	const auto randomColor = generateRandomColor();
+
+    for (auto& object : _objects)
+    {
+        if (object.ColliderRef == colliderRef || object.ColliderRef == otherColliderRef)
+        {
+	        object.TriggerExitTimer = _blinkTimer;
+	        object.ObjectColor = randomColor;
+        }
+    }
+}
+
+void CollisionSample::OnCollisionStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
+{
+	for (auto& _object : _objects)
+	{
+		if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
+		{
+			_object.ObjectColor = _triggerStayColor;
+		}
+	}
 }

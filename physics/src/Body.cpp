@@ -43,11 +43,17 @@ namespace Physics
 		return _mass;
 	}
 
+	[[nodiscard]] float Body::InverseMass() const noexcept
+	{
+		return _inverseMass;
+	}
+
 	void Body::SetMass(float mass) noexcept
 	{
 		if (mass <= 0.f) return;
 
 		_mass = mass;
+		_inverseMass = 1.f / mass;
 	}
 
 	void Body::ApplyForce(Math::Vec2F force) noexcept
@@ -62,11 +68,13 @@ namespace Physics
 		_position = Math::Vec2F(0, 0);
 		_velocity = Math::Vec2F(0, 0);
 		_force = Math::Vec2F(0, 0);
+		_inverseMass = 0.f;
 	}
 
 	void Body::Enable() noexcept
 	{
 		_mass = 1.f;
+		_inverseMass = 1.f;
 	}
 
 	[[nodiscard]] bool Body::IsEnabled() const noexcept

@@ -112,46 +112,130 @@ namespace Physics
 
 		for (auto& colliderPair : newColliderPairs)
 		{
-			// TriggerInfo enter
+			Collider& colliderA = GetCollider(colliderPair.A);
+			Collider& colliderB = GetCollider(colliderPair.B);
+
 			if (_colliderPairs.find(colliderPair) == _colliderPairs.end())
 			{
-				Collider& colliderA = GetCollider(colliderPair.A);
-				Collider& colliderB = GetCollider(colliderPair.B);
-
+				// Enter
 				if (colliderA.IsTrigger() || colliderB.IsTrigger())
 				{
 					_contactListener->OnTriggerEnter(colliderPair.A, colliderPair.B);
 				}
+				else
+				{
+					_contactListener->OnCollisionEnter(colliderPair.A, colliderPair.B);
+				}
 			}
-				// TriggerInfo stay
 			else
 			{
-				Collider& colliderA = GetCollider(colliderPair.A);
-				Collider& colliderB = GetCollider(colliderPair.B);
-
+				// Stay
 				if (colliderA.IsTrigger() || colliderB.IsTrigger())
 				{
 					_contactListener->OnTriggerStay(colliderPair.A, colliderPair.B);
 				}
+				else
+				{
+					_contactListener->OnCollisionStay(colliderPair.A, colliderPair.B);
+				}
+			}
+
+			if (!colliderA.IsTrigger() && !colliderB.IsTrigger() &&
+				(colliderA.GetCollisionType() == ColliderCollisionType::Dynamic || colliderB.GetCollisionType() == ColliderCollisionType::Dynamic))
+			{
+				onCollision(colliderPair.A, colliderPair.B);
 			}
 		}
 
+		// Exit
 		for (auto& colliderPair : _colliderPairs)
 		{
-			// TriggerInfo exit
-			if (newColliderPairs.find(colliderPair) == newColliderPairs.end())
-			{
-				Collider& colliderA = GetCollider(colliderPair.A);
-				Collider& colliderB = GetCollider(colliderPair.B);
+			if (newColliderPairs.find(colliderPair) != newColliderPairs.end()) continue;
 
-				if (colliderA.IsTrigger() || colliderB.IsTrigger())
-				{
-					_contactListener->OnTriggerExit(colliderPair.A, colliderPair.B);
-				}
+			Collider& colliderA = GetCollider(colliderPair.A);
+			Collider& colliderB = GetCollider(colliderPair.B);
+
+			if (colliderA.IsTrigger() || colliderB.IsTrigger())
+			{
+				_contactListener->OnTriggerExit(colliderPair.A, colliderPair.B);
+			}
+			else
+			{
+				_contactListener->OnCollisionExit(colliderPair.A, colliderPair.B);
 			}
 		}
 
 		_colliderPairs = newColliderPairs;
+	}
+
+	void World::onCollision(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
+	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(onCollision, "World::onCollision", true);
+#endif
+
+		// Only check for circles and rectangles
+		const auto& colliderA = GetCollider(colliderRef);
+		const auto& colliderB = GetCollider(otherColliderRef);
+
+		if (colliderA.GetShapeType() == Math::ShapeType::Polygon || colliderB.GetShapeType() == Math::ShapeType::Polygon) return;
+
+		// 2x circle
+		if (colliderA.GetShapeType() == Math::ShapeType::Circle && colliderB.GetShapeType() == Math::ShapeType::Circle)
+		{
+			const auto& circleA = colliderA.GetCircle();
+			const auto& circleB = colliderB.GetCircle();
+
+			auto& bodyA = GetBody(colliderA.GetBodyRef());
+			auto& bodyB = GetBody(colliderB.GetBodyRef());
+
+			const auto& positionA = bodyA.Position() + colliderA.GetOffset();
+			const auto& positionB = bodyB.Position() + colliderB.GetOffset();
+
+			const auto& radiusA = circleA.Radius();
+			const auto& radiusB = circleB.Radius();
+
+			const auto& distance = positionA.Distance(positionB);
+
+			if (distance > radiusA + radiusB) return;
+
+			const auto& normal = (positionA - positionB).Normalized();
+			const auto& relativeVelocity = bodyA.Velocity() - bodyB.Velocity();
+			const auto& velocityAlongNormal = relativeVelocity.Dot(normal);
+
+			if (velocityAlongNormal > 0) return;
+
+			const auto& restitution = std::min(colliderA.GetBounciness(), colliderB.GetBounciness());
+			const auto& impulseMagnitude = -restitution * velocityAlongNormal;
+			const auto& impulse = impulseMagnitude * normal;
+
+			if (colliderA.GetCollisionType() == ColliderCollisionType::Dynamic)
+			{
+				bodyA.SetVelocity(bodyA.Velocity() + impulse * bodyA.InverseMass());
+			}
+
+			if (colliderB.GetCollisionType() == ColliderCollisionType::Dynamic)
+			{
+				bodyB.SetVelocity(bodyB.Velocity() - impulse * bodyB.InverseMass());
+			}
+		}
+		// 2x rectangle
+		else if (colliderA.GetShapeType() == Math::ShapeType::Rectangle && colliderB.GetShapeType() == Math::ShapeType::Rectangle)
+		{
+
+		}
+		// 1x circle, 1x rectangle
+		else if (colliderA.GetShapeType() == Math::ShapeType::Circle && colliderB.GetShapeType() == Math::ShapeType::Rectangle ||
+				colliderA.GetShapeType() == Math::ShapeType::Rectangle && colliderB.GetShapeType() == Math::ShapeType::Circle)
+		{
+			std::array<ColliderRef, 2> colliderRefs { colliderRef, otherColliderRef };
+			std::size_t indexCircle = colliderA.GetShapeType() == Math::ShapeType::Circle ? 0 : 1;
+			std::size_t indexRectangle = colliderA.GetShapeType() == Math::ShapeType::Rectangle ? 0 : 1;
+
+			auto& circle = GetCollider(colliderRefs[indexCircle]);
+			auto& rectangle = GetCollider(colliderRefs[indexRectangle]);
+		}
+
 	}
 
 	bool World::overlap(const Collider& colliderA, const Collider& colliderB) noexcept

@@ -28,5 +28,9 @@ namespace Physics
          * @param otherColliderRef The colliderRef of the collider that is colliding with.
          */
 		virtual void OnTriggerStay(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept = 0;
+
+		virtual void OnCollisionEnter(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept = 0;
+		virtual void OnCollisionExit(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept = 0;
+		virtual void OnCollisionStay(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept = 0;
 	};
 }

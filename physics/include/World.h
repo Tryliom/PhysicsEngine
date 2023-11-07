@@ -44,6 +44,12 @@ namespace Physics
 		 */
 		void processColliders() noexcept;
 		/**
+		 * @brief Calculate the collisions of the colliders
+		 * @param colliderRef The collider to check the collisions for
+		 * @param otherColliderRef The other collider to check the collisions for
+		 */
+		void onCollision(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept;
+		/**
 		 * @brief Check if the colliders overlap
 		 * @param colliderA	 The first collider
 		 * @param colliderB  The second collider

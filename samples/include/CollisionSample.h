@@ -4,7 +4,7 @@
 #include "Sample.h"
 #include "Color.h"
 
-class TriggerSample final : public Sample, Physics::ContactListener
+class CollisionSample final : public Sample, Physics::ContactListener
 {
 	struct Object
 	{
@@ -17,11 +17,10 @@ class TriggerSample final : public Sample, Physics::ContactListener
 	};
 
 public:
-	TriggerSample() noexcept;
+	CollisionSample() noexcept;
 
 private:
 	std::vector<Object> _objects;
-	Object _mouseObject;
 
 	bool _stop {};
 	bool _showBoxes {};
@@ -42,14 +41,15 @@ private:
 
     void createBall() noexcept;
 	void createBox() noexcept;
-	void createPolygon() noexcept;
+
+	static Color generateRandomColor() noexcept;
 
 public:
-    void OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
-    void OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
-    void OnTriggerStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
+    void OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
+    void OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
+    void OnTriggerStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
 
-	void OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
-	void OnCollisionExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
-	void OnCollisionStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
+	void OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
+	void OnCollisionExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
+	void OnCollisionStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
 };

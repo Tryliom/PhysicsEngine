@@ -3,6 +3,7 @@
 #include "TriggerSample.h"
 #include "PlanetSystemSample.h"
 #include "FreeTriggerSample.h"
+#include "CollisionSample.h"
 #include "Input.h"
 #include "Display.h"
 
@@ -15,8 +16,9 @@
 #endif
 
 SampleManager::SampleManager() noexcept : _timer(), _samples({
-	MakeUnique<Sample, FreeTriggerSample>(),
+	MakeUnique<Sample, CollisionSample>(),
     MakeUnique<Sample, TriggerSample>(),
+	MakeUnique<Sample, FreeTriggerSample>(),
     MakeUnique<Sample, PlanetSystemSample>()
 })
 {

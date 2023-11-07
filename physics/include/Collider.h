@@ -2,6 +2,7 @@
 
 #include "Shape.h"
 #include "Ref.h"
+#include "ColliderCollisionType.h"
 
 #include <variant>
 
@@ -26,6 +27,8 @@ namespace Physics
 
 		float _bounciness { 0.f };
 		float _friction { 0.f };
+
+		ColliderCollisionType _collisionType { ColliderCollisionType::Dynamic };
 
 		bool _isTrigger { false };
 		bool _isEnabled { false };
@@ -72,6 +75,11 @@ namespace Physics
          * @return True if the collider is a trigger
          */
 		[[nodiscard]] bool IsTrigger() const noexcept;
+		/**
+		 * @brief Get the collision type of the collider
+		 * @return the collision type
+		 */
+		[[nodiscard]] ColliderCollisionType GetCollisionType() const noexcept;
 
 		/**
 		 * @brief Check if the collider is free
@@ -122,6 +130,11 @@ namespace Physics
          * @param isTrigger true if the collider is a trigger
          */
 		void SetIsTrigger(bool isTrigger) noexcept;
+		/**
+		 * @brief Set the collision type of the collider
+		 * @param collisionType the collision type
+		 */
+		void SetCollisionType(ColliderCollisionType collisionType) noexcept;
 
         /**
          * @brief Set the shape of the collider to a circle, the circle center is not used

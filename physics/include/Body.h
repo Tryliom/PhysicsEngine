@@ -23,6 +23,7 @@ namespace Physics
 		Math::Vec2F _velocity = Math::Vec2F(0, 0);
 		Math::Vec2F _force = Math::Vec2F(0, 0);
 		float _mass = -1.f;
+		float _inverseMass = 0.f;
 
 	public:
         /**
@@ -45,6 +46,11 @@ namespace Physics
          * @return The mass of the body
          */
 		[[nodiscard]] float Mass() const noexcept;
+		/**
+		 * @brief Get the inverse mass of the body
+		 * @return The inverse mass of the body
+		 */
+		[[nodiscard]] float InverseMass() const noexcept;
 
         /**
          * @brief Set the position of the body
