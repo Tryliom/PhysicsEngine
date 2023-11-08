@@ -10,8 +10,7 @@ namespace Physics
 		Colliders {StandardAllocator<SimplifiedCollider> {allocator}} {}
 
 	QuadTree::QuadTree(const Math::RectangleF& boundary) noexcept :
-		_nodesAllocator(std::malloc((getMaxNodes()) * sizeof(QuadNode) * 2), (getMaxNodes()) * sizeof(QuadNode) * 2),
-		_colliderAllocator(std::malloc(sizeof(ColliderRef) * sizeof(AllocationHeader)), sizeof(ColliderRef) * sizeof(AllocationHeader))
+		_nodesAllocator(std::malloc((getMaxNodes()) * sizeof(QuadNode) * 2), (getMaxNodes()) * sizeof(QuadNode) * 2)
     {
 		_nodes.resize(getMaxNodes(), QuadNode {_heapAllocator});
 
@@ -84,31 +83,6 @@ namespace Physics
         }
     }
 
-	void QuadTree::regeneratePairs(std::size_t index, SimplifiedCollider collider) noexcept
-    {
-        const auto& node = _nodes[index];
-
-        for (auto& childCollider: node.Colliders)
-        {
-			if (childCollider.Ref == collider.Ref) continue;
-            if (!Math::Intersect(childCollider.Bounds, collider.Bounds)) continue;
-
-            _colliders.push_back(childCollider.Ref);
-        }
-
-        if (node.Divided)
-        {
-            for (auto i = 1; i <= 4; i++)
-            {
-                const auto& child = _nodes[index * 4 + i];
-
-                if (!Math::Intersect(child.Boundary, collider.Bounds)) continue;
-
-                regeneratePairs(index * 4 + i, collider);
-            }
-        }
-    }
-
 	void QuadTree::Insert(SimplifiedCollider collider) noexcept
 	{
 #ifdef TRACY_ENABLE
@@ -168,19 +142,71 @@ namespace Physics
         }
 	}
 
-	const MyVector<ColliderRef>& QuadTree::GetColliders(SimplifiedCollider collider) noexcept
+	void QuadTree::addAllPossiblePairs(std::size_t index, ColliderRef collider) noexcept
+	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(addAllPossiblePairs, "QuadTree::addAllPossiblePairs", true);
+#endif
+
+		const auto& node = _nodes[index];
+
+		for (auto i = 0; i < node.Colliders.size(); i++)
+		{
+			const auto& otherCollider = node.Colliders[i];
+
+			if (collider == otherCollider.Ref) continue;
+
+			if (Math::Intersect(otherCollider.Bounds, _nodes[index].Colliders[i].Bounds))
+			{
+				_allPossiblePairs.push_back(ColliderPair{collider, otherCollider.Ref});
+			}
+		}
+
+		if (node.Divided)
+		{
+			for (auto i = 1; i <= 4; i++)
+			{
+				addAllPossiblePairs(index * 4 + i, collider);
+			}
+		}
+	}
+
+	const MyVector<ColliderPair>& QuadTree::GetAllPossiblePairs() noexcept
 	{
 #ifdef TRACY_ENABLE
 		ZoneNamedN(GetColliders, "QuadTree::GetColliders", true);
 #endif
-		const std::size_t size = GetAllCollidersCount() * sizeof(ColliderRef) * sizeof(AllocationHeader);
+		for (std::size_t parentIndex = 0; parentIndex < _nodes.size(); parentIndex++)
+		{
+			const auto& node = _nodes[parentIndex];
 
-        _colliders.clear();
-		_colliderAllocator.Init(std::malloc(size), size);
+			for (auto i = 0; i < node.Colliders.size(); i++)
+			{
+				const auto& collider = node.Colliders[i];
 
-        regeneratePairs(0, collider);
+				for (auto j = i + 1; j < node.Colliders.size(); j++)
+				{
+					const auto& otherCollider = node.Colliders[j];
 
-        return _colliders;
+					if (collider.Ref == otherCollider.Ref) continue;
+
+					if (Math::Intersect(collider.Bounds, otherCollider.Bounds))
+					{
+						_allPossiblePairs.push_back(ColliderPair{collider.Ref, otherCollider.Ref});
+					}
+				}
+
+				if (node.Divided)
+				{
+					for (auto j = 1; j <= 4; j++)
+					{
+						addAllPossiblePairs(parentIndex * 4 + j, collider.Ref);
+					}
+				}
+			}
+		}
+
+		return _allPossiblePairs;
 	}
 
 	void QuadTree::UpdateBoundary(const Math::RectangleF& boundary) noexcept
@@ -218,7 +244,7 @@ namespace Physics
             node.Divided = false;
         }
 
-		_colliderAllocator.Init(std::malloc(16), 16);
+		_allPossiblePairs.clear();
 	}
 
 	std::vector<Math::RectangleF> QuadTree::GetBoundaries() const noexcept

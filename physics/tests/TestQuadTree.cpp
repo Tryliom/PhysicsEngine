@@ -101,7 +101,7 @@ TEST_P(TestQuadTreeFixture, GetColliders)
 	colliders.push_back({{colliders.size(), 0}, middleRect});
 	quadTree.Insert(colliders.back());
 
-	auto collidersToCheck = quadTree.GetColliders(colliders[0]);
+	auto collidersToCheck = quadTree.GetAllPossiblePairs(colliders[0]);
 
 	EXPECT_EQ(collidersToCheck.size(), colliders.size() - 1);
 }

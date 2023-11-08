@@ -21,17 +21,19 @@ namespace Physics
         explicit World(HeapAllocator& heapAllocator, std::size_t defaultBodySize = 500) noexcept;
 
     private:
-		std::unordered_set<ColliderPair, ColliderPairHash, std::equal_to<>, StandardAllocator<ColliderPair>> _colliderPairs;
-	    HeapAllocator& _heapAllocator;
+		QuadTree _quadTree {Math::RectangleF(Math::Vec2F::Zero(), Math::Vec2F::One())};
+
+		MyVector<ColliderPair> _lastColliderPairs;
 	    MyVector<Body> _bodies;
 		MyVector<Collider> _colliders;
 	    MyVector<std::size_t> _colliderGenerations;
 	    MyVector<std::size_t> _bodyGenerations;
-		QuadTree _quadTree {Math::RectangleF(Math::Vec2F::Zero(), Math::Vec2F::One())};
 
         ContactListener* _contactListener { nullptr };
 
         Math::Vec2F _gravity;
+
+	    HeapAllocator& _heapAllocator;
 
 		/**
 		 * @brief Check the collisions and triggers of the colliders

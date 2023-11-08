@@ -9,8 +9,8 @@
 namespace Physics
 {
 	World::World(HeapAllocator& heapAllocator, std::size_t defaultBodySize) noexcept :
-        _heapAllocator(heapAllocator),
-        _colliderPairs{ StandardAllocator<ColliderPair> {heapAllocator} },
+		_heapAllocator(heapAllocator),
+		_lastColliderPairs{StandardAllocator<ColliderPair> {heapAllocator} },
 		_bodies { StandardAllocator<Body> {heapAllocator} },
 		_colliders { StandardAllocator<Collider> {heapAllocator} },
 		_colliderGenerations { StandardAllocator<std::size_t> {heapAllocator} },
@@ -86,49 +86,39 @@ namespace Physics
 #ifdef TRACY_ENABLE
 		ZoneNamedN(processColliders, "World::processColliders", true);
 #endif
-        //TODO: Use std::vector of ColliderPair
-        std::unordered_set<ColliderPair, ColliderPairHash, std::equal_to<>, StandardAllocator<ColliderPair>> newColliderPairs { StandardAllocator<ColliderPair> {_heapAllocator} };
+        const auto& allPossibleColliderPairs = _quadTree.GetAllPossiblePairs();
+		MyVector<ColliderPair> newColliderPairs { StandardAllocator<ColliderPair> {_heapAllocator} };
 
-        //TODO: Get all possible colliders pair at once
-		// Check for collisions
-		for (auto& collider : _colliders)
-		{
-			if (!collider.IsEnabled() || collider.IsFree()) continue;
+		newColliderPairs.reserve(allPossibleColliderPairs.size());
 
-			// Get all colliders that overlap with the collider
-			const auto& colliders = _quadTree.GetColliders({ collider.GetColliderRef(), collider.GetBounds() });
-
-			for (auto& otherColliderRef : colliders)
-			{
-				const auto& otherCollider = GetCollider(otherColliderRef);
-
-				if (otherCollider.GetBodyRef() == collider.GetBodyRef()) continue;
-
-				// Check if the colliders overlap
-				if (overlap(collider, otherCollider))
-				{
-					newColliderPairs.insert(ColliderPair{ collider.GetColliderRef(), otherColliderRef });
-				}
-			}
-		}
-
-		for (auto& colliderPair : newColliderPairs)
+		for (auto& colliderPair : allPossibleColliderPairs)
 		{
 			Collider& colliderA = GetCollider(colliderPair.A);
 			Collider& colliderB = GetCollider(colliderPair.B);
 
-			if (_colliderPairs.find(colliderPair) == _colliderPairs.end())
+			if (colliderA.GetBodyRef() == colliderB.GetBodyRef()) continue;
+			if (!overlap(colliderA, colliderB)) continue;
+
+			newColliderPairs.push_back(colliderPair);
+		}
+
+		for (auto& collider : newColliderPairs)
+		{
+			Collider& colliderA = GetCollider(collider.A);
+			Collider& colliderB = GetCollider(collider.B);
+
+			if (std::find(_lastColliderPairs.begin(), _lastColliderPairs.end(), collider) == _lastColliderPairs.end())
 			{
-                if (_contactListener == nullptr) continue;
+				if (_contactListener == nullptr) continue;
 
 				// Enter
 				if (colliderA.IsTrigger() || colliderB.IsTrigger())
 				{
-					_contactListener->OnTriggerEnter(colliderPair.A, colliderPair.B);
+					_contactListener->OnTriggerEnter(collider.A, collider.B);
 				}
 				else
 				{
-					_contactListener->OnCollisionEnter(colliderPair.A, colliderPair.B);
+					_contactListener->OnCollisionEnter(collider.A, collider.B);
 				}
 			}
 			else
@@ -136,50 +126,50 @@ namespace Physics
 				// Stay
 				if (colliderA.IsTrigger() || colliderB.IsTrigger())
 				{
-                    if (_contactListener == nullptr) continue;
+					if (_contactListener == nullptr) continue;
 
-					_contactListener->OnTriggerStay(colliderPair.A, colliderPair.B);
+					_contactListener->OnTriggerStay(collider.A, collider.B);
 				}
 				else
 				{
-                    if (_contactListener != nullptr)
-                    {
-                        _contactListener->OnCollisionStay(colliderPair.A, colliderPair.B);
-                    }
+					if (_contactListener != nullptr)
+					{
+						_contactListener->OnCollisionStay(collider.A, collider.B);
+					}
 
-                    const auto& bodyA = GetBody(colliderA.GetBodyRef());
-                    const auto& bodyB = GetBody(colliderB.GetBodyRef());
+					const auto& bodyA = GetBody(colliderA.GetBodyRef());
+					const auto& bodyB = GetBody(colliderB.GetBodyRef());
 
 					if (bodyA.GetBodyType() == BodyType::Dynamic || bodyB.GetBodyType() == BodyType::Dynamic)
 					{
-						onCollision(colliderPair.A, colliderPair.B);
+						onCollision(collider.A, collider.B);
 					}
 				}
 			}
 		}
 
-        if (_contactListener != nullptr)
-        {
-            // Exit
-            for (auto& colliderPair: _colliderPairs)
-            {
-                if (newColliderPairs.find(colliderPair) != newColliderPairs.end()) continue;
+		if (_contactListener != nullptr)
+		{
+			// Exit
+			for (auto& colliderPair: _lastColliderPairs)
+			{
+				if (std::find(newColliderPairs.begin(), newColliderPairs.end(), colliderPair) != newColliderPairs.end()) continue;
 
-                Collider& colliderA = GetCollider(colliderPair.A);
-                Collider& colliderB = GetCollider(colliderPair.B);
+				Collider& colliderA = GetCollider(colliderPair.A);
+				Collider& colliderB = GetCollider(colliderPair.B);
 
-                if (colliderA.IsTrigger() || colliderB.IsTrigger())
-                {
-                    _contactListener->OnTriggerExit(colliderPair.A, colliderPair.B);
-                }
-                else
-                {
-                    _contactListener->OnCollisionExit(colliderPair.A, colliderPair.B);
-                }
-            }
-        }
+				if (colliderA.IsTrigger() || colliderB.IsTrigger())
+				{
+					_contactListener->OnTriggerExit(colliderPair.A, colliderPair.B);
+				}
+				else
+				{
+					_contactListener->OnCollisionExit(colliderPair.A, colliderPair.B);
+				}
+			}
+		}
 
-		_colliderPairs = newColliderPairs;
+		_lastColliderPairs = newColliderPairs;
 	}
 
 	void World::onCollision(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
@@ -394,7 +384,7 @@ namespace Physics
 
     void World::Reset() noexcept
     {
-        _colliderPairs.clear();
+        _lastColliderPairs.clear();
         _bodies.clear();
         _colliders.clear();
         _colliderGenerations.clear();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Collider.h"
+#include "ColliderPair.h"
 #include "UniquePtr.h"
 #include "Allocator.h"
 
@@ -36,10 +37,8 @@ namespace Physics
 	private:
 		HeapAllocator _heapAllocator {};
 		LinearAllocator _nodesAllocator;
-		FreeListAllocator _colliderAllocator;
 		MyVector<QuadNode> _nodes { StandardAllocator <QuadNode> {_nodesAllocator} };
-        //TODO: Change it to a vector of pair of colliders
-        MyVector<ColliderRef> _colliders { StandardAllocator <ColliderRef> {_heapAllocator} };
+		MyVector<ColliderPair> _allPossiblePairs { StandardAllocator <ColliderPair> {_heapAllocator} };
 
         static constexpr std::size_t _maxDepth = 5;
 		static constexpr std::size_t _maxCapacity = 8;
@@ -48,8 +47,7 @@ namespace Physics
         static constexpr std::size_t getDepth(std::size_t index) noexcept;
 
         void subdivide(std::size_t index) noexcept;
-        //TODO: Change it to generate all possible pairs of colliders check all colliders in parent -> check in children
-        void regeneratePairs(std::size_t index, SimplifiedCollider collider) noexcept;
+		void addAllPossiblePairs(std::size_t index, ColliderRef collider) noexcept;
 
     public:
 		/**
@@ -59,11 +57,10 @@ namespace Physics
 		 */
 		void Insert(SimplifiedCollider collider) noexcept;
 		/**
-		 * @brief Get all colliders that overlap with the collider
-		 * @param collider The collider to check for overlap
-		 * @return All colliders that overlap with the collider
+		 * @brief Get all the possible pairs of colliders in the quadtree
+		 * @return All the possible pairs of colliders in the quadtree
 		 */
-		[[nodiscard]] const MyVector<ColliderRef>& GetColliders(SimplifiedCollider collider) noexcept;
+		[[nodiscard]] const MyVector<ColliderPair>& GetAllPossiblePairs() noexcept;
 
 		/**
 		 * @brief Set the new boundary of the quadtree, applies to all nodes
