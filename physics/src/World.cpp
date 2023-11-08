@@ -221,7 +221,7 @@ namespace Physics
 
             if (bodyB.GetBodyType() == BodyType::Dynamic)
             {
-                bodyB.AddVelocity(impulse * bodyB.InverseMass());
+                bodyB.AddVelocity(- impulse * bodyB.InverseMass());
             }
 		}
 		// 2x rectangle, overlap already checked
@@ -252,7 +252,7 @@ namespace Physics
 
             if (bodyB.GetBodyType() == BodyType::Dynamic)
             {
-                bodyB.AddVelocity(impulse * bodyB.InverseMass());
+                bodyB.AddVelocity(- impulse * bodyB.InverseMass());
             }
 		}
 	}
