@@ -145,7 +145,7 @@ namespace Physics
 	void QuadTree::addAllPossiblePairs(std::size_t index, ColliderRef collider) noexcept
 	{
 #ifdef TRACY_ENABLE
-		ZoneNamedN(addAllPossiblePairs, "QuadTree::addAllPossiblePairs", true);
+		ZoneScoped;
 #endif
 
 		const auto& node = _nodes[index];
@@ -174,7 +174,7 @@ namespace Physics
 	const MyVector<ColliderPair>& QuadTree::GetAllPossiblePairs() noexcept
 	{
 #ifdef TRACY_ENABLE
-		ZoneNamedN(GetColliders, "QuadTree::GetColliders", true);
+		ZoneNamedN(GetAllPossiblePairs, "QuadTree::GetAllPossiblePairs", true);
 #endif
 		for (std::size_t parentIndex = 0; parentIndex < _nodes.size(); parentIndex++)
 		{
