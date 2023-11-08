@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vec2.h"
+#include "BodyType.h"
 
 namespace Physics
 {
@@ -24,6 +25,7 @@ namespace Physics
 		Math::Vec2F _force = Math::Vec2F(0, 0);
 		float _mass = -1.f;
 		float _inverseMass = 0.f;
+        BodyType _bodyType = BodyType::Dynamic;
 
 	public:
         /**
@@ -51,6 +53,11 @@ namespace Physics
 		 * @return The inverse mass of the body
 		 */
 		[[nodiscard]] float InverseMass() const noexcept;
+        /**
+         * @brief Get the body type of the body
+         * @return The body type of the body
+         */
+        [[nodiscard]] BodyType GetBodyType() const noexcept;
 
         /**
          * @brief Set the position of the body
@@ -73,6 +80,11 @@ namespace Physics
 		 * @param mass
 		 */
 		void SetMass(float mass) noexcept;
+        /**
+         * @brief Set the body type of the body
+         * @param bodyType The new body type of the body
+         */
+        void SetBodyType(BodyType bodyType) noexcept;
 
         /**
          * @brief Apply a force to the body (add it to the current force)

@@ -142,7 +142,10 @@ namespace Physics
 				{
 					_contactListener->OnCollisionStay(colliderPair.A, colliderPair.B);
 
-					if (colliderA.GetCollisionType() == ColliderCollisionType::Dynamic || colliderB.GetCollisionType() == ColliderCollisionType::Dynamic)
+                    const auto& bodyA = GetBody(colliderA.GetBodyRef());
+                    const auto& bodyB = GetBody(colliderB.GetBodyRef());
+
+					if (bodyA.GetBodyType() == BodyType::Dynamic || bodyB.GetBodyType() == BodyType::Dynamic)
 					{
 						onCollision(colliderPair.A, colliderPair.B);
 					}
@@ -203,15 +206,15 @@ namespace Physics
 			const auto& impulseMagnitude = -restitution * velocityAlongNormal;
 			const auto& impulse = impulseMagnitude * normal;
 
-			if (colliderA.GetCollisionType() == ColliderCollisionType::Dynamic)
-			{
-				bodyA.SetVelocity(bodyA.Velocity() + impulse * bodyA.InverseMass());
-			}
+			if (bodyA.GetBodyType() == BodyType::Dynamic)
+            {
+                bodyA.SetVelocity(bodyA.Velocity() + impulse * bodyA.InverseMass());
+            }
 
-			if (colliderB.GetCollisionType() == ColliderCollisionType::Dynamic)
-			{
-				bodyB.SetVelocity(bodyB.Velocity() - impulse * bodyB.InverseMass());
-			}
+			if (bodyB.GetBodyType() == BodyType::Dynamic)
+            {
+                bodyB.SetVelocity(bodyB.Velocity() - impulse * bodyB.InverseMass());
+            }
 		}
 		// 2x rectangle, overlap already checked
 		else if (colliderA.GetShapeType() == Math::ShapeType::Rectangle && colliderB.GetShapeType() == Math::ShapeType::Rectangle)
@@ -234,15 +237,15 @@ namespace Physics
 			const auto& impulseMagnitude = -restitution * velocityAlongNormal;
 			const auto& impulse = impulseMagnitude * normal;
 
-			if (colliderA.GetCollisionType() == ColliderCollisionType::Dynamic)
-			{
-				bodyA.SetVelocity(bodyA.Velocity() + impulse * bodyA.InverseMass());
-			}
+            if (bodyA.GetBodyType() == BodyType::Dynamic)
+            {
+                bodyA.SetVelocity(bodyA.Velocity() + impulse * bodyA.InverseMass());
+            }
 
-			if (colliderB.GetCollisionType() == ColliderCollisionType::Dynamic)
-			{
-				bodyB.SetVelocity(bodyB.Velocity() - impulse * bodyB.InverseMass());
-			}
+            if (bodyB.GetBodyType() == BodyType::Dynamic)
+            {
+                bodyB.SetVelocity(bodyB.Velocity() - impulse * bodyB.InverseMass());
+            }
 		}
 	}
 

@@ -37,11 +37,6 @@ namespace Physics
 		return _isTrigger;
 	}
 
-	ColliderCollisionType Collider::GetCollisionType() const noexcept
-	{
-		return _collisionType;
-	}
-
 	bool Collider::IsFree() const noexcept
 	{
 		return _shapeType == Math::ShapeType::None;
@@ -85,11 +80,6 @@ namespace Physics
 	void Collider::SetIsTrigger(bool isTrigger) noexcept
 	{
 		_isTrigger = isTrigger;
-	}
-
-	void Collider::SetCollisionType(ColliderCollisionType collisionType) noexcept
-	{
-		_collisionType = collisionType;
 	}
 
 	void Collider::SetCircle(Math::CircleF circle) noexcept

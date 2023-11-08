@@ -79,7 +79,7 @@ void CollisionSample::onInput() noexcept
 			auto& body = _world.GetBody(object.BodyRef);
 			auto velocity = Math::Vec2F::Zero();
 
-			if (!_stop && _world.GetCollider(object.ColliderRef).GetCollisionType() == Physics::ColliderCollisionType::Dynamic)
+			if (!_stop && body.GetBodyType() == Physics::BodyType::Dynamic)
 			{
 				const auto directionToCenter = Math::Vec2F{ screenWidth / 2.f, screenHeight / 2.f } - body.Position();
 
@@ -312,10 +312,10 @@ void CollisionSample::createWalls() noexcept
 
 			body.SetPosition(Math::Vec2F::Zero());
 			body.SetVelocity(Math::Vec2F::Zero());
+            body.SetBodyType(Physics::BodyType::Static);
 
 			collider.SetRectangle(partWall);
 			collider.SetBounciness(1.f);
-			collider.SetCollisionType(Physics::ColliderCollisionType::Static);
 		}
 	}
 }

@@ -25,6 +25,8 @@ namespace Physics
 
 	void Body::SetVelocity(Math::Vec2F velocity) noexcept
 	{
+        if (_bodyType == BodyType::Static) return;
+
 		_velocity = velocity;
 	}
 
@@ -50,11 +52,28 @@ namespace Physics
 
 	void Body::SetMass(float mass) noexcept
 	{
-		if (mass <= 0.f) return;
+		if (mass <= 0.f || _bodyType != BodyType::Dynamic) return;
 
 		_mass = mass;
 		_inverseMass = 1.f / mass;
 	}
+
+    [[nodiscard]] BodyType Body::GetBodyType() const noexcept
+    {
+        return _bodyType;
+    }
+
+    void Body::SetBodyType(BodyType bodyType) noexcept
+    {
+        _bodyType = bodyType;
+
+        if (bodyType != BodyType::Dynamic)
+        {
+            _mass = 0.f;
+            _inverseMass = 0.f;
+            _velocity = Math::Vec2F::Zero();
+        }
+    }
 
 	void Body::ApplyForce(Math::Vec2F force) noexcept
 	{
@@ -69,6 +88,7 @@ namespace Physics
 		_velocity = Math::Vec2F(0, 0);
 		_force = Math::Vec2F(0, 0);
 		_inverseMass = 0.f;
+        _bodyType = BodyType::Dynamic;
 	}
 
 	void Body::Enable() noexcept
