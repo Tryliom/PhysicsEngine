@@ -31,6 +31,8 @@ namespace Physics
 
         ContactListener* _contactListener { nullptr };
 
+        Math::Vec2F _gravity;
+
 		/**
 		 * @brief Check the collisions and triggers of the colliders
 		 */
@@ -120,5 +122,7 @@ namespace Physics
 		 * @return All the boundaries of the quadtree
 		 */
 	    [[nodiscard]] std::vector<Math::RectangleF> GetQuadTreeBoundaries() const noexcept;
+
+        void SetGravity(Math::Vec2F gravity) noexcept;
     };
 }

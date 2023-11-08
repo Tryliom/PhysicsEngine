@@ -32,8 +32,6 @@ namespace Physics
 #ifdef TRACY_ENABLE
 		ZoneNamedN(updateColliders, "World::updateColliders", true);
 #endif
-        if (_contactListener == nullptr) return;
-
 		// Calculate minimum and maximum bounds of all colliders
 		float minX = std::numeric_limits<float>::max();
 		float minY = std::numeric_limits<float>::max();
@@ -121,6 +119,8 @@ namespace Physics
 
 			if (_colliderPairs.find(colliderPair) == _colliderPairs.end())
 			{
+                if (_contactListener == nullptr) continue;
+
 				// Enter
 				if (colliderA.IsTrigger() || colliderB.IsTrigger())
 				{
@@ -136,11 +136,16 @@ namespace Physics
 				// Stay
 				if (colliderA.IsTrigger() || colliderB.IsTrigger())
 				{
+                    if (_contactListener == nullptr) continue;
+
 					_contactListener->OnTriggerStay(colliderPair.A, colliderPair.B);
 				}
 				else
 				{
-					_contactListener->OnCollisionStay(colliderPair.A, colliderPair.B);
+                    if (_contactListener != nullptr)
+                    {
+                        _contactListener->OnCollisionStay(colliderPair.A, colliderPair.B);
+                    }
 
                     const auto& bodyA = GetBody(colliderA.GetBodyRef());
                     const auto& bodyB = GetBody(colliderB.GetBodyRef());
@@ -153,23 +158,26 @@ namespace Physics
 			}
 		}
 
-		// Exit
-		for (auto& colliderPair : _colliderPairs)
-		{
-			if (newColliderPairs.find(colliderPair) != newColliderPairs.end()) continue;
+        if (_contactListener != nullptr)
+        {
+            // Exit
+            for (auto& colliderPair: _colliderPairs)
+            {
+                if (newColliderPairs.find(colliderPair) != newColliderPairs.end()) continue;
 
-			Collider& colliderA = GetCollider(colliderPair.A);
-			Collider& colliderB = GetCollider(colliderPair.B);
+                Collider& colliderA = GetCollider(colliderPair.A);
+                Collider& colliderB = GetCollider(colliderPair.B);
 
-			if (colliderA.IsTrigger() || colliderB.IsTrigger())
-			{
-				_contactListener->OnTriggerExit(colliderPair.A, colliderPair.B);
-			}
-			else
-			{
-				_contactListener->OnCollisionExit(colliderPair.A, colliderPair.B);
-			}
-		}
+                if (colliderA.IsTrigger() || colliderB.IsTrigger())
+                {
+                    _contactListener->OnTriggerExit(colliderPair.A, colliderPair.B);
+                }
+                else
+                {
+                    _contactListener->OnCollisionExit(colliderPair.A, colliderPair.B);
+                }
+            }
+        }
 
 		_colliderPairs = newColliderPairs;
 	}
@@ -206,14 +214,14 @@ namespace Physics
 			const auto& impulseMagnitude = -restitution * velocityAlongNormal;
 			const auto& impulse = impulseMagnitude * normal;
 
-			if (bodyA.GetBodyType() == BodyType::Dynamic)
+            if (bodyA.GetBodyType() == BodyType::Dynamic)
             {
-                bodyA.SetVelocity(bodyA.Velocity() + impulse * bodyA.InverseMass());
+                bodyA.AddVelocity(impulse * bodyA.InverseMass());
             }
 
-			if (bodyB.GetBodyType() == BodyType::Dynamic)
+            if (bodyB.GetBodyType() == BodyType::Dynamic)
             {
-                bodyB.SetVelocity(bodyB.Velocity() - impulse * bodyB.InverseMass());
+                bodyB.AddVelocity(impulse * bodyB.InverseMass());
             }
 		}
 		// 2x rectangle, overlap already checked
@@ -239,12 +247,12 @@ namespace Physics
 
             if (bodyA.GetBodyType() == BodyType::Dynamic)
             {
-                bodyA.SetVelocity(bodyA.Velocity() + impulse * bodyA.InverseMass());
+                bodyA.AddVelocity(impulse * bodyA.InverseMass());
             }
 
             if (bodyB.GetBodyType() == BodyType::Dynamic)
             {
-                bodyB.SetVelocity(bodyB.Velocity() - impulse * bodyB.InverseMass());
+                bodyB.AddVelocity(impulse * bodyB.InverseMass());
             }
 		}
 	}
@@ -358,10 +366,17 @@ namespace Physics
 #endif
 		for (auto& body : _bodies)
 		{
-			if (!body.IsEnabled()) continue;
+			if (!body.IsEnabled() || body.GetBodyType() == BodyType::Static) continue;
 
-			body.SetVelocity(body.Velocity() + body.Force() * deltaTime);
-			body.SetPosition(body.Position() + body.Velocity() * deltaTime);
+            if (body.UseGravity())
+            {
+                body.AddForce(_gravity * body.InverseMass());
+            }
+
+            const auto& acceleration = body.Force() * body.InverseMass() * deltaTime;
+
+			body.AddVelocity(acceleration);
+			body.AddPosition(body.Velocity() * deltaTime);
 			body.SetForce(Math::Vec2F(0, 0));
 		}
 
@@ -509,4 +524,9 @@ namespace Physics
 	{
 		return _quadTree.GetBoundaries();
 	}
+
+    void World::SetGravity(Math::Vec2F gravity) noexcept
+    {
+        _gravity = gravity;
+    }
 }

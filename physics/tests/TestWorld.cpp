@@ -154,7 +154,7 @@ TEST_P(TestWorldFixtureTime, Update)
 	body.SetPosition(pair.first[0]);
 	body.SetVelocity(pair.first[1]);
 	body.SetMass(pair.second.second);
-	body.ApplyForce(pair.first[3] * body.Mass());
+    body.AddForce(pair.first[3] * body.Mass());
 
 	auto velocity = body.Velocity() + body.Force() * deltaTime;
 	auto position = body.Position() + velocity * deltaTime;

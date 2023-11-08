@@ -26,6 +26,7 @@ namespace Physics
 		float _mass = -1.f;
 		float _inverseMass = 0.f;
         BodyType _bodyType = BodyType::Dynamic;
+        bool _useGravity { false };
 
 	public:
         /**
@@ -58,6 +59,11 @@ namespace Physics
          * @return The body type of the body
          */
         [[nodiscard]] BodyType GetBodyType() const noexcept;
+        /**
+         * @brief Get the use gravity of the body
+         * @return The use gravity of the body
+         */
+        [[nodiscard]] bool UseGravity() const noexcept;
 
         /**
          * @brief Set the position of the body
@@ -85,12 +91,28 @@ namespace Physics
          * @param bodyType The new body type of the body
          */
         void SetBodyType(BodyType bodyType) noexcept;
+        /**
+         * @brief Set the use gravity of the body
+         * @param useGravity The new use gravity of the body
+         */
+        void SetUseGravity(bool useGravity) noexcept;
 
         /**
          * @brief Apply a force to the body (add it to the current force)
          * @param force The force to apply
          */
-		void ApplyForce(Math::Vec2F force) noexcept;
+		void AddForce(Math::Vec2F force) noexcept;
+        /**
+         * @brief Add a velocity to the body (add it to the current velocity)
+         * @param velocity The velocity to add
+         */
+        void AddVelocity(Math::Vec2F velocity) noexcept;
+        /**
+         * @brief Add a position to the body (add it to the current position)
+         * @param position The position to add
+         */
+        void AddPosition(Math::Vec2F position) noexcept;
+
 		/**
 		 * @brief Disable the body by setting its mass to -1. Clear all other values.
 		 */

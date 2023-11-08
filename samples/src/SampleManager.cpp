@@ -4,18 +4,20 @@
 #include "PlanetSystemSample.h"
 #include "FreeTriggerSample.h"
 #include "CollisionSample.h"
+#include "GravitySample.h"
 #include "Input.h"
 #include "Display.h"
 
 #include <imgui.h>
-#include "imgui_impl_sdl2.h"
-#include "imgui_impl_sdlrenderer2.h"
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_sdlrenderer2.h>
 
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
 #endif
 
 SampleManager::SampleManager() noexcept : _timer(), _samples({
+    MakeUnique<Sample, GravitySample>(),
 	MakeUnique<Sample, CollisionSample>(),
     MakeUnique<Sample, TriggerSample>(),
 	MakeUnique<Sample, FreeTriggerSample>(),

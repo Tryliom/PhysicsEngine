@@ -75,10 +75,30 @@ namespace Physics
         }
     }
 
-	void Body::ApplyForce(Math::Vec2F force) noexcept
+    [[nodiscard]] bool Body::UseGravity() const noexcept
+    {
+        return _useGravity;
+    }
+
+    void Body::SetUseGravity(bool useGravity) noexcept
+    {
+        _useGravity = useGravity;
+    }
+
+	void Body::AddForce(Math::Vec2F force) noexcept
 	{
 		_force += force;
 	}
+
+    void Body::AddVelocity(Math::Vec2F velocity) noexcept
+    {
+        _velocity += velocity;
+    }
+
+    void Body::AddPosition(Math::Vec2F position) noexcept
+    {
+        _position += position;
+    }
 
 	void Body::Disable() noexcept
 	{
@@ -99,6 +119,6 @@ namespace Physics
 
 	[[nodiscard]] bool Body::IsEnabled() const noexcept
 	{
-		return _mass > 0.f;
+		return _mass >= 0.f;
 	}
 }

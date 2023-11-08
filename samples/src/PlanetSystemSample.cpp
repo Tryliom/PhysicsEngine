@@ -150,7 +150,7 @@ void PlanetSystemSample::onUpdate(float deltaTime) noexcept
 
             if (centerToPlanet == Math::Vec2F::Zero()) continue;
 
-            body.ApplyForce(centerToPlanet.Normalized() * (_sunMass * body.Mass() / (centerToPlanet.Length() * centerToPlanet.Length())));
+            body.AddForce(centerToPlanet.Normalized() * (_sunMass * body.Mass() / (centerToPlanet.Length() * centerToPlanet.Length())));
         }
     }
 
@@ -168,8 +168,8 @@ void PlanetSystemSample::onUpdate(float deltaTime) noexcept
 
             if (sunToOtherSun == Math::Vec2F::Zero()) continue;
 
-            sunBody.ApplyForce(sunToOtherSun.Normalized() * (otherSunBody.Mass() *
-                sunBody.Mass() / (sunToOtherSun.Length() * sunToOtherSun.Length())));
+            sunBody.AddForce(sunToOtherSun.Normalized() * (otherSunBody.Mass() *
+                                                           sunBody.Mass() / (sunToOtherSun.Length() * sunToOtherSun.Length())));
         }
     }
 }
