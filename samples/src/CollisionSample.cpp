@@ -1,3 +1,4 @@
+#include <imgui.h>
 #include "CollisionSample.h"
 
 #include "Random.h"
@@ -7,32 +8,33 @@
 CollisionSample::CollisionSample() noexcept :
 	Sample(
 		"Collisions",
-		"Sample showing how to use colliders with circles and boxes.\n"
+		"Sample showing how to use collisions with circles and boxes.\n"
+        "When a shape:\n"
+        "- Starts to collide: it will have a green shape inside.\n"
+        "- Stops to collide: it will have a red shape inside.\n"
+        "- Stay: it will have a yellow shape inside.\n"
 		"Controls:\n"
 		"Space -> Freeze/unfreeze all objects\n"
 		"B -> Toggle boxes around objects\n"
 		"Q -> Toggle quad trees\n"
 		"Right click -> Move camera\n"
-		"Mouse wheel -> Zoom\n"
+		"Mouse wheel -> Zoom"
 	)
 {}
 
 void CollisionSample::onInit() noexcept
 {
-    Display::SetTitle("Rectangle Collision Sample");
+    Display::SetTitle("Collision Sample");
     _world.SetContactListener(this);
 
-    constexpr static int Circles = 0;
-    constexpr static int Boxes = 20;
+	_objects.resize(_circles + _boxes + 4 * _wallSplit);
 
-	_objects.resize(Circles + Boxes + 4 * _wallSplit);
-
-    for (int i = 0; i < Circles; ++i)
+    for (int i = 0; i < _circles; ++i)
     {
         createBall();
     }
 
-    for (int i = 0; i < Boxes; ++i)
+    for (int i = 0; i < _boxes; ++i)
     {
         createBox();
     }
@@ -101,6 +103,18 @@ void CollisionSample::onInput() noexcept
 	}
 }
 
+void CollisionSample::onDrawImGui() noexcept
+{
+    ImGui::DragInt("Circles", &_circles, 1.f, 0, 10000);
+    ImGui::DragInt("Boxes", &_boxes, 1.f, 0, 10000);
+
+    if (ImGui::Button("Regenerate"))
+    {
+        Deinit();
+        Init();
+    }
+}
+
 void CollisionSample::onUpdate(float deltaTime) noexcept
 {
     // Check if the object is outside the screen and if so, bounce it back
@@ -140,6 +154,16 @@ void CollisionSample::onRender() noexcept
                 const auto circle = collider.GetCircle() + body.Position();
 
                 Display::Draw(circle, object.ObjectColor);
+
+                if (object.TriggerEnterTimer > 0.f)
+                {
+                    Display::Draw(circle, _triggerEnterColor, Math::Vec2F::One() * 0.8f);
+                }
+
+                if (object.TriggerExitTimer > 0.f)
+                {
+                    Display::Draw(circle, _triggerExitColor, Math::Vec2F::One() * 0.6f);
+                }
             }
             break;
 
@@ -148,6 +172,16 @@ void CollisionSample::onRender() noexcept
                 const auto rect = collider.GetRectangle() + body.Position();
 
                 Display::Draw(rect, object.ObjectColor);
+
+                if (object.TriggerEnterTimer > 0.f)
+                {
+                    Display::Draw(rect, _triggerEnterColor, Math::Vec2F::One() * 0.8f);
+                }
+
+                if (object.TriggerExitTimer > 0.f)
+                {
+                    Display::Draw(rect, _triggerExitColor, Math::Vec2F::One() * 0.6f);
+                }
             }
             break;
 
@@ -296,7 +330,16 @@ Color CollisionSample::generateRandomColor() noexcept
 	);
 }
 
-void CollisionSample::OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept {}
+void CollisionSample::OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
+{
+    for (auto& object : _objects)
+    {
+        if (object.ColliderRef == colliderRef || object.ColliderRef == otherColliderRef)
+        {
+            object.TriggerEnterTimer = _blinkTimer;
+        }
+    }
+}
 
 void CollisionSample::OnCollisionExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
 {
@@ -307,6 +350,7 @@ void CollisionSample::OnCollisionExit(Physics::ColliderRef colliderRef, Physics:
         if (object.ColliderRef == colliderRef || object.ColliderRef == otherColliderRef)
         {
 	        object.ObjectColor = randomColor;
+            object.TriggerExitTimer = _blinkTimer;
         }
     }
 }

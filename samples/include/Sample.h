@@ -39,6 +39,10 @@ public:
      * @brief Deinitialize the sample.
      */
     void Deinit() noexcept;
+    /**
+     * @brief Draw the ImGui window for the sample.
+     */
+    void DrawImGui() noexcept;
 
 protected:
 	/**
@@ -62,4 +66,8 @@ protected:
      * @brief Called when the sample is deinitialized. This is where you should deinitialize your sample.
      */
     virtual void onDeinit() noexcept = 0;
+    /**
+     * @brief Called when imGui window is drew, place your options for the sample here.
+     */
+    virtual void onDrawImGui() noexcept = 0;
 };

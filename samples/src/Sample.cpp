@@ -48,3 +48,8 @@ void Sample::Deinit() noexcept
     onDeinit();
     _world.Reset();
 }
+
+void Sample::DrawImGui() noexcept
+{
+    onDrawImGui();
+}

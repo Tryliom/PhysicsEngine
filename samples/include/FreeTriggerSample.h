@@ -39,6 +39,7 @@ private:
 	void onInput() noexcept override;
 	void onUpdate(float deltaTime) noexcept override;
 	void onRender() noexcept override;
+    void onDrawImGui() noexcept override {}
 
 	void createBall() noexcept;
 	void createBox() noexcept;

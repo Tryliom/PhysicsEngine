@@ -26,10 +26,13 @@ private:
 	bool _showBoxes {};
 	bool _showQuadTrees {};
 
+    int _circles = 0;
+    int _boxes = 20;
+
     static constexpr Color _color = Color(100, 100, 100);
     static constexpr Color _triggerEnterColor = Color(100, 255, 100);
     static constexpr Color _triggerExitColor = Color(255, 100, 100);
-    static constexpr Color _triggerStayColor = Color(155, 155, 100);
+    static constexpr Color _triggerStayColor = Color(255, 255, 100);
     static constexpr float _blinkTimer = 0.3f;
 	static constexpr int _wallSplit = 50;
 
@@ -39,6 +42,7 @@ private:
 	void onUpdate(float deltaTime) noexcept override;
 	void onRender() noexcept override;
 	void onInput() noexcept override;
+    void onDrawImGui() noexcept override;
 
 	void createBox() noexcept;
 	void createWalls() noexcept;

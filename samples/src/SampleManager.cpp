@@ -16,8 +16,8 @@
 #endif
 
 SampleManager::SampleManager() noexcept : _timer(), _samples({
-    MakeUnique<Sample, TriggerSample>(),
 	MakeUnique<Sample, CollisionSample>(),
+    MakeUnique<Sample, TriggerSample>(),
 	MakeUnique<Sample, FreeTriggerSample>(),
     MakeUnique<Sample, PlanetSystemSample>()
 })
@@ -110,6 +110,10 @@ void SampleManager::drawImGui() noexcept
 
 	// Display the description of the current sample
 	ImGui::TextWrapped("%s", _descriptions[_currentSample].c_str());
+
+    ImGui::Spacing();
+
+    _samples[_currentSample]->DrawImGui();
 
 	ImGui::End();
 }

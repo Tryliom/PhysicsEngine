@@ -1,3 +1,4 @@
+#include <imgui.h>
 #include "TriggerSample.h"
 
 #include "Random.h"
@@ -7,13 +8,17 @@
 TriggerSample::TriggerSample() noexcept :
 	Sample(
 		"Triggers",
-		"Sample showing how to use triggers with circles and boxes.\n"
+		"Sample showing how to use triggers with circles, polygons and boxes.\n"
+        "When a shape:\n"
+        "- Starts to collide: it will have a green shape outside.\n"
+        "- Stops colliding: it will have a red shape outside.\n"
+        "- Is colliding: it will have a yellow shape outside.\n"
 		"Controls:\n"
 		"Space -> Freeze/unfreeze all objects\n"
 		"B -> Toggle boxes around objects\n"
 		"Q -> Toggle quad trees\n"
 		"Right click -> Move camera\n"
-		"Mouse wheel -> Zoom\n"
+		"Mouse wheel -> Zoom"
 	)
 {}
 
@@ -22,23 +27,19 @@ void TriggerSample::onInit() noexcept
     Display::SetTitle("Trigger Sample");
     _world.SetContactListener(this);
 
-	constexpr static int Circles = 1000;
-    constexpr static int Boxes = 0;
-    constexpr static int Polygons = 0;
+	_objects.resize(_circles + _boxes + _polygons);
 
-	_objects.resize(Circles + Boxes + Polygons);
-
-	for (int i = 0; i < Circles; ++i)
+	for (int i = 0; i < _circles; ++i)
 	{
         createBall();
 	}
 
-    for (int i = 0; i < Boxes; ++i)
+    for (int i = 0; i < _boxes; ++i)
     {
         createBox();
     }
 
-    for (int i = 0; i < Polygons; ++i)
+    for (int i = 0; i < _polygons; ++i)
     {
         createPolygon();
     }
@@ -58,7 +59,6 @@ void TriggerSample::onDeinit() noexcept
 {
     _objects.clear();
 }
-
 
 void TriggerSample::onInput() noexcept
 {
@@ -113,6 +113,19 @@ void TriggerSample::onInput() noexcept
 	{
 		_showQuadTrees = !_showQuadTrees;
 	}
+}
+
+void TriggerSample::onDrawImGui() noexcept
+{
+    ImGui::DragInt("Circles", &_circles, 1, 0, 1000);
+    ImGui::DragInt("Boxes", &_boxes, 1, 0, 1000);
+    ImGui::DragInt("Polygons", &_polygons, 1, 0, 1000);
+
+    if (ImGui::Button("Regenerate"))
+    {
+        Deinit();
+        Init();
+    }
 }
 
 void TriggerSample::onUpdate(float deltaTime) noexcept
@@ -314,18 +327,16 @@ void TriggerSample::createPolygon() noexcept
 	const static auto screenWidth = static_cast<float>(Display::GetWidth());
 	const static auto screenHeight = static_cast<float>(Display::GetHeight());
 	const static auto screenCenter = Math::Vec2F{ screenWidth / 2.f, screenHeight / 2.f };
-	const int randomVertices = Math::Random::Range(3, 8);
 	const float min = 10.f;
 	const float max = 70.f;
 
 	std::vector<Math::Vec2F> vertices;
 
-	vertices.resize(randomVertices);
+	vertices.resize(3);
 
-	for (int i = 0; i < randomVertices; ++i)
-	{
-		vertices.emplace_back(Math::Random::Range(min, max), Math::Random::Range(min, max));
-	}
+	vertices.emplace_back(min, min);
+    vertices.emplace_back(max, min);
+    vertices.emplace_back(max, max);
 
 	auto poly = Math::PolygonF{ vertices };
 
@@ -345,24 +356,24 @@ void TriggerSample::createPolygon() noexcept
 
 void TriggerSample::OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
 {
-    /*for (auto& _object : _objects)
+    for (auto& _object : _objects)
     {
         if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
         {
             _object.TriggerEnterTimer = _blinkTimer;
         }
-    }*/
+    }
 }
 
 void TriggerSample::OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
 {
-    /*for (auto& _object : _objects)
+    for (auto& _object : _objects)
     {
         if (_object.ColliderRef == colliderRef || _object.ColliderRef == otherColliderRef)
         {
             _object.TriggerExitTimer = _blinkTimer;
         }
-    }*/
+    }
 }
 
 void TriggerSample::OnTriggerStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept

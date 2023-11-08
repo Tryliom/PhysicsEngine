@@ -183,11 +183,6 @@ FreeListAllocator::FreeListAllocator(void* ptr, std::size_t size) noexcept
 
 void FreeListAllocator::Init(void* ptr, std::size_t size) noexcept
 {
-	if (_rootPtr != nullptr)
-	{
-		std::free(_rootPtr);
-	}
-
 	_rootPtr = ptr;
 	_size = size;
 	_freeBlocks = static_cast<FreeBlock*>(_rootPtr);
