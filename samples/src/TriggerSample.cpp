@@ -22,7 +22,7 @@ void TriggerSample::onInit() noexcept
     Display::SetTitle("Trigger Sample");
     _world.SetContactListener(this);
 
-	constexpr static int Circles = 10;
+	constexpr static int Circles = 1000;
     constexpr static int Boxes = 0;
     constexpr static int Polygons = 0;
 

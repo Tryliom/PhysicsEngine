@@ -40,9 +40,9 @@ private:
 	void onRender() noexcept override;
 	void onInput() noexcept override;
 
-    void createBall() noexcept;
 	void createBox() noexcept;
 	void createWalls() noexcept;
+    void createBall() noexcept;
 
 	static Color generateRandomColor() noexcept;
 

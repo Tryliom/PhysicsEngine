@@ -18,11 +18,11 @@ namespace Physics
     class World
     {
     public:
-        explicit World(std::size_t defaultBodySize = 500) noexcept;
+        explicit World(HeapAllocator& heapAllocator, std::size_t defaultBodySize = 500) noexcept;
 
     private:
-		std::unordered_set<ColliderPair, ColliderPairHash> _colliderPairs;
-	    HeapAllocator _heapAllocator {};
+		std::unordered_set<ColliderPair, ColliderPairHash, std::equal_to<>, StandardAllocator<ColliderPair>> _colliderPairs;
+	    HeapAllocator& _heapAllocator;
 	    MyVector<Body> _bodies;
 		MyVector<Collider> _colliders;
 	    MyVector<std::size_t> _colliderGenerations;
@@ -64,6 +64,10 @@ namespace Physics
 		void updateBodies(float deltaTime) noexcept;
 
     public:
+        /**
+         * @brief Reset the world
+         */
+        void Reset() noexcept;
 		/**
 		 * @brief Update the world
 		 * @param deltaTime The time since the last update

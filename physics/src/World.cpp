@@ -8,11 +8,13 @@
 
 namespace Physics
 {
-	World::World(std::size_t defaultBodySize) noexcept :
-		_bodies { StandardAllocator<Body> {_heapAllocator} },
-		_colliders { StandardAllocator<Collider> {_heapAllocator} },
-		_colliderGenerations { StandardAllocator<std::size_t> {_heapAllocator} },
-		_bodyGenerations { StandardAllocator<std::size_t> {_heapAllocator} }
+	World::World(HeapAllocator& heapAllocator, std::size_t defaultBodySize) noexcept :
+        _heapAllocator(heapAllocator),
+        _colliderPairs{ StandardAllocator<ColliderPair> {heapAllocator} },
+		_bodies { StandardAllocator<Body> {heapAllocator} },
+		_colliders { StandardAllocator<Collider> {heapAllocator} },
+		_colliderGenerations { StandardAllocator<std::size_t> {heapAllocator} },
+		_bodyGenerations { StandardAllocator<std::size_t> {heapAllocator} }
 	{
 		if (defaultBodySize == 0)
 		{
@@ -86,7 +88,7 @@ namespace Physics
 #ifdef TRACY_ENABLE
 		ZoneNamedN(processColliders, "World::processColliders", true);
 #endif
-		std::unordered_set<ColliderPair, ColliderPairHash> newColliderPairs;
+        std::unordered_set<ColliderPair, ColliderPairHash, std::equal_to<>, StandardAllocator<ColliderPair>> newColliderPairs { StandardAllocator<ColliderPair> {_heapAllocator} };
 
 		// Check for collisions
 		for (auto& collider : _colliders)
@@ -372,6 +374,15 @@ namespace Physics
 			collider.SetPosition(body.Position() + collider.GetOffset());
 		}
 	}
+
+    void World::Reset() noexcept
+    {
+        _colliderPairs.clear();
+        _bodies.clear();
+        _colliders.clear();
+        _colliderGenerations.clear();
+        _bodyGenerations.clear();
+    }
 
 	void World::Update(float deltaTime) noexcept
 	{

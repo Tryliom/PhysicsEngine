@@ -10,7 +10,7 @@
 #include "imgui_impl_sdlrenderer2.h"
 
 #ifdef TRACY_ENABLE
-#include "tracy/Tracy.hpp"
+#include <tracy/Tracy.hpp>
 #endif
 
 namespace Display
