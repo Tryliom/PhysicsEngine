@@ -11,7 +11,7 @@ namespace Physics
 
 	QuadTree::QuadTree(const Math::RectangleF& boundary) noexcept :
 		_nodesAllocator(std::malloc((getMaxNodes()) * sizeof(QuadNode) * 2), (getMaxNodes()) * sizeof(QuadNode) * 2),
-		_colliderAllocator(std::malloc(16), 16)
+		_colliderAllocator(std::malloc(sizeof(ColliderRef) * sizeof(AllocationHeader)), sizeof(ColliderRef) * sizeof(AllocationHeader))
     {
 		_nodes.resize(getMaxNodes(), QuadNode {_heapAllocator});
 
@@ -84,10 +84,8 @@ namespace Physics
         }
     }
 
-	MyVector<ColliderRef> QuadTree::getColliders(std::size_t index, SimplifiedCollider collider) noexcept
+	void QuadTree::regeneratePairs(std::size_t index, SimplifiedCollider collider) noexcept
     {
-        MyVector<ColliderRef> colliders { StandardAllocator<ColliderRef> {_colliderAllocator} };
-
         const auto& node = _nodes[index];
 
         for (auto& childCollider: node.Colliders)
@@ -95,7 +93,7 @@ namespace Physics
 			if (childCollider.Ref == collider.Ref) continue;
             if (!Math::Intersect(childCollider.Bounds, collider.Bounds)) continue;
 
-            colliders.emplace_back(childCollider.Ref);
+            _colliders.push_back(childCollider.Ref);
         }
 
         if (node.Divided)
@@ -106,13 +104,9 @@ namespace Physics
 
                 if (!Math::Intersect(child.Boundary, collider.Bounds)) continue;
 
-                const auto childColliders = getColliders(index * 4 + i, collider);
-
-                colliders.insert(colliders.end(), childColliders.begin(), childColliders.end());
+                regeneratePairs(index * 4 + i, collider);
             }
         }
-
-        return colliders;
     }
 
 	void QuadTree::Insert(SimplifiedCollider collider) noexcept
@@ -174,16 +168,19 @@ namespace Physics
         }
 	}
 
-	MyVector<ColliderRef> QuadTree::GetColliders(SimplifiedCollider collider) noexcept
+	const MyVector<ColliderRef>& QuadTree::GetColliders(SimplifiedCollider collider) noexcept
 	{
 #ifdef TRACY_ENABLE
 		ZoneNamedN(GetColliders, "QuadTree::GetColliders", true);
 #endif
 		const std::size_t size = GetAllCollidersCount() * sizeof(ColliderRef) * sizeof(AllocationHeader);
 
+        _colliders.clear();
 		_colliderAllocator.Init(std::malloc(size), size);
 
-        return getColliders(0, collider);
+        regeneratePairs(0, collider);
+
+        return _colliders;
 	}
 
 	void QuadTree::UpdateBoundary(const Math::RectangleF& boundary) noexcept

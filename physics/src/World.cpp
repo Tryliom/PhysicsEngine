@@ -88,15 +88,17 @@ namespace Physics
 #ifdef TRACY_ENABLE
 		ZoneNamedN(processColliders, "World::processColliders", true);
 #endif
+        //TODO: Use std::vector of ColliderPair
         std::unordered_set<ColliderPair, ColliderPairHash, std::equal_to<>, StandardAllocator<ColliderPair>> newColliderPairs { StandardAllocator<ColliderPair> {_heapAllocator} };
 
+        //TODO: Get all possible colliders pair at once
 		// Check for collisions
 		for (auto& collider : _colliders)
 		{
 			if (!collider.IsEnabled() || collider.IsFree()) continue;
 
 			// Get all colliders that overlap with the collider
-			auto colliders = _quadTree.GetColliders({ collider.GetColliderRef(), collider.GetBounds() });
+			const auto& colliders = _quadTree.GetColliders({ collider.GetColliderRef(), collider.GetBounds() });
 
 			for (auto& otherColliderRef : colliders)
 			{
@@ -217,13 +219,10 @@ namespace Physics
 			auto& bodyA = GetBody(colliderA.GetBodyRef());
 			auto& bodyB = GetBody(colliderB.GetBodyRef());
 
-			auto velocityA = bodyA.Velocity();
-			auto velocityB = bodyB.Velocity();
-
-			if (velocityA == Math::Vec2F::Zero() && velocityB == Math::Vec2F::Zero()) return;
-
 			const auto& positionA = bodyA.Position() + colliderA.GetOffset() + colliderA.GetRectangle().Center();
 			const auto& positionB = bodyB.Position() + colliderB.GetOffset() + colliderB.GetRectangle().Center();
+
+            //TODO: Check penetration and take the minimum penetration vertical and horizontal
 
 			const auto& normal = (positionA - positionB).Normalized();
 			const auto& relativeVelocity = bodyA.Velocity() - bodyB.Velocity();
@@ -382,6 +381,11 @@ namespace Physics
         _colliders.clear();
         _colliderGenerations.clear();
         _bodyGenerations.clear();
+
+        _bodies.resize(1);
+        _bodyGenerations.resize(1, 0);
+        _colliders.resize(1);
+        _colliderGenerations.resize(1, 0);
     }
 
 	void World::Update(float deltaTime) noexcept

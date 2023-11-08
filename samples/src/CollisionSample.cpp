@@ -6,7 +6,7 @@
 
 CollisionSample::CollisionSample() noexcept :
 	Sample(
-		"Rectangle Collisions",
+		"Collisions",
 		"Sample showing how to use colliders with circles and boxes.\n"
 		"Controls:\n"
 		"Space -> Freeze/unfreeze all objects\n"
@@ -26,6 +26,11 @@ void CollisionSample::onInit() noexcept
     constexpr static int Boxes = 20;
 
 	_objects.resize(Circles + Boxes + 4 * _wallSplit);
+
+    for (int i = 0; i < Circles; ++i)
+    {
+        createBall();
+    }
 
     for (int i = 0; i < Boxes; ++i)
     {
