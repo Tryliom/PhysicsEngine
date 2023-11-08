@@ -51,11 +51,30 @@ public:
 		_interactionId = Interaction::Stay;
 		_interactionCount++;
 	}
+
+    void OnCollisionEnter(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept override
+    {
+        _interactionId = Interaction::Enter;
+        _interactionCount++;
+    }
+
+    void OnCollisionExit(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept override
+    {
+        _interactionId = Interaction::Exit;
+        _interactionCount++;
+    }
+
+    void OnCollisionStay(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept override
+    {
+        _interactionId = Interaction::Stay;
+        _interactionCount++;
+    }
 };
 
 TEST(World, CreateBody)
 {
-	World world(1);
+    HeapAllocator allocator;
+	World world(allocator, 1);
 
 	auto body = world.CreateBody();
 
@@ -84,7 +103,8 @@ TEST(World, CreateBody)
 
 TEST(World, Collider)
 {
-	World world(1);
+    HeapAllocator allocator;
+    World world(allocator, 1);
 
 	auto bodyRef = world.CreateBody();
 	auto colliderRef = world.CreateCollider(bodyRef);
@@ -123,7 +143,8 @@ TEST(World, Collider)
 
 TEST_P(TestWorldFixtureTime, Update)
 {
-    World world(1);
+    HeapAllocator allocator;
+    World world(allocator, 1);
 
 	auto pair = GetParam();
 	auto deltaTime = pair.second.first;
@@ -152,7 +173,8 @@ TEST_P(TestWorldFixtureTime, Update)
 
 TEST(World, UpdateCollisionCircle)
 {
-	World world(1);
+    HeapAllocator allocator;
+    World world(allocator, 1);
 
 	auto bodyRef2 = world.CreateBody();
 	auto colliderRef2 = world.CreateCollider(bodyRef2);
@@ -202,7 +224,8 @@ TEST(World, UpdateCollisionCircle)
 
 TEST(World, UpdateCollisionRectangle)
 {
-	World world(1);
+    HeapAllocator allocator;
+    World world(allocator, 1);
 
 	auto bodyRef2 = world.CreateBody();
 	auto colliderRef2 = world.CreateCollider(bodyRef2);
@@ -252,7 +275,8 @@ TEST(World, UpdateCollisionRectangle)
 
 TEST(World, UpdateCollisionPolygon)
 {
-	World world(1);
+    HeapAllocator allocator;
+    World world(allocator, 1);
 
 	auto bodyRef2 = world.CreateBody();
 	auto colliderRef2 = world.CreateCollider(bodyRef2);
