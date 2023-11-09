@@ -47,7 +47,7 @@ namespace Physics
         static constexpr std::size_t getDepth(std::size_t index) noexcept;
 
         void subdivide(std::size_t index) noexcept;
-		void addAllPossiblePairs(std::size_t index, const ColliderRef& collider) noexcept;
+		void addAllPossiblePairs(std::size_t index, const SimplifiedCollider& collider) noexcept;
 
     public:
 		/**

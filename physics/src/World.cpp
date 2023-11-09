@@ -9,13 +9,12 @@
 
 namespace Physics
 {
-	World::World(HeapAllocator& heapAllocator, std::size_t defaultBodySize) noexcept :
-		_heapAllocator(heapAllocator),
-		_lastColliderPairs{StandardAllocator<ColliderPair> {heapAllocator} },
-		_bodies { StandardAllocator<Body> {heapAllocator} },
-		_colliders { StandardAllocator<Collider> {heapAllocator} },
-		_colliderGenerations { StandardAllocator<std::size_t> {heapAllocator} },
-		_bodyGenerations { StandardAllocator<std::size_t> {heapAllocator} }
+	World::World(std::size_t defaultBodySize) noexcept :
+		_lastColliderPairs{StandardAllocator<ColliderPair> {_heapAllocator} },
+		_bodies { StandardAllocator<Body> {_heapAllocator} },
+		_colliders { StandardAllocator<Collider> {_heapAllocator} },
+		_colliderGenerations { StandardAllocator<std::size_t> {_heapAllocator} },
+		_bodyGenerations { StandardAllocator<std::size_t> {_heapAllocator} }
 	{
 		if (defaultBodySize == 0)
 		{
@@ -91,12 +90,12 @@ namespace Physics
         const auto& allPossibleColliderPairs = _quadTree.GetAllPossiblePairs();
         MyVector<ColliderPair> newColliderPairs { StandardAllocator<ColliderPair> {_heapAllocator} };
 
-        newColliderPairs.reserve(allPossibleColliderPairs.size() * Math::Clamp(_lastColliderPairsPercentage * 2, _lastColliderPairsPercentage, 1.f));
+        newColliderPairs.reserve(allPossibleColliderPairs.size());
 
         for (const auto& colliderPair : allPossibleColliderPairs)
         {
-            Collider& colliderA = GetCollider(colliderPair.A);
-            Collider& colliderB = GetCollider(colliderPair.B);
+            const Collider& colliderA = GetCollider(colliderPair.A);
+            const Collider& colliderB = GetCollider(colliderPair.B);
 
             if (colliderA.GetBodyRef() == colliderB.GetBodyRef()) continue;
 
@@ -115,8 +114,6 @@ namespace Physics
         ZoneText(info.c_str(), info.size());
 #endif
 
-        _lastColliderPairsPercentage = static_cast<float>(newColliderPairs.size()) / static_cast<float>(allPossibleColliderPairs.size());
-
         return newColliderPairs;
     }
 
@@ -131,10 +128,10 @@ namespace Physics
         ZoneNamedN(onCollisions, "Check triggers and collisions", true);
 #endif
 
-		for (auto& collider : newColliderPairs)
+		for (const auto& collider : newColliderPairs)
 		{
-			Collider& colliderA = GetCollider(collider.A);
-			Collider& colliderB = GetCollider(collider.B);
+			const Collider& colliderA = GetCollider(collider.A);
+			const Collider& colliderB = GetCollider(collider.B);
 
 			if (std::find(_lastColliderPairs.begin(), _lastColliderPairs.end(), collider) == _lastColliderPairs.end())
 			{
@@ -410,20 +407,6 @@ namespace Physics
 			collider.SetPosition(body.Position() + collider.GetOffset());
 		}
 	}
-
-    void World::Reset() noexcept
-    {
-        _lastColliderPairs.clear();
-        _bodies.clear();
-        _colliders.clear();
-        _colliderGenerations.clear();
-        _bodyGenerations.clear();
-
-        _bodies.resize(1);
-        _bodyGenerations.resize(1, 0);
-        _colliders.resize(1);
-        _colliderGenerations.resize(1, 0);
-    }
 
 	void World::Update(float deltaTime) noexcept
 	{

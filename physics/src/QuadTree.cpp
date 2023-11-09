@@ -60,7 +60,7 @@ namespace Physics
 
         node.Colliders.clear();
 
-        for (auto collider : colliders)
+        for (const auto& collider : colliders)
         {
             std::size_t targetIndex = 0;
 
@@ -143,22 +143,20 @@ namespace Physics
         }
 	}
 
-	void QuadTree::addAllPossiblePairs(std::size_t index, const ColliderRef& collider) noexcept
+	void QuadTree::addAllPossiblePairs(std::size_t index, const SimplifiedCollider& collider) noexcept
 	{
 #ifdef TRACY_ENABLE
 		ZoneScoped;
 #endif
 		const auto& node = _nodes[index];
 
-		for (auto i = 0; i < node.Colliders.size(); i++)
+		for (const auto & otherCollider : node.Colliders)
 		{
-			const auto& otherCollider = node.Colliders[i];
+			if (collider.Ref == otherCollider.Ref) continue;
 
-			if (collider == otherCollider.Ref) continue;
-
-			if (Math::Intersect(otherCollider.Bounds, _nodes[index].Colliders[i].Bounds))
+			if (Math::Intersect(otherCollider.Bounds, collider.Bounds))
 			{
-				_allPossiblePairs.push_back(ColliderPair{collider, otherCollider.Ref});
+				_allPossiblePairs.push_back(ColliderPair{collider.Ref, otherCollider.Ref});
 			}
 		}
 
@@ -208,7 +206,7 @@ namespace Physics
 
 					for (auto j = index; j <= maxIndex; j++)
 					{
-						addAllPossiblePairs(j, ref);
+						addAllPossiblePairs(j, collider);
 					}
 				}
 			}

@@ -20,7 +20,7 @@ FreeTriggerSample::FreeTriggerSample() noexcept :
 
 void FreeTriggerSample::onInit() noexcept
 {
-	Display::SetTitle("Trigger Sample");
+	Display::SetTitle("Free Trigger Sample");
 	_world.SetContactListener(this);
 }
 

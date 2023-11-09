@@ -18,8 +18,8 @@
 
 SampleManager::SampleManager() noexcept : _timer(), _samples({
     MakeUnique<Sample, TriggerSample>(),
-    MakeUnique<Sample, GravitySample>(),
 	MakeUnique<Sample, CollisionSample>(),
+    MakeUnique<Sample, GravitySample>(),
 	MakeUnique<Sample, FreeTriggerSample>(),
     MakeUnique<Sample, PlanetSystemSample>()
 })

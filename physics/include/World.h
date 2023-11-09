@@ -18,10 +18,12 @@ namespace Physics
     class World
     {
     public:
-        explicit World(HeapAllocator& heapAllocator, std::size_t defaultBodySize = 500) noexcept;
+        explicit World(std::size_t defaultBodySize = 500) noexcept;
+		~World() noexcept = default;
 
     private:
 		QuadTree _quadTree {Math::RectangleF(Math::Vec2F::Zero(), Math::Vec2F::One())};
+	    HeapAllocator _heapAllocator;
 
 		MyVector<ColliderPair> _lastColliderPairs;
 	    MyVector<Body> _bodies;
@@ -32,10 +34,6 @@ namespace Physics
         ContactListener* _contactListener { nullptr };
 
         Math::Vec2F _gravity;
-
-	    HeapAllocator& _heapAllocator;
-
-        float _lastColliderPairsPercentage { 1.f };
 
 		/**
 		 * @brief Check the collisions and triggers of the colliders
@@ -71,10 +69,6 @@ namespace Physics
 		void updateBodies(float deltaTime) noexcept;
 
     public:
-        /**
-         * @brief Reset the world
-         */
-        void Reset() noexcept;
 		/**
 		 * @brief Update the world
 		 * @param deltaTime The time since the last update

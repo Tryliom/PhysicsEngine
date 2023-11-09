@@ -9,8 +9,7 @@
 #include <tracy/Tracy.hpp>
 #endif
 
-Sample::Sample(std::string name, std::string description) noexcept :
-        _world(_heapAllocator, 1)
+Sample::Sample(std::string name, std::string description) noexcept
 {
 	_name = std::move(name);
 	_description = std::move(description);
@@ -46,7 +45,7 @@ void Sample::Init() noexcept
 void Sample::Deinit() noexcept
 {
     onDeinit();
-    _world.Reset();
+    _world = Physics::World();
 }
 
 void Sample::DrawImGui() noexcept

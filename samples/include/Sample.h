@@ -12,7 +12,6 @@ public:
 private:
 	std::string _name;
 	std::string _description;
-    HeapAllocator _heapAllocator {};
 
 protected:
     Physics::World _world;
