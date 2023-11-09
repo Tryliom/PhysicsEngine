@@ -4,6 +4,7 @@
 
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
+#include <fmt/format.h>
 #endif
 
 namespace Physics
@@ -81,26 +82,54 @@ namespace Physics
 		}
 	}
 
+    MyVector<ColliderPair> World::getColliderPairs() noexcept
+    {
+#ifdef TRACY_ENABLE
+        ZoneScopedN("World::getColliderPairs");
+#endif
+
+        const auto& allPossibleColliderPairs = _quadTree.GetAllPossiblePairs();
+        MyVector<ColliderPair> newColliderPairs { StandardAllocator<ColliderPair> {_heapAllocator} };
+
+        newColliderPairs.reserve(allPossibleColliderPairs.size() * Math::Clamp(_lastColliderPairsPercentage * 2, _lastColliderPairsPercentage, 1.f));
+
+        for (auto& colliderPair : allPossibleColliderPairs)
+        {
+            Collider& colliderA = GetCollider(colliderPair.A);
+            Collider& colliderB = GetCollider(colliderPair.B);
+
+            if (colliderA.GetBodyRef() == colliderB.GetBodyRef()) continue;
+
+            if (colliderA.GetShapeType() == Math::ShapeType::Rectangle && colliderB.GetShapeType() == Math::ShapeType::Rectangle ||
+                overlap(colliderA, colliderB))
+            {
+                newColliderPairs.push_back(colliderPair);
+            }
+        }
+
+#ifdef TRACY_ENABLE
+
+        const auto& info = fmt::format(
+                "{} - {} = {} verified collider pairs",
+                allPossibleColliderPairs.size(), allPossibleColliderPairs.size() - newColliderPairs.size(), newColliderPairs.size());
+        ZoneText(info.c_str(), info.size());
+#endif
+
+        _lastColliderPairsPercentage = static_cast<float>(newColliderPairs.size()) / static_cast<float>(allPossibleColliderPairs.size());
+
+        return newColliderPairs;
+    }
+
 	void World::processColliders() noexcept
 	{
 #ifdef TRACY_ENABLE
-		ZoneNamedN(processColliders, "World::processColliders", true);
+        ZoneScopedN("World::processColliders");
 #endif
-        const auto& allPossibleColliderPairs = _quadTree.GetAllPossiblePairs();
-		MyVector<ColliderPair> newColliderPairs { StandardAllocator<ColliderPair> {_heapAllocator} };
+		MyVector<ColliderPair> newColliderPairs = getColliderPairs();
 
-		newColliderPairs.reserve(allPossibleColliderPairs.size());
-
-		for (auto& colliderPair : allPossibleColliderPairs)
-		{
-			Collider& colliderA = GetCollider(colliderPair.A);
-			Collider& colliderB = GetCollider(colliderPair.B);
-
-			if (colliderA.GetBodyRef() == colliderB.GetBodyRef()) continue;
-			if (!overlap(colliderA, colliderB)) continue;
-
-			newColliderPairs.push_back(colliderPair);
-		}
+#ifdef TRACY_ENABLE
+        ZoneNamedN(onCollisions, "Check triggers and collisions", true);
+#endif
 
 		for (auto& collider : newColliderPairs)
 		{

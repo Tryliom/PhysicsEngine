@@ -35,6 +35,8 @@ namespace Physics
 
 	    HeapAllocator& _heapAllocator;
 
+        float _lastColliderPairsPercentage { 1.f };
+
 		/**
 		 * @brief Check the collisions and triggers of the colliders
 		 */
@@ -46,6 +48,7 @@ namespace Physics
 		/**
 		 * @brief Check the collisions and triggers of the colliders in the quadtree
 		 */
+        MyVector<ColliderPair> getColliderPairs() noexcept;
 		void processColliders() noexcept;
 		/**
 		 * @brief Calculate the collisions of the colliders

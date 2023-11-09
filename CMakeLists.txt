@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(SDL2 REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 
 OPTION(ENABLE_SANITIZERS "Enable sanitizers" OFF)
 OPTION(USE_TRACY "Enable Tracy profiling" OFF)
@@ -60,7 +61,7 @@ add_library(PhysicsEngineLib ${SRC_FILES})
 set_target_properties(PhysicsEngineLib PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(PhysicsEngineLib PUBLIC physics/include/)
 target_include_directories(PhysicsEngineLib PUBLIC libs/Math/)
-target_link_libraries(PhysicsEngineLib PUBLIC CommonLib)
+target_link_libraries(PhysicsEngineLib PUBLIC CommonLib fmt::fmt)
 
 # Physics tests
 SET(PHYSICS_TEST_DIR ${CMAKE_SOURCE_DIR}/physics/tests)
