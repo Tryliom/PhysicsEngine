@@ -93,7 +93,7 @@ namespace Physics
 
         newColliderPairs.reserve(allPossibleColliderPairs.size() * Math::Clamp(_lastColliderPairsPercentage * 2, _lastColliderPairsPercentage, 1.f));
 
-        for (auto& colliderPair : allPossibleColliderPairs)
+        for (const auto& colliderPair : allPossibleColliderPairs)
         {
             Collider& colliderA = GetCollider(colliderPair.A);
             Collider& colliderB = GetCollider(colliderPair.B);
