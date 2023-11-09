@@ -18,15 +18,4 @@ namespace Physics
 			return A == other.A && B == other.B || A == other.B && B == other.A;
 		}
 	};
-
-    /**
-     * @brief Hash function for ColliderPair
-     */
-	struct ColliderPairHash
-	{
-		std::size_t operator()(const ColliderPair& pair) const noexcept
-		{
-			return pair.A.Index + pair.B.Index + pair.A.Generation + pair.B.Generation;
-		}
-	};
 }

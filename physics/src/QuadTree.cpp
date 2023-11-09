@@ -2,6 +2,7 @@
 
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
+#include <fmt/format.h>
 #endif
 
 namespace Physics
@@ -142,12 +143,11 @@ namespace Physics
         }
 	}
 
-	void QuadTree::addAllPossiblePairs(std::size_t index, ColliderRef collider) noexcept
+	void QuadTree::addAllPossiblePairs(std::size_t index, const ColliderRef& collider) noexcept
 	{
 #ifdef TRACY_ENABLE
 		ZoneScoped;
 #endif
-
 		const auto& node = _nodes[index];
 
 		for (auto i = 0; i < node.Colliders.size(); i++)
@@ -164,10 +164,13 @@ namespace Physics
 
 		if (node.Divided)
 		{
-			for (auto i = 1; i <= 4; i++)
-			{
-				addAllPossiblePairs(index * 4 + i, collider);
-			}
+            const auto& nextIndex = index * 4 + 1;
+            const auto& maxIndex = nextIndex + 3;
+
+            for (auto j = nextIndex; j <= maxIndex; j++)
+            {
+                addAllPossiblePairs(j, collider);
+            }
 		}
 	}
 
@@ -183,24 +186,29 @@ namespace Physics
 			for (auto i = 0; i < node.Colliders.size(); i++)
 			{
 				const auto& collider = node.Colliders[i];
+                const auto& ref = collider.Ref;
+                const auto& bounds = collider.Bounds;
 
 				for (auto j = i + 1; j < node.Colliders.size(); j++)
 				{
 					const auto& otherCollider = node.Colliders[j];
 
-					if (collider.Ref == otherCollider.Ref) continue;
+					if (ref == otherCollider.Ref) continue;
 
-					if (Math::Intersect(collider.Bounds, otherCollider.Bounds))
+					if (Math::Intersect(bounds, otherCollider.Bounds))
 					{
-						_allPossiblePairs.push_back(ColliderPair{collider.Ref, otherCollider.Ref});
+						_allPossiblePairs.push_back(ColliderPair{ref, otherCollider.Ref});
 					}
 				}
 
 				if (node.Divided)
 				{
-					for (auto j = 1; j <= 4; j++)
+                    const auto& index = parentIndex * 4 + 1;
+                    const auto& maxIndex = index + 3;
+
+					for (auto j = index; j <= maxIndex; j++)
 					{
-						addAllPossiblePairs(parentIndex * 4 + j, collider.Ref);
+						addAllPossiblePairs(j, ref);
 					}
 				}
 			}

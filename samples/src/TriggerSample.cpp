@@ -273,7 +273,6 @@ void TriggerSample::createBall() noexcept
 {
 	const static auto screenWidth = static_cast<float>(Display::GetWidth());
 	const static auto screenHeight = static_cast<float>(Display::GetHeight());
-	const static auto screenCenter = Math::Vec2F{ screenWidth / 2.f, screenHeight / 2.f };
 	const float minRadius = 10.f;
 	const float maxRadius = 30.f;
 
@@ -287,7 +286,7 @@ void TriggerSample::createBall() noexcept
 	auto& body = _world.GetBody(_objects.back().BodyRef);
 
 	body.SetPosition({ Math::Random::Range(0.f, screenWidth), Math::Random::Range(0.f, screenHeight) });
-	body.SetVelocity((screenCenter - body.Position()).Normalized() * Math::Random::Range(100.f, 300.f));
+	body.SetVelocity({ Math::Random::Range(-300.f, 300.f), Math::Random::Range(-300.f, 300.f) });
 
 	collider.SetCircle(circle);
 	collider.SetIsTrigger(true);
@@ -316,7 +315,7 @@ void TriggerSample::createBox() noexcept
 	auto& body = _world.GetBody(_objects.back().BodyRef);
 
 	body.SetPosition({ Math::Random::Range(0.f, screenWidth), Math::Random::Range(0.f, screenHeight) });
-	body.SetVelocity((screenCenter - body.Position()).Normalized() * Math::Random::Range(100.f, 300.f));
+    body.SetVelocity({ Math::Random::Range(-300.f, 300.f), Math::Random::Range(-300.f, 300.f) });
 
 	collider.SetRectangle(rect);
 	collider.SetIsTrigger(true);
@@ -348,7 +347,7 @@ void TriggerSample::createPolygon() noexcept
 	auto& body = _world.GetBody(_objects.back().BodyRef);
 
 	body.SetPosition({ Math::Random::Range(0.f, screenWidth), Math::Random::Range(0.f, screenHeight) });
-	body.SetVelocity((screenCenter - body.Position()).Normalized() * Math::Random::Range(100.f, 300.f));
+    body.SetVelocity({ Math::Random::Range(-300.f, 300.f), Math::Random::Range(-300.f, 300.f) });
 
 	collider.SetPolygon(poly);
 	collider.SetIsTrigger(true);

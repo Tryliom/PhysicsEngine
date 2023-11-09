@@ -27,7 +27,7 @@ private:
 	bool _showBoxes {};
 	bool _showQuadTrees {};
 
-    int _circles = 100;
+    int _circles = 1000;
     int _boxes = 0;
     int _polygons = 0;
 
