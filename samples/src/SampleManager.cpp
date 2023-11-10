@@ -16,8 +16,8 @@
 #endif
 
 SampleManager::SampleManager() noexcept : _timer(), _samples({
-    MakeUnique<Sample, PlanetSystemSample>(),
     MakeUnique<Sample, GravitySample>(),
+    MakeUnique<Sample, PlanetSystemSample>(),
 	MakeUnique<Sample, CollisionSample>(),
     MakeUnique<Sample, TriggerSample>(),
 })

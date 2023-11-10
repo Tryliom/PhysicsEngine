@@ -150,7 +150,7 @@ void PlanetSystemSample::onUpdate(float deltaTime) noexcept
 
 			const auto& force = radius.Normalized() * (body.Mass() * _sunMass / radius.SquareLength());
 
-            body.AddForce(force);
+            body.AddForce(force * body.Mass());
         }
     }
 
@@ -168,7 +168,9 @@ void PlanetSystemSample::onUpdate(float deltaTime) noexcept
 
             if (radius == Math::Vec2F::Zero()) continue;
 
-            sunBody.AddForce(radius.Normalized() * (sunBody.Mass() * otherSunBody.Mass() / radius.SquareLength()));
+			const auto& force = radius.Normalized() * (sunBody.Mass() * otherSunBody.Mass() / radius.SquareLength());
+
+            sunBody.AddForce(force * sunBody.Mass());
         }
     }
 }
@@ -226,9 +228,9 @@ void PlanetSystemSample::createPlanet(Math::Vec2F position, float extraMass)
     auto& nearestSunBody = _world.GetBody(nearestSun);
 
     // Make the planet velocity perpendicular to the vector from the center of the screen to the planet.
-    Math::Vec2F sunToPlanet = planet.Position() - nearestSunBody.Position();
+    Math::Vec2F radius = planet.Position() - nearestSunBody.Position();
     // Calculate the velocity needed to make the planet orbit around the center of the screen using his mass.
-    Math::Vec2F orbitalVelocity = Math::Vec2F(-sunToPlanet.Y, sunToPlanet.X).Normalized() * std::sqrt(nearestSunBody.Mass() * mass / sunToPlanet.Length());
+    Math::Vec2F orbitalVelocity = Math::Vec2F(-radius.Y, radius.X).Normalized() * std::sqrt(nearestSunBody.Mass() * mass / radius.Length());
     // Apply the sun velocity to the planet.
     orbitalVelocity += nearestSunBody.Velocity();
 
