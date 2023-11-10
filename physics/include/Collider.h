@@ -61,7 +61,7 @@ namespace Physics
          * @brief Get the bounciness of the collider
          * @return the bounciness
          */
-		[[nodiscard]] float GetBounciness() const noexcept;
+		[[nodiscard]] float GetRestitution() const noexcept;
         /**
          * @brief Get the friction of the collider
          * @return the friction

@@ -67,7 +67,21 @@ namespace Math
          * @param position the position of the rectangle
          * @param size the size of the rectangle
          */
-        constexpr Rectangle(Vec2<T> minBound, Vec2<T> maxBound) noexcept : _minBound(minBound), _maxBound(maxBound) {}
+        constexpr Rectangle(Vec2<T> minBound, Vec2<T> maxBound) noexcept : _minBound(minBound), _maxBound(maxBound)
+		{
+			// Swap them if they are not in the right order
+			if (_minBound.X > _maxBound.X)
+			{
+				_minBound.X = maxBound.X;
+				_maxBound.X = minBound.X;
+			}
+
+			if (_minBound.Y > _maxBound.Y)
+			{
+				_minBound.Y = maxBound.Y;
+				_maxBound.Y = minBound.Y;
+			}
+		}
 
     private:
         Vec2<T> _minBound = Vec2<T>::Zero();

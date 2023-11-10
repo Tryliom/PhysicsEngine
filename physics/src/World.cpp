@@ -204,72 +204,116 @@ namespace Physics
 		ZoneNamedN(onCollision, "World::onCollision", true);
 #endif
 
-		auto colliderA = GetCollider(colliderRef);
-		auto colliderB = GetCollider(otherColliderRef);
+		std::array<ColliderRef, 2> colliders = { colliderRef, otherColliderRef };
+		std::array<BodyRef, 2> bodies = { GetCollider(colliderRef).GetBodyRef(), GetCollider(otherColliderRef).GetBodyRef() };
+
+		if (GetBody(bodies[0]).GetBodyType() == BodyType::Static)
+		{
+			std::swap(colliders[0], colliders[1]);
+			std::swap(bodies[0], bodies[1]);
+		}
+
+		auto& bodyA = GetBody(bodies[0]);
+		auto& bodyB = GetBody(bodies[1]);
+		const auto& colliderA = GetCollider(colliders[0]);
+		const auto& colliderB = GetCollider(colliders[1]);
 
 		if (colliderA.GetShapeType() == Math::ShapeType::Polygon || colliderB.GetShapeType() == Math::ShapeType::Polygon) return;
 		if (colliderA.GetShapeType() == Math::ShapeType::Circle && colliderB.GetShapeType() == Math::ShapeType::Rectangle) return;
 		if (colliderA.GetShapeType() == Math::ShapeType::Rectangle && colliderB.GetShapeType() == Math::ShapeType::Circle) return;
 
+		auto positionA = bodyA.Position() + colliderA.GetOffset();
+		auto positionB = bodyB.Position() + colliderB.GetOffset();
+		Math::Vec2F normal;
+		float penetration;
+
 		// 2x circle, overlap already checked
 		if (colliderA.GetShapeType() == Math::ShapeType::Circle && colliderB.GetShapeType() == Math::ShapeType::Circle)
 		{
-			auto& bodyA = GetBody(colliderA.GetBodyRef());
-			auto& bodyB = GetBody(colliderB.GetBodyRef());
+			const auto& circleA = colliderA.GetCircle();
+			const auto& circleB = colliderB.GetCircle();
+			const auto& radiusA = circleA.Radius();
+			const auto& radiusB = circleB.Radius();
 
-			const auto& positionA = bodyA.Position() + colliderA.GetOffset();
-			const auto& positionB = bodyB.Position() + colliderB.GetOffset();
+			positionA += circleA.Center();
+			positionB += circleB.Center();
 
-			const auto& normal = (positionA - positionB).Normalized();
-			const auto& relativeVelocity = bodyA.Velocity() - bodyB.Velocity();
-			const auto& velocityAlongNormal = relativeVelocity.Dot(normal);
+			const auto& delta = positionA - positionB;
 
-			if (velocityAlongNormal > 0) return;
-
-			const auto& restitution = std::min(colliderA.GetBounciness(), colliderB.GetBounciness());
-			const auto& impulseMagnitude = -restitution * velocityAlongNormal;
-			const auto& impulse = impulseMagnitude * normal;
-
-            if (bodyA.GetBodyType() == BodyType::Dynamic)
-            {
-                bodyA.AddVelocity(impulse * bodyA.InverseMass());
-            }
-
-            if (bodyB.GetBodyType() == BodyType::Dynamic)
-            {
-                bodyB.AddVelocity(- impulse * bodyB.InverseMass());
-            }
+			normal = delta.Normalized();
+			penetration = radiusA + radiusB - delta.Length();
 		}
 		// 2x rectangle, overlap already checked
 		else if (colliderA.GetShapeType() == Math::ShapeType::Rectangle && colliderB.GetShapeType() == Math::ShapeType::Rectangle)
 		{
-			auto& bodyA = GetBody(colliderA.GetBodyRef());
-			auto& bodyB = GetBody(colliderB.GetBodyRef());
+			const auto& rectA = colliderA.GetRectangle();
+			const auto& rectB = colliderB.GetRectangle();
+			const auto& halfSizeA = rectA.HalfSize();
+			const auto& halfSizeB = rectB.HalfSize();
 
-			const auto& positionA = bodyA.Position() + colliderA.GetOffset() + colliderA.GetRectangle().Center();
-			const auto& positionB = bodyB.Position() + colliderB.GetOffset() + colliderB.GetRectangle().Center();
+			positionA += rectA.Center();
+			positionB += rectB.Center();
 
-            //TODO: Check penetration and take the minimum penetration vertical and horizontal
+			const auto& delta = positionA - positionB;
 
-			const auto& normal = (positionA - positionB).Normalized();
-			const auto& relativeVelocity = bodyA.Velocity() - bodyB.Velocity();
-			const auto& velocityAlongNormal = relativeVelocity.Dot(normal);
+			const auto& penetrationX = halfSizeA.X + halfSizeB.X - std::abs(delta.X);
+			const auto& penetrationY = halfSizeA.Y + halfSizeB.Y - std::abs(delta.Y);
 
-			if (velocityAlongNormal > 0) return;
+			if (penetrationX < penetrationY)
+			{
+				normal = delta.X > 0 ? Math::Vec2F::Right() : Math::Vec2F::Left();
+				penetration = penetrationX;
+			}
+			else
+			{
+				normal = delta.Y > 0 ? Math::Vec2F::Up() : Math::Vec2F::Down();
+				penetration = penetrationY;
+			}
+		}
 
-			const auto& restitution = std::min(colliderA.GetBounciness(), colliderB.GetBounciness());
-			const auto& impulseMagnitude = -restitution * velocityAlongNormal;
-			const auto& impulse = impulseMagnitude * normal;
+		const auto& separatingVelocity = (bodyA.Velocity() - bodyB.Velocity()).Dot(normal);
+		const auto& inverseMassA = bodyA.InverseMass();
+		const auto& inverseMassB = bodyB.InverseMass();
+		const auto& totalInverseMass = inverseMassA + inverseMassB;
 
-            if (bodyA.GetBodyType() == BodyType::Dynamic)
-            {
-                bodyA.AddVelocity(impulse * bodyA.InverseMass());
-            }
+		if (separatingVelocity <= 0)
+		{
+			const auto& massA = bodyA.Mass();
+			const auto& massB = bodyB.Mass();
+			const auto& restitutionA = colliderA.GetRestitution();
+			const auto& restitutionB = colliderB.GetRestitution();
 
-            if (bodyB.GetBodyType() == BodyType::Dynamic)
-            {
-                bodyB.AddVelocity(- impulse * bodyB.InverseMass());
-            }
+			const auto& combinedRestitution = (massA * restitutionA + massB * restitutionB) / (massA + massB);
+			const auto& finalSeparatingVelocity = -separatingVelocity * combinedRestitution;
+			const auto& deltaVelocity = finalSeparatingVelocity - separatingVelocity;
+
+			const auto& impulse = deltaVelocity / totalInverseMass;
+			const auto& impulsePerMass = impulse * normal;
+
+			if (bodyA.GetBodyType() == BodyType::Dynamic)
+			{
+				bodyA.AddVelocity(impulsePerMass * inverseMassA);
+			}
+
+			if (bodyB.GetBodyType() == BodyType::Dynamic)
+			{
+				bodyB.AddVelocity(impulsePerMass * -inverseMassB);
+			}
+		}
+
+		if (penetration <= 0) return;
+		if (totalInverseMass <= 0) return;
+
+		const auto& movePerMass = normal * (penetration / totalInverseMass);
+
+		if (bodyA.GetBodyType() == BodyType::Dynamic)
+		{
+			bodyA.AddPosition(movePerMass * inverseMassA);
+		}
+
+		if (bodyB.GetBodyType() == BodyType::Dynamic)
+		{
+			bodyB.AddPosition(movePerMass * -inverseMassB);
 		}
 	}
 
@@ -382,18 +426,29 @@ namespace Physics
 #endif
 		for (auto& body : _bodies)
 		{
-			if (!body.IsEnabled() || body.GetBodyType() == BodyType::Static) continue;
+			if (!body.IsEnabled()) continue;
 
-            if (body.UseGravity())
-            {
-                body.AddForce(_gravity * body.InverseMass());
-            }
+			switch(body.GetBodyType())
+			{
+				case BodyType::Static: break;
+				case BodyType::Dynamic:
+				{
+					if (body.UseGravity())
+					{
+						body.AddForce(_gravity);
+					}
 
-            const auto& acceleration = body.Force() * body.InverseMass() * deltaTime;
-
-			body.AddVelocity(acceleration);
-			body.AddPosition(body.Velocity() * deltaTime);
-			body.SetForce(Math::Vec2F(0, 0));
+					body.AddVelocity(body.Force() * body.InverseMass() * deltaTime);
+					body.AddPosition(body.Velocity() * deltaTime);
+					body.SetForce(Math::Vec2F(0, 0));
+				}
+				break;
+				case BodyType::Kinematic:
+				{
+					body.AddPosition(body.Velocity() * deltaTime);
+				}
+				break;
+			}
 		}
 
 		if (_colliders.empty()) return;

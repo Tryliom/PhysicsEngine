@@ -34,7 +34,6 @@ private:
     static constexpr Color _triggerExitColor = Color(255, 100, 100);
     static constexpr Color _triggerStayColor = Color(255, 255, 100);
     static constexpr float _blinkTimer = 0.3f;
-	static constexpr int _wallSplit = 50;
 
     void onInit() noexcept override;
     void onDeinit() noexcept override;

@@ -27,7 +27,7 @@ void CollisionSample::onInit() noexcept
     Display::SetTitle("Collision Sample");
     _world.SetContactListener(this);
 
-	_objects.resize(_circles + _boxes + 4 * _wallSplit);
+	_objects.resize(_circles + _boxes + 4);
 
     for (int i = 0; i < _circles; ++i)
     {
@@ -281,42 +281,25 @@ void CollisionSample::createWalls() noexcept
 		{static_cast<float>(Display::GetWidth()) + wallThickness * 0.5f, static_cast<float>(Display::GetHeight())}
 	};
 	std::array<Math::RectangleF, 4> walls{ top, bottom, left, right };
-    auto bodyRef = _world.CreateBody();
+    const auto& bodyRef = _world.CreateBody();
+	auto& body = _world.GetBody(bodyRef);
+
+	body.SetPosition(Math::Vec2F::Zero());
+	body.SetVelocity(Math::Vec2F::Zero());
+	body.SetBodyType(Physics::BodyType::Static);
 
 	// Create walls
 	for (const auto& wall : walls)
 	{
-		// Separate the wall in _wallSplit smaller walls
-		for (int i = 0; i < _wallSplit; ++i)
-		{
-			auto partWall = Math::RectangleF{
-				{wall.MinBound().X + wall.Width() / _wallSplit * i,       wall.MinBound().Y},
-				{wall.MinBound().X + wall.Width() / _wallSplit * (i + 1), wall.MaxBound().Y}
-			};
+		_objects.emplace_back();
+		_objects.back().BodyRef = bodyRef;
+		_objects.back().ColliderRef = _world.CreateCollider(bodyRef);
+		_objects.back().ObjectColor = _color;
 
-            if (wall.Width() < wall.Height())
-            {
-                partWall = Math::RectangleF{
-                    {wall.MinBound().X, wall.MinBound().Y + wall.Height() / _wallSplit * i},
-                    {wall.MaxBound().X, wall.MinBound().Y + wall.Height() / _wallSplit * (i + 1)}
-                };
-            }
+		auto& collider = _world.GetCollider(_objects.back().ColliderRef);
 
-			_objects.emplace_back();
-			_objects.back().BodyRef = bodyRef;
-			_objects.back().ColliderRef = _world.CreateCollider(bodyRef);
-			_objects.back().ObjectColor = _color;
-
-			auto& collider = _world.GetCollider(_objects.back().ColliderRef);
-			auto& body = _world.GetBody(_objects.back().BodyRef);
-
-			body.SetPosition(Math::Vec2F::Zero());
-			body.SetVelocity(Math::Vec2F::Zero());
-            body.SetBodyType(Physics::BodyType::Static);
-
-			collider.SetRectangle(partWall);
-			collider.SetBounciness(1.f);
-		}
+		collider.SetRectangle(wall);
+		collider.SetBounciness(1.f);
 	}
 }
 
@@ -336,6 +319,10 @@ void CollisionSample::OnCollisionEnter(Physics::ColliderRef colliderRef, Physics
     {
         if (object.ColliderRef == colliderRef || object.ColliderRef == otherColliderRef)
         {
+	        const auto& body = _world.GetBody(object.BodyRef);
+
+	        if (body.GetBodyType() == Physics::BodyType::Static) continue;
+
             object.TriggerEnterTimer = _blinkTimer;
         }
     }
@@ -350,6 +337,11 @@ void CollisionSample::OnCollisionExit(Physics::ColliderRef colliderRef, Physics:
         if (object.ColliderRef == colliderRef || object.ColliderRef == otherColliderRef)
         {
 	        object.ObjectColor = randomColor;
+
+			const auto& body = _world.GetBody(object.BodyRef);
+
+			if (body.GetBodyType() == Physics::BodyType::Static) continue;
+
             object.TriggerExitTimer = _blinkTimer;
         }
     }

@@ -40,7 +40,7 @@ TEST(Collider, DefaultConstructor)
 	EXPECT_EQ(collider.GetColliderRef(), ColliderRef());
 	EXPECT_EQ(collider.GetBodyRef(), BodyRef());
 	EXPECT_EQ(collider.GetContactListener(), nullptr);
-	EXPECT_EQ(collider.GetBounciness(), 0.f);
+	EXPECT_EQ(collider.GetRestitution(), 0.f);
 	EXPECT_EQ(collider.GetFriction(), 0.f);
 	EXPECT_FALSE(collider.IsTrigger());
 	EXPECT_TRUE(collider.IsFree());
@@ -81,7 +81,7 @@ TEST(Collider, SetBounciness)
 
 	collider.SetBounciness(0.5f);
 
-	EXPECT_EQ(collider.GetBounciness(), 0.5f);
+	EXPECT_EQ(collider.GetRestitution(), 0.5f);
 }
 
 TEST(Collider, SetFriction)

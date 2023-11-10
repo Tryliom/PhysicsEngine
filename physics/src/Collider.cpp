@@ -22,7 +22,7 @@ namespace Physics
 		return _position;
 	}
 
-    float Collider::GetBounciness() const noexcept
+    float Collider::GetRestitution() const noexcept
 	{
 		return _bounciness;
 	}

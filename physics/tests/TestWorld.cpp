@@ -119,7 +119,7 @@ TEST(World, Collider)
 	EXPECT_EQ(collider.GetBodyRef(), bodyRef);
 	EXPECT_TRUE(collider.IsEnabled());
 	EXPECT_FALSE(collider.IsTrigger());
-	EXPECT_EQ(collider.GetBounciness(), 0.f);
+	EXPECT_EQ(collider.GetRestitution(), 0.f);
 	EXPECT_EQ(collider.GetFriction(), 0.f);
 
 	world.DestroyCollider(colliderRef);
