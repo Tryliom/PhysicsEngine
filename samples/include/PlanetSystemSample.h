@@ -27,10 +27,10 @@ public:
 	PlanetSystemSample() noexcept;
 
 private:
-    const float _mouseRandomRadius = 15.f;
-    const float _sunMass = 10000.f;
-    const float _sunRadius = 10.f;
-    const Color _sunColor = Color(255, 255, 0);
+    static constexpr float _mouseRandomRadius = 15.f;
+	static constexpr float _sunMass = 100000.f;
+	static constexpr float _sunRadius = 10.f;
+	static constexpr Color _sunColor = Color(255, 255, 0);
 
     std::vector<Planet> _planets;
     std::vector<Physics::BodyRef> _suns;

@@ -187,6 +187,7 @@ void GravitySample::createBall() noexcept
 
 	body.SetPosition(Display::GetMousePosition());
 	body.SetUseGravity(true);
+	body.SetMass(Math::Random::Range(1.f, 10.f));
 
 	collider.SetCircle(circle);
 	collider.SetBounciness(_objectsBounciness);

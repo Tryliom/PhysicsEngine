@@ -35,7 +35,7 @@ void PlanetSystemSample::onInit() noexcept
     constexpr int planetsToCreate = 250;
     constexpr float R = 700;
 
-    _planets.resize(planetsToCreate);
+    _planets.reserve(planetsToCreate);
 
     for (std::size_t i = 0; i < planetsToCreate; i++)
     {
@@ -125,8 +125,8 @@ void PlanetSystemSample::onInput() noexcept
 	}
 	else if (Input::IsMouseButtonHeld(SDL_BUTTON_LEFT))
 	{
-		createPlanet(Display::GetMousePosition() +
-		             Math::Vec2F(Math::Random::Range(-_mouseRandomRadius, _mouseRandomRadius), Math::Random::Range(-_mouseRandomRadius, _mouseRandomRadius)));
+		createPlanet(Display::GetMousePosition() + Math::Vec2F(Math::Random::Range(-_mouseRandomRadius, _mouseRandomRadius),
+															   Math::Random::Range(-_mouseRandomRadius, _mouseRandomRadius)));
 	}
 
 	if (Input::IsMouseButtonPressed(SDL_BUTTON_MIDDLE))
@@ -137,24 +137,24 @@ void PlanetSystemSample::onInput() noexcept
 
 void PlanetSystemSample::onUpdate(float deltaTime) noexcept
 {
-	for (auto& planet : _planets)
+	for (const auto& planet : _planets)
     {
         auto& body = _world.GetBody(planet.BodyRef);
 
-        for (auto sun : _suns)
+        for (const auto& sun : _suns)
         {
-            auto& sunBody = _world.GetBody(sun);
+            const auto& sunBody = _world.GetBody(sun);
+            Math::Vec2F radius = sunBody.Position() - body.Position();
 
-            // Apply force to planet to make it orbit around the center of the screen.
-            Math::Vec2F centerToPlanet = sunBody.Position() - body.Position();
+            if (radius == Math::Vec2F::Zero()) continue;
 
-            if (centerToPlanet == Math::Vec2F::Zero()) continue;
+			const auto& force = radius.Normalized() * (body.Mass() * _sunMass / radius.SquareLength());
 
-            body.AddForce(centerToPlanet.Normalized() * (_sunMass * body.Mass() / (centerToPlanet.Length() * centerToPlanet.Length())));
+            body.AddForce(force);
         }
     }
 
-    for (auto& sun : _suns)
+    for (const auto& sun : _suns)
     {
         auto& sunBody = _world.GetBody(sun);
 
@@ -164,19 +164,18 @@ void PlanetSystemSample::onUpdate(float deltaTime) noexcept
 
             if (&sunBody == &otherSunBody) continue;
 
-            Math::Vec2F sunToOtherSun = otherSunBody.Position() - sunBody.Position();
+            Math::Vec2F radius = otherSunBody.Position() - sunBody.Position();
 
-            if (sunToOtherSun == Math::Vec2F::Zero()) continue;
+            if (radius == Math::Vec2F::Zero()) continue;
 
-            sunBody.AddForce(sunToOtherSun.Normalized() * (otherSunBody.Mass() *
-                                                           sunBody.Mass() / (sunToOtherSun.Length() * sunToOtherSun.Length())));
+            sunBody.AddForce(radius.Normalized() * (sunBody.Mass() * otherSunBody.Mass() / radius.SquareLength()));
         }
     }
 }
 
 void PlanetSystemSample::onRender() noexcept
 {
-	for (auto& planet : _planets)
+	for (const auto& planet : _planets)
     {
         auto& body = _world.GetBody(planet.BodyRef);
 
@@ -206,7 +205,6 @@ void PlanetSystemSample::createPlanet(Math::Vec2F position, float extraMass)
     auto planetRef = _world.CreateBody();
     auto& planet = _world.GetBody(planetRef);
     auto mass = Math::Random::Range(800.f, 1400.f) + extraMass;
-    _planets.emplace_back(planetRef, generateRandomColor(), mass / 200.f);
 
     planet.SetPosition(position);
     planet.SetMass(mass);
@@ -235,11 +233,13 @@ void PlanetSystemSample::createPlanet(Math::Vec2F position, float extraMass)
     orbitalVelocity += nearestSunBody.Velocity();
 
     planet.SetVelocity(orbitalVelocity);
+
+	_planets.push_back({planetRef, generateRandomColor(), mass / 200.f});
 }
 
 void PlanetSystemSample::createSun(Math::Vec2F position)
 {
-    auto sunRef = _world.CreateBody();
+    const auto& sunRef = _world.CreateBody();
     auto& sun = _world.GetBody(sunRef);
 
     _suns.push_back(sunRef);

@@ -27,11 +27,6 @@ namespace Physics
 		return _bounciness;
 	}
 
-	float Collider::GetFriction() const noexcept
-	{
-		return _friction;
-	}
-
 	bool Collider::IsTrigger() const noexcept
 	{
 		return _isTrigger;
@@ -70,11 +65,6 @@ namespace Physics
 	void Collider::SetBounciness(float bounciness) noexcept
 	{
 		_bounciness = bounciness;
-	}
-
-	void Collider::SetFriction(float friction) noexcept
-	{
-		_friction = friction;
 	}
 
 	void Collider::SetIsTrigger(bool isTrigger) noexcept
@@ -119,7 +109,6 @@ namespace Physics
 	{
 		_isEnabled = false;
 		_bounciness = 0.f;
-		_friction = 0.f;
 		_isTrigger = false;
 		_shapeType = Math::ShapeType::None;
 	}

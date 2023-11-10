@@ -25,7 +25,6 @@ namespace Physics
 		Math::ShapeType _shapeType { Math::ShapeType::None };
 
 		float _bounciness { 0.f };
-		float _friction { 0.f };
 
 		bool _isTrigger { false };
 		bool _isEnabled { false };
@@ -62,11 +61,6 @@ namespace Physics
          * @return the bounciness
          */
 		[[nodiscard]] float GetRestitution() const noexcept;
-        /**
-         * @brief Get the friction of the collider
-         * @return the friction
-         */
-		[[nodiscard]] float GetFriction() const noexcept;
         /**
          * @brief Check if the collider is a trigger
          * @return True if the collider is a trigger
@@ -112,11 +106,6 @@ namespace Physics
          * @param bounciness the bounciness
          */
 		void SetBounciness(float bounciness) noexcept;
-        /**
-         * @brief Set the friction of the collider
-         * @param friction the friction
-         */
-		void SetFriction(float friction) noexcept;
         /**
          * @brief Set if the collider is a trigger
          * @param isTrigger true if the collider is a trigger

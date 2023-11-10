@@ -2,7 +2,6 @@
 
 #include "TriggerSample.h"
 #include "PlanetSystemSample.h"
-#include "FreeTriggerSample.h"
 #include "CollisionSample.h"
 #include "GravitySample.h"
 #include "Input.h"
@@ -17,11 +16,10 @@
 #endif
 
 SampleManager::SampleManager() noexcept : _timer(), _samples({
+    MakeUnique<Sample, PlanetSystemSample>(),
+    MakeUnique<Sample, GravitySample>(),
 	MakeUnique<Sample, CollisionSample>(),
     MakeUnique<Sample, TriggerSample>(),
-    MakeUnique<Sample, GravitySample>(),
-	MakeUnique<Sample, FreeTriggerSample>(),
-    MakeUnique<Sample, PlanetSystemSample>()
 })
 {
     Display::Init(SCREEN_WIDTH, SCREEN_HEIGHT, "Samples selection");
@@ -112,7 +110,6 @@ void SampleManager::drawImGui() noexcept
 
 	// Display the description of the current sample
 	ImGui::TextWrapped("%s", _descriptions[_currentSample].c_str());
-
     ImGui::Spacing();
 
     _samples[_currentSample]->DrawImGui();
