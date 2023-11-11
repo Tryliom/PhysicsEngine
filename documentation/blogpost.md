@@ -1,24 +1,14 @@
-<style>
-    * {
-        font-family:"Century Gothic", sans-serif;
-    }
-    #md {
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-</style>
-
-**Physics engine**
+# Physics engine
 
 It's a physics engine created during the [SAE Games Programming](https://www.sae.edu/ch-ge/games-programming-diploma-bachelor) formation, by [Alexis Haldy aka Tryliom](https://github.com/Tryliom).<br>
 
 What's the meaning of this engine ?
 ==============================================================
 
-!!! Note: Goal :
-    * Understand Physics basics
-    * Track our code
-    * Understand how to optimize it
+Goal : Create a physics engine from scratch in C++.<br>
+  * Understand Physics basics
+  * Track our code
+  * Understand how to optimize it
 
 Demo scenes
 ==============================================================
@@ -190,7 +180,7 @@ Physics time: 80% -> 50%<br>
 - I optimized the quadtree, so a collider can only be inserted once in the quadtree.
 - I still get all colliders using recursive calls and insert with the same vector.
 - I still use an unordered_set to store the colliders in the quadtree.
-- It use now a FreeList allocator to allocate the colliders inside the quadtree, it created a small memory leak.
+- It uses now a FreeList allocator to allocate the colliders inside the quadtree, it created a small memory leak.
 - I implemented the memory tracking.
 - I fixed the double rendering bug.
 
@@ -224,9 +214,3 @@ Physics time: 70% -> 73%<br>
 A frame take more time to be processed, but the getColliderPairs function take less time.<br>
 
 ![Student t-test](images/ttest3-4.png)
-
-<style class="fallback">
-    body{visibility:hidden}
-</style>
-<script>markdeepOptions={tocStyle:'long'};</script>
-<script src="https://casual-effects.com/markdeep/latest/markdeep.min.js?" charset="utf-8"></script>

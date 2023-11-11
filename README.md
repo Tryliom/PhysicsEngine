@@ -4,7 +4,7 @@
 
 - [Build](documentation/Build.md)
 - [Naming convention](documentation/NamingConvention.md)
-- [Blogpost about the engine](documentation/blogpost.md.html)
+- [Blogpost about the engine](documentation/blogpost.md)
 
 ## Description
 
