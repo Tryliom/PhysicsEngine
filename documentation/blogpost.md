@@ -62,19 +62,7 @@ In the engine, the quadtree is used to optimize the collision detection, it will
 
 In the engine, the max depth is 5 and max number of shape per node is 8.<br>
 
-************************************
-*.---------------.----------------.*
-*|               |                |*
-*|     Node 1    |    Node 2      |*
-*|               |                |*
-*|               |                |*
-*.---------------.----------------.*
-*|               |                |*
-*|     Node 3    |    Node 4      |*
-*|               |                |*
-*|               |                |*
-*'---------------'----------------'*
-************************************
+![](images/quadtree.png)
 
 The Node 0 is the root node, it's the first node that will be created, it will be divided into 4 nodes (Node 1, Node 2, Node 3, Node 4) if there is more than 8 shapes (max shape per nodes) in the root node.<br>
 
