@@ -12,40 +12,40 @@ Goal : Create a physics engine from scratch in C++.<br>
 
 Demo scenes
 ==============================================================
-## Planet Scene
+## Planet scene
 
 Planets orbiting around a sun, the small circles are the planets and the center one (in yellow) is the sun.
 
-We can see the gravitational force applied to the planets, the closer they are to the sun, the faster they go.
-We can spawn planets and suns by clicking on the screen with different mass.
+You can see the gravitational force applied to the planets, the closer they are of the sun, the faster they go.
+You can spawn planets with different masses and suns, by clicking on the screen.
 
 ![](images/planet.gif)
 
-## Trigger Scene
+## Trigger scene
 
-Circles, rectangles and polygons will change color depending on if they overlap, enter or exit a trigger.
+Circles, rectangles and polygons will change color depending on whether they overlap, enter or exit a trigger.
 
-- Yellow mean overlap
-- Green outside border mean enter
-- Red outside border mean exit
+- Yellow corresponds to on overlap
+- Green outside border corresponds to enter
+- Red outside border corresponds to exit
 
 You can see the quadtree in the background (square borders), it's used to optimize the collision detection.
 
 ![](images/triggers.gif)
 
-## Collision Scene
+## Collision scene
 
-Circles and rectangles collide with each other and adapt their velocity, position.
-At each collision, the shapes take on the same new color and change their inside color according to the state (enter and exit).
+Circles and rectangles collide with each other, adapt their velocity and position.
+At each collision, the shapes take on the same new color and change their interior color according to the state (enter and exit).
 
-- Green inside mean enter
-- Red inside mean exit
+- Green inside corresponds to enter
+- Red inside corresponds to exit
 
 ![](images/collisions.gif)
 
-## Gravity Scene
+## Gravity scene
 
-You can spawn circles and rectangles, they are attracted by a force that pulls them downwards at each frame.<br>
+You can spawn dynamic circles and rectangles, they are attracted by gravity.<br>
 You can edit the gravity force and the bounce factor of future spawned shapes.<br>
 There is a static ground that can't be moved and that will collide with the shapes.
 
@@ -56,9 +56,15 @@ Quadtree
 
 ## What is a quadtree ?
 
-A quadtree is a tree data structure in which each internal node has exactly four children. Quadtrees are the two-dimensional analog of octrees and are most often used to partition a two-dimensional space by recursively subdividing it into four quadrants or regions. The data associated with a leaf cell varies by application, but the leaf cell represents a "unit of interesting spatial information".<br>
-This means that the quadtree will divide the screen into 4 parts, and each of these parts will be divided into 4 parts, and so on up to a certain depth defined by the user.<br>
-In the engine, the quadtree is used to optimize the collision detection, it will only check the shapes that are in the same quadtree node (and children) as the shape that we want to check.<br>
+A quadtree is a tree data structure in which each internal node has exactly four children. 
+Quadtrees are the two-dimensional analog of octrees and are most often used to partition a two-dimensional space by 
+recursively subdividing it into four quadrants or regions. The data associated with a leaf cell varies by application, 
+but the leaf cell represents a "unit of interesting spatial information".
+
+This means that the quadtree will divide the screen into 4 parts, and each of these parts will be divided into 4 parts, 
+and so on up to a certain depth defined by the user.<br>
+In the engine, the quadtree is used to optimize the collision detection, 
+it will only check the shapes that are in the same quadtree node (and children) as the shape that we want to check.<br>
 
 In the engine, the max depth is 5 and max number of shape per node is 8.<br>
 
@@ -68,7 +74,7 @@ The Node 0 is the root node, it's the first node that will be created, it will b
 
 ## Advantages
 
-Reduce the number of collision checks, the time complexity go through O(n) -> Olog(n) with this method as we divided the space in four.
+Reduce the number of collision check, the time complexity go through O(n) -> Olog(n) with this method as we divided the space in four.
 
 ## How I made it ?
 
@@ -83,13 +89,12 @@ Then, the world insert all colliders in the quadtree.
 The quadtree check if the collider overlap the node, if it's the case, the collider is inserted in the node.<br>
 If the node is full, it will be divided into 4 nodes and all colliders will be inserted in the new nodes.<br>
 If the collider overlap multiple children, it will be inserted in the parent node.<br>
-The max number limit will be ignored if the node is a leaf node (it doesn't have children).<br>
+The maximum limit of colliders in a node will be ignored if the node is a leaf node (it doesn't have children).<br>
 
 ### Calculate all possible pairs (simplified)
 
 After inserting all colliders in the quadtree, the world will ask the quadtree to calculate all possible pairs.<br>
-It will take all colliders in the root node and check if they overlap with simplified bound (rectangle), if it's the case, it will add them to the possible pairs list.<br>
-Then, it will take all colliders in the children nodes and check if they overlap, if it's the case, it will add them to the possible pairs list.<br>
+It will take all colliders in the root node and the children, check if they overlap with simplified bound (rectangle), if it's the case, it will add them to the possible pairs list.<br>
 It will do this recursively until it reach the leaf nodes.<br>
 
 Allocators
@@ -99,7 +104,6 @@ Allocators
 
 An allocator is a class that will allocate memory for you.<br>
 It's used to avoid memory fragmentation and to improve the performance.<br>
-The allocator used in the engine is a heap allocator, it's a simple allocator that will allocate memory on the heap.<br>
 This is mainly used to monitor the memory usage and to avoid memory fragmentation.<br>
 
 I made a heap, linear and free list allocator.<br>
@@ -108,7 +112,7 @@ Memory and performance tracking
 ==============================================================
 
 Memory and performance tracking is done with the [Tracy profiler](https://github.com/wolfpld/tracy/tree/master) library.<br>
-Here is a frame with the Trigger Scene with 500 circles and 500 rectangles.<br>
+Here is a frame with the *trigger scene* with 500 circles and 500 rectangles.<br>
 
 ![](images/tracyFrame.png)
 
@@ -117,11 +121,12 @@ The engine is running at 165FPS (vsync), the frame time is around 9ms and the ph
 
 ## Memory tracking
 
-There is small allocations when inserting colliders each times a node size increase. The nodes keep the same size after that so there is less future allocations.<br>
+There is small allocations when inserting colliders each times a node size increase. The nodes then remain the same size, which reduces future allocations.
 
 ![](images/insertColliders.png)
 
-There is a big allocation when all possible pairs are put on the new collider pairs list (with verified collision).<br>
+
+There is a large allocation when all possible pairs are placed on the list of new collider pairs (with verified collision).<br>
 This is deallocated at the end of the collision detection.<br>
 
 ![](images/10secProfile.png)
@@ -132,26 +137,26 @@ All memory is deallocated when the engine is closed.<br>
 Performance tracking over the development of the engine
 ==============================================================
 
-I will start by showing how the engine was performing using Tracy at the beginning of the project, without any optimization nor quadtree.<br>
-And continue with all the optimization that I made and how it improved the performance.<br>
-It will be a frame with the Collision Scene with 500 circles and 500 rectangles every time. I will take 10sec of sample each time.<br>
+I will start by showing how the engine worked using Tracy at the beginning of the project, without any optimization nor quadtree.<br>
+And continue with all the optimization that I made and how it improved the performances.<br>
+The samples will last 10sec each with a focus on frame with the *collision scene* with 500 circles and 500 rectangles every time.<br>
 
 ## Without quadtree
 
-At the beginning, I don't implement the quadtree, so the engine was checking all possible pairs at each frame.<br>
-I also don't implement the memory tracking yet.<br>
+At the beginning, I didn't implement the quadtree, so the engine was checking all possible pairs at each frame.<br>
+I also haven't implemented the memory tracking yet.<br>
 
 ![A frame](images/history1.png)
 ![The stats of the updateColliders](images/history1Stats.png)
 
-We can see that a frame take around 30ms to be processed, the physics time take around 80% of the total time.<br>
-At this time, I had a bug with the double rendering, so the engine was rendering twice the same frame, but it's not important for the performance.<br>
+We can see that a frame take around 30ms to be processed, the physics part take around 80% of the total time.<br>
+At that moment, I had a bug with a double rendering, so the engine was rendering twice the same frame, but it doesn't affect the performance.<br>
 
 ## With basic quadtree
 
-I implemented the quadtree, but I didn't optimize it yet, and it has some problems.<br>
-The collider were inserted in each node that they overlap, so a collider could be inserted multiple times in the quadtree.<br>
-I use an unordered_set to store the colliders in the quadtree.<br>
+I've implemented the quadtree, but I haven't optimised it yet, and it has a few problems.<br>
+Colliders have been inserted into each node that they overlap, so that a collider can be inserted several times into the quadtree.<br>
+I used an `unordered_set` to store the colliders in the quadtree.<br>
 
 ![A frame](images/history2.png)
 ![The stats of the updateColliders](images/history2Stats.png)
@@ -159,7 +164,7 @@ I use an unordered_set to store the colliders in the quadtree.<br>
 ### Difference with the previous frame
 
 Frame time: 30ms -> 18ms<br>
-Physics time: 80% -> 50%<br>
+Physics part: 80% -> 50%<br>
 
 ![Student t-test](images/ttest1-2.png)
 
@@ -167,7 +172,7 @@ Physics time: 80% -> 50%<br>
 
 - I optimized the quadtree, so a collider can only be inserted once in the quadtree.
 - I still get all colliders using recursive calls and insert with the same vector.
-- I still use an unordered_set to store the colliders in the quadtree.
+- I still use an `unordered_set` to store the colliders in the quadtree.
 - It uses now a FreeList allocator to allocate the colliders inside the quadtree, it created a small memory leak.
 - I implemented the memory tracking.
 - I fixed the double rendering bug.
@@ -180,13 +185,13 @@ We can see a lot of allocations, it's the free list allocator that allocate memo
 ### Difference with the previous frame
 
 Frame time: 18ms -> 8ms<br>
-Physics time: 50% -> 70%<br>
+Physics part: 50% -> 70%<br>
 
 ![Student t-test](images/ttest2-3.png)
 
 ## Now, with the optimized quadtree and the optimized collision detection
 
-- I removed the use of unordered_set, I use now a vector to store the colliders in the quadtree with a method to only insert a collider pair once.<br>
+- I removed the use of `unordered_set`, I use now a vector to store the colliders in the quadtree with a method to only insert a collider pair once.<br>
 - I optimized the collision detection, I don't check anymore if the colliders are in the same quadtree node, I check if they overlap with simplified bound (rectangle).<br>
 - I use a heap allocator to allocate the colliders inside the quadtree, it doesn't create memory leak anymore, but it's slower.<br>
 - It's stable now, there is no more allocations.<br>
@@ -197,7 +202,7 @@ Physics time: 50% -> 70%<br>
 ### Difference with the previous frame
 
 Frame time: 8ms -> 9ms<br>
-Physics time: 70% -> 73%<br>
+Physics part: 70% -> 73%<br>
 
 A frame take more time to be processed, but the getColliderPairs function take less time.<br>
 
