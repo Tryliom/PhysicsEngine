@@ -210,7 +210,8 @@ void CollisionSample::createBall() noexcept
 {
 	const static auto screenWidth = static_cast<float>(Display::GetWidth());
 	const static auto screenHeight = static_cast<float>(Display::GetHeight());
-	const static auto screenCenter = Math::Vec2F{ screenWidth / 2.f, screenHeight / 2.f };
+	const static auto marginWidth = screenWidth * 0.1f;
+	const static auto marginHeight = screenHeight * 0.1f;
 	const float minRadius = 10.f;
 	const float bounciness = Math::Random::Range(0.f, 1.f);
 
@@ -224,8 +225,8 @@ void CollisionSample::createBall() noexcept
 	auto& collider = _world.GetCollider(_objects.back().ColliderRef);
 	auto& body = _world.GetBody(_objects.back().BodyRef);
 
-	body.SetPosition({ Math::Random::Range(0.f, screenWidth), Math::Random::Range(0.f, screenHeight) });
-	body.SetVelocity((screenCenter - body.Position()).Normalized() * 100.f);
+	body.SetPosition({ Math::Random::Range(marginWidth, screenWidth - marginWidth), Math::Random::Range(marginHeight, screenHeight - marginHeight) });
+	body.SetVelocity({ Math::Random::Range(-300.f, 300.f), Math::Random::Range(-300.f, 300.f) });
 
 	collider.SetCircle(circle);
 	collider.SetBounciness(1.f);
@@ -235,7 +236,8 @@ void CollisionSample::createBox() noexcept
 {
 	const static auto screenWidth = static_cast<float>(Display::GetWidth());
 	const static auto screenHeight = static_cast<float>(Display::GetHeight());
-	const static auto screenCenter = Math::Vec2F{ screenWidth / 2.f, screenHeight / 2.f };
+	const static auto marginWidth = screenWidth * 0.1f;
+	const static auto marginHeight = screenHeight * 0.1f;
 	const float minBoundMin = 10.f;
 	const float minBoundMax = 50.f;
 	const float maxBoundMin = 60.f;
@@ -254,8 +256,8 @@ void CollisionSample::createBox() noexcept
 	auto& collider = _world.GetCollider(_objects.back().ColliderRef);
 	auto& body = _world.GetBody(_objects.back().BodyRef);
 
-	body.SetPosition({ Math::Random::Range(0.f, screenWidth), Math::Random::Range(0.f, screenHeight) });
-	body.SetVelocity((screenCenter - body.Position()).Normalized() * 100.f);
+	body.SetPosition({ Math::Random::Range(marginWidth, screenWidth - marginWidth), Math::Random::Range(marginHeight, screenHeight - marginHeight) });
+	body.SetVelocity({ Math::Random::Range(-300.f, 300.f), Math::Random::Range(-300.f, 300.f) });
 
 	collider.SetRectangle(rect);
 	collider.SetBounciness(1.f);

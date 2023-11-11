@@ -16,10 +16,10 @@
 #endif
 
 SampleManager::SampleManager() noexcept : _timer(), _samples({
+    MakeUnique<Sample, TriggerSample>(),
+	MakeUnique<Sample, CollisionSample>(),
     MakeUnique<Sample, GravitySample>(),
     MakeUnique<Sample, PlanetSystemSample>(),
-	MakeUnique<Sample, CollisionSample>(),
-    MakeUnique<Sample, TriggerSample>(),
 })
 {
     Display::Init(SCREEN_WIDTH, SCREEN_HEIGHT, "Samples selection");
