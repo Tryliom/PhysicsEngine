@@ -1,7 +1,7 @@
 #include "Collider.h"
 #include "ColliderPair.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include <array>
 
@@ -25,23 +25,13 @@ INSTANTIATE_TEST_SUITE_P(ColliderPair, TestColliderPairFixture, testing::Values(
 	std::array<ColliderRef, 4>{ ColliderRef(1, 1), ColliderRef(0, 1), ColliderRef(1, 0), ColliderRef(0, 0) }
 ));
 
-class TestContactListener : public ContactListener
-{
-public:
-	void OnTriggerEnter(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept override {}
-	void OnTriggerExit(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept override {}
-	void OnTriggerStay(ColliderRef colliderRef, ColliderRef otherColliderRef) noexcept override {}
-};
-
 TEST(Collider, DefaultConstructor)
 {
 	Collider collider;
 
 	EXPECT_EQ(collider.GetColliderRef(), ColliderRef());
 	EXPECT_EQ(collider.GetBodyRef(), BodyRef());
-	EXPECT_EQ(collider.GetContactListener(), nullptr);
 	EXPECT_EQ(collider.GetRestitution(), 0.f);
-	EXPECT_EQ(collider.GetFriction(), 0.f);
 	EXPECT_FALSE(collider.IsTrigger());
 	EXPECT_TRUE(collider.IsFree());
 	EXPECT_FALSE(collider.IsEnabled());
@@ -65,16 +55,6 @@ TEST(Collider, SetBodyRef)
 	EXPECT_EQ(collider.GetBodyRef(), BodyRef(1, 2));
 }
 
-TEST(Collider, SetContactListener)
-{
-	Collider collider;
-	ContactListener* contactListener = new TestContactListener();
-
-	collider.SetContactListener(contactListener);
-
-	EXPECT_TRUE(collider.GetContactListener() != nullptr);
-}
-
 TEST(Collider, SetBounciness)
 {
 	Collider collider;
@@ -82,15 +62,6 @@ TEST(Collider, SetBounciness)
 	collider.SetBounciness(0.5f);
 
 	EXPECT_EQ(collider.GetRestitution(), 0.5f);
-}
-
-TEST(Collider, SetFriction)
-{
-	Collider collider;
-
-	collider.SetFriction(0.5f);
-
-	EXPECT_EQ(collider.GetFriction(), 0.5f);
 }
 
 TEST(Collider, SetIsTrigger)
@@ -107,6 +78,7 @@ TEST(Collider, SetIsEnabled)
 	Collider collider;
 
 	collider.Enable();
+	collider.SetCircle(CircleF({ 1.f, 2.f }, 3.f));
 
 	EXPECT_TRUE(collider.IsEnabled());
 

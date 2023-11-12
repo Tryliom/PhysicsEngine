@@ -1,6 +1,6 @@
 #include "UniquePtr.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 struct TestUniquePtrFixture : public ::testing::TestWithParam<int> {};
 

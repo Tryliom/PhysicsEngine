@@ -55,7 +55,6 @@ namespace Physics
 
         _nodes[index].Divided = true;
 
-        // Distribute colliders to children, when a collider is distributed, remove it from the parent. If it collides with more than one child, keep it in the parent.
         const auto colliders = node.Colliders;
 
         node.Colliders.clear();
@@ -226,9 +225,9 @@ namespace Physics
 
         for (std::size_t i = 0; index < getMaxNodes(); i++)
         {
-            const auto bounds = _nodes[i].Boundary;
-            const auto minBound = bounds.MinBound();
-            const auto halfSize = bounds.Size() / 2.f;
+            const auto& bounds = _nodes[i].Boundary;
+            const auto& minBound = bounds.MinBound();
+            const auto& halfSize = bounds.Size() / 2.f;
 
             _nodes[index].Boundary = Math::RectangleF(minBound, bounds.Center());
             _nodes[index+1].Boundary = Math::RectangleF(Math::Vec2F(minBound.X + halfSize.X, minBound.Y),

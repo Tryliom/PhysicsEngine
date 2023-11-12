@@ -2,6 +2,7 @@
 
 #include "Collider.h"
 #include "ColliderPair.h"
+
 #include "Allocator.h"
 
 #include <vector>
@@ -9,12 +10,18 @@
 
 namespace Physics
 {
+	/**
+	 * @brief A simplified collider that only contains the collider reference and the collider bounds (rectangle)
+	 */
     struct SimplifiedCollider
     {
         ColliderRef Ref {};
         Math::RectangleF Bounds {Math::Vec2F::Zero(), Math::Vec2F::One()};
     };
 
+	/**
+	 * @brief A quadtree node that contains a boundary, a list of colliders and a boolean that indicates if the node has been divided
+	 */
     struct QuadNode
     {
 		explicit QuadNode(HeapAllocator& allocator) noexcept;
@@ -24,6 +31,9 @@ namespace Physics
         bool Divided {false};
     };
 
+	/**
+	 * @brief A quadtree that contains a list of quadtree nodes and a list of all possible pairs of colliders
+	 */
 	class QuadTree
 	{
 	public:
@@ -34,8 +44,8 @@ namespace Physics
 		explicit QuadTree(const Math::RectangleF& boundary) noexcept;
 
 	private:
-		HeapAllocator _heapAllocator {};
 		LinearAllocator _nodesAllocator;
+		HeapAllocator _heapAllocator {};
 		MyVector<QuadNode> _nodes { StandardAllocator <QuadNode> {_nodesAllocator} };
 		MyVector<ColliderPair> _allPossiblePairs { StandardAllocator <ColliderPair> {_heapAllocator} };
 

@@ -1,7 +1,7 @@
 #include "Body.h"
 #include "Vec2.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include <array>
 

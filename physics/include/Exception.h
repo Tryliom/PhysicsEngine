@@ -11,7 +11,7 @@ public:
 	InvalidBodyRefException() noexcept = default;
 	~InvalidBodyRefException() noexcept override = default;
 
-	const char* what() const noexcept override
+	[[nodiscard]] const char* what() const noexcept override
 	{
 		return "Invalid generation body reference";
 	}
@@ -26,7 +26,7 @@ public:
 	InvalidColliderRefException() noexcept = default;
 	~InvalidColliderRefException() noexcept override = default;
 
-	const char* what() const noexcept override
+	[[nodiscard]] const char* what() const noexcept override
 	{
 		return "Invalid generation collider reference";
 	}

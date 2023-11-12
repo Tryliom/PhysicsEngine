@@ -139,7 +139,8 @@ namespace Physics
 		{
 			case Math::ShapeType::Circle:
 			{
-				auto circle = GetCircle();
+				const auto& circle = GetCircle();
+
 				return Math::RectangleF::FromCenter(circle.Center(), {circle.Radius(), circle.Radius()});
 			}
 			case Math::ShapeType::Rectangle:
@@ -162,7 +163,7 @@ namespace Physics
 					maxY = std::max(maxY, vertex.Y);
 				}
 
-				return Math::RectangleF{Math::Vec2F{minX, minY}, Math::Vec2F{maxX, maxY}};
+				return Math::RectangleF{ Math::Vec2F{minX, minY}, Math::Vec2F{maxX, maxY} };
 			}
 			case Math::ShapeType::None: break;
 		}

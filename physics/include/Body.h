@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Vec2.h"
 #include "BodyType.h"
+
+#include "Vec2.h"
 
 namespace Physics
 {

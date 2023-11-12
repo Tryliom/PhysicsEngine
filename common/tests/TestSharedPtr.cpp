@@ -1,6 +1,6 @@
 #include "SharedPtr.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 struct TestSharedPtrFixture : public ::testing::TestWithParam<int> {};
 

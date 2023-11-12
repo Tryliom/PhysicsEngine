@@ -2,7 +2,7 @@
 #include "Body.h"
 #include "Exception.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include <array>
 
@@ -74,7 +74,7 @@ public:
 TEST(World, CreateBody)
 {
     HeapAllocator allocator;
-	World world(allocator, 1);
+	World world;
 
 	auto body = world.CreateBody();
 
@@ -104,7 +104,7 @@ TEST(World, CreateBody)
 TEST(World, Collider)
 {
     HeapAllocator allocator;
-    World world(allocator, 1);
+    World world;
 
 	auto bodyRef = world.CreateBody();
 	auto colliderRef = world.CreateCollider(bodyRef);
@@ -120,7 +120,6 @@ TEST(World, Collider)
 	EXPECT_TRUE(collider.IsEnabled());
 	EXPECT_FALSE(collider.IsTrigger());
 	EXPECT_EQ(collider.GetRestitution(), 0.f);
-	EXPECT_EQ(collider.GetFriction(), 0.f);
 
 	world.DestroyCollider(colliderRef);
 
@@ -144,7 +143,7 @@ TEST(World, Collider)
 TEST_P(TestWorldFixtureTime, Update)
 {
     HeapAllocator allocator;
-    World world(allocator, 1);
+    World world;
 
 	auto pair = GetParam();
 	auto deltaTime = pair.second.first;
@@ -171,10 +170,10 @@ TEST_P(TestWorldFixtureTime, Update)
 	EXPECT_FLOAT_EQ(body.Force().Y, 0.f);
 }
 
-TEST(World, UpdateCollisionCircle)
+TEST(World, TriggerCircle)
 {
     HeapAllocator allocator;
-    World world(allocator, 1);
+    World world;
 
 	auto bodyRef2 = world.CreateBody();
 	auto colliderRef2 = world.CreateCollider(bodyRef2);
@@ -222,10 +221,10 @@ TEST(World, UpdateCollisionCircle)
 	world.DestroyBody(bodyRef3);
 }
 
-TEST(World, UpdateCollisionRectangle)
+TEST(World, TriggerRectangle)
 {
     HeapAllocator allocator;
-    World world(allocator, 1);
+    World world;
 
 	auto bodyRef2 = world.CreateBody();
 	auto colliderRef2 = world.CreateCollider(bodyRef2);
@@ -273,10 +272,10 @@ TEST(World, UpdateCollisionRectangle)
 	world.DestroyBody(bodyRef3);
 }
 
-TEST(World, UpdateCollisionPolygon)
+TEST(World, TriggerPolygon)
 {
     HeapAllocator allocator;
-    World world(allocator, 1);
+    World world;
 
 	auto bodyRef2 = world.CreateBody();
 	auto colliderRef2 = world.CreateCollider(bodyRef2);
@@ -315,6 +314,156 @@ TEST(World, UpdateCollisionPolygon)
 	EXPECT_EQ(interactionCount, 2);
 
 	world.GetBody(bodyRef2).SetPosition({ 100.f, 100.f });
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Exit);
+	EXPECT_EQ(interactionCount, 3);
+
+	world.DestroyBody(bodyRef2);
+	world.DestroyBody(bodyRef3);
+}
+
+TEST(World, CollisionCircle)
+{
+	HeapAllocator allocator;
+	World world;
+
+	auto bodyRef2 = world.CreateBody();
+	auto colliderRef2 = world.CreateCollider(bodyRef2);
+	auto& collider2 = world.GetCollider(colliderRef2);
+	auto interaction = Interaction::None;
+	auto interactionCount = 0;
+	auto* contactListener = new TestContactListener(interaction, interactionCount);
+
+	world.SetContactListener(contactListener);
+	collider2.SetCircle(CircleF({0.1f, 0.1f}, 1.f));
+	collider2.SetIsTrigger(false);
+
+	EXPECT_EQ(colliderRef2.Index, 0);
+	EXPECT_EQ(colliderRef2.Generation, 0);
+	EXPECT_EQ(collider2.GetBodyRef(), bodyRef2);
+	EXPECT_TRUE(collider2.IsEnabled());
+
+	auto bodyRef3 = world.CreateBody();
+	auto colliderRef3 = world.CreateCollider(bodyRef3);
+	auto& collider3 = world.GetCollider(colliderRef3);
+
+	collider3.SetCircle(CircleF({0.f, 0.f}, 1.f));
+
+	EXPECT_EQ(colliderRef3.Index, 1);
+	EXPECT_EQ(colliderRef3.Generation, 0);
+
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Enter);
+	EXPECT_EQ(interactionCount, 1);
+
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Stay);
+	EXPECT_EQ(interactionCount, 2);
+
+	world.GetBody(bodyRef2).SetPosition({ 10.f, 10.f });
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Exit);
+	EXPECT_EQ(interactionCount, 3);
+
+	world.DestroyBody(bodyRef2);
+	world.DestroyBody(bodyRef3);
+}
+
+TEST(World, CollisionRectangle)
+{
+	HeapAllocator allocator;
+	World world;
+
+	auto bodyRef2 = world.CreateBody();
+	auto colliderRef2 = world.CreateCollider(bodyRef2);
+	auto& collider2 = world.GetCollider(colliderRef2);
+	auto interaction = Interaction::None;
+	auto interactionCount = 0;
+	auto* contactListener = new TestContactListener(interaction, interactionCount);
+
+	world.SetContactListener(contactListener);
+	collider2.SetRectangle(RectangleF({0.1f, 0.1f}, {1.f, 1.f}));
+	collider2.SetIsTrigger(false);
+
+	EXPECT_EQ(colliderRef2.Index, 0);
+	EXPECT_EQ(colliderRef2.Generation, 0);
+	EXPECT_EQ(collider2.GetBodyRef(), bodyRef2);
+	EXPECT_TRUE(collider2.IsEnabled());
+
+	auto bodyRef3 = world.CreateBody();
+	auto colliderRef3 = world.CreateCollider(bodyRef3);
+	auto& collider3 = world.GetCollider(colliderRef3);
+
+	collider3.SetRectangle(RectangleF({0.f, 0.f}, {1.f, 1.f}));
+
+	EXPECT_EQ(colliderRef3.Index, 1);
+	EXPECT_EQ(colliderRef3.Generation, 0);
+
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Enter);
+	EXPECT_EQ(interactionCount, 1);
+
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Stay);
+	EXPECT_EQ(interactionCount, 2);
+
+	world.GetBody(bodyRef2).SetPosition({ 10.f, 10.f });
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Exit);
+	EXPECT_EQ(interactionCount, 3);
+
+	world.DestroyBody(bodyRef2);
+	world.DestroyBody(bodyRef3);
+}
+
+TEST(World, CollisionCircleAndRectangle)
+{
+	HeapAllocator allocator;
+	World world;
+
+	auto bodyRef2 = world.CreateBody();
+	auto colliderRef2 = world.CreateCollider(bodyRef2);
+	auto& collider2 = world.GetCollider(colliderRef2);
+	auto interaction = Interaction::None;
+	auto interactionCount = 0;
+	auto* contactListener = new TestContactListener(interaction, interactionCount);
+
+	world.SetContactListener(contactListener);
+	collider2.SetCircle(CircleF({0.1f, 0.1f}, 1.f));
+	collider2.SetIsTrigger(false);
+
+	EXPECT_EQ(colliderRef2.Index, 0);
+	EXPECT_EQ(colliderRef2.Generation, 0);
+	EXPECT_EQ(collider2.GetBodyRef(), bodyRef2);
+	EXPECT_TRUE(collider2.IsEnabled());
+
+	auto bodyRef3 = world.CreateBody();
+	auto colliderRef3 = world.CreateCollider(bodyRef3);
+	auto& collider3 = world.GetCollider(colliderRef3);
+
+	collider3.SetRectangle(RectangleF({0.f, 0.f}, {1.f, 1.f}));
+
+	EXPECT_EQ(colliderRef3.Index, 1);
+	EXPECT_EQ(colliderRef3.Generation, 0);
+
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Enter);
+	EXPECT_EQ(interactionCount, 1);
+
+	world.Update(1.f / 60.f);
+
+	EXPECT_EQ(interaction, Interaction::Stay);
+	EXPECT_EQ(interactionCount, 2);
+
+	world.GetBody(bodyRef2).SetPosition({ 10.f, 10.f });
 	world.Update(1.f / 60.f);
 
 	EXPECT_EQ(interaction, Interaction::Exit);

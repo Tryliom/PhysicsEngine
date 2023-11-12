@@ -5,20 +5,30 @@
 
 namespace Physics
 {
+	/**
+	 * @brief A contact resolver is used to resolve the collision between two bodies
+	 */
 	class ContactResolver
 	{
 	public:
+		/**
+		 * @brief Construct a new Contact Resolver object
+		 * @param bodyA The first body
+		 * @param bodyB The second body
+		 * @param colliderA The first collider
+		 * @param colliderB The second collider
+		 */
 		ContactResolver(Body* bodyA, Body* bodyB, Collider* colliderA, Collider* colliderB) noexcept;
 		~ContactResolver() noexcept = default;
 
 	private:
-		Body* _bodyA {nullptr };
-		Body* _bodyB {nullptr };
+		Body* _bodyA { nullptr };
+		Body* _bodyB { nullptr };
 		Collider* _colliderA { nullptr };
 		Collider* _colliderB { nullptr };
 
-		Math::Vec2F _normal { 0.0f, 0.0f };
-		float _penetration { 0.0f };
+		Math::Vec2F _normal { Math::Vec2F::Zero() };
+		float _penetration { 0.f };
 
 	public:
 		/**

@@ -73,7 +73,7 @@ namespace Physics
 		 */
 		[[nodiscard]] bool IsFree() const noexcept;
 		/**
-		 * @brief Check if the collider is enabled (not free but disabled at this moment)
+		 * @brief Check if the collider is enabled and has a shape associated (not free but disabled at this moment)
 		 * @return true if the collider is enabled
 		 */
 		[[nodiscard]] bool IsEnabled() const noexcept;

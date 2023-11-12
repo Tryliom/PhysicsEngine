@@ -18,6 +18,10 @@ namespace Physics
     class World
     {
     public:
+		/**
+		 * @brief Construct a new World object
+		 * @param defaultBodySize The default size of the bodies vector
+		 */
         explicit World(std::size_t defaultBodySize = 500) noexcept;
 		~World() noexcept = default;
 
@@ -122,6 +126,10 @@ namespace Physics
 		 */
 	    [[nodiscard]] std::vector<Math::RectangleF> GetQuadTreeBoundaries() const noexcept;
 
+		/**
+		 * @brief Get the gravity of the world
+		 * @param gravity The gravity of the world
+		 */
         void SetGravity(Math::Vec2F gravity) noexcept;
     };
 }

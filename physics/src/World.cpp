@@ -73,7 +73,6 @@ namespace Physics
 		ZoneNamedN(insertColliders, "World::insertColliders", true);
 #endif
 
-		// Insert all colliders into the quadtree
 		for (auto& collider : _colliders)
 		{
 			if (!collider.IsEnabled() || collider.IsFree()) continue;

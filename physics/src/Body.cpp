@@ -67,12 +67,11 @@ namespace Physics
     {
         _bodyType = bodyType;
 
-        if (bodyType != BodyType::Dynamic)
-        {
-            _mass = 0.f;
-            _inverseMass = 0.f;
-            _velocity = Math::Vec2F::Zero();
-        }
+        if (bodyType == BodyType::Dynamic) return;
+
+	    _mass = 0.f;
+	    _inverseMass = 0.f;
+	    _velocity = Math::Vec2F::Zero();
     }
 
     [[nodiscard]] bool Body::UseGravity() const noexcept

@@ -1,6 +1,6 @@
 #include "QuadTree.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 struct TestQuadTreeFixture : public ::testing::TestWithParam<Math::RectangleF> {};
 
@@ -101,9 +101,9 @@ TEST_P(TestQuadTreeFixture, GetColliders)
 	colliders.push_back({{colliders.size(), 0}, middleRect});
 	quadTree.Insert(colliders.back());
 
-	auto collidersToCheck = quadTree.GetAllPossiblePairs(colliders[0]);
+	auto collidersToCheck = quadTree.GetAllPossiblePairs();
 
-	EXPECT_EQ(collidersToCheck.size(), colliders.size() - 1);
+	EXPECT_EQ(collidersToCheck.size(), colliders.size() * 4);
 }
 
 TEST_P(TestQuadTreeFixture, ClearColliders)

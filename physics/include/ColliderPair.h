@@ -9,7 +9,6 @@ namespace Physics
      */
 	struct ColliderPair
 	{
-		// A and B can be in any order
 		ColliderRef A;
 		ColliderRef B;
 
