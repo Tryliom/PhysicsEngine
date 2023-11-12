@@ -4,8 +4,9 @@
 #include "Shape.h"
 #include "Color.h"
 
-#include <string>
 #include <SDL_events.h>
+
+#include <string>
 
 /**
  * @brief Camera struct. Contains the position and the zoom of the camera.

@@ -2,12 +2,12 @@
 #include "Input.h"
 #include "Exception.h"
 
-#include "SDL.h"
+#include <SDL.h>
+#include <imgui.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_sdlrenderer2.h>
 
 #include <vector>
-#include <imgui.h>
-#include "imgui_impl_sdl2.h"
-#include "imgui_impl_sdlrenderer2.h"
 
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
@@ -28,7 +28,6 @@ namespace Display
 	static ImGuiIO* _imGuiIO;
 
 	static Camera _camera;
-
 
 	void Init(size_t width, size_t height, const std::string& name)
 	{
