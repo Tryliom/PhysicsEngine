@@ -27,9 +27,9 @@ private:
 	bool _showBoxes {};
 	bool _showQuadTrees {};
 
-    int _circles = 500;
-    int _boxes = 500;
-    int _polygons = 0;
+    int _circles = 50;
+    int _boxes = 50;
+    int _polygons = 50;
 
     static constexpr Color _color = Color(100, 100, 100);
     static constexpr Color _triggerEnterColor = Color(100, 255, 100);

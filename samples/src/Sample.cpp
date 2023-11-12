@@ -1,9 +1,9 @@
 #include "Sample.h"
 
-#include <utility>
-
 #include "Display.h"
 #include "Timer.h"
+
+#include <utility>
 
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>

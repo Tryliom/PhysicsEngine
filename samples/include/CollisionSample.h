@@ -1,7 +1,8 @@
 #pragma once
 
-#include "World.h"
 #include "Sample.h"
+
+#include "World.h"
 #include "Color.h"
 
 class CollisionSample final : public Sample, Physics::ContactListener
@@ -26,8 +27,8 @@ private:
 	bool _showBoxes {};
 	bool _showQuadTrees {};
 
-    int _circles = 10;
-    int _boxes = 10;
+    int _circles = 30;
+    int _boxes = 30;
 
     static constexpr Color _color = Color(100, 100, 100);
     static constexpr Color _triggerEnterColor = Color(100, 255, 100);

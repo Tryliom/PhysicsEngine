@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
 #include "World.h"
+
+#include <string>
 
 class Sample
 {

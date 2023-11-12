@@ -49,9 +49,6 @@ void SampleManager::Run() noexcept
 
 			ImGui_ImplSDL2_ProcessEvent(&e);
             Input::OnInput(e);
-
-            if (Input::IsKeyPressed(SDL_SCANCODE_LEFT)) switchSample(static_cast<int>(_currentSample) - 1);
-            if (Input::IsKeyPressed(SDL_SCANCODE_RIGHT)) switchSample(static_cast<int>(_currentSample) + 1);
         }
 
         ImGui_ImplSDLRenderer2_NewFrame();
