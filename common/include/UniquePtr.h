@@ -36,7 +36,7 @@ public:
     {
         if (_ptr != nullptr)
         {
-            delete _ptr;
+			delete _ptr;
             _ptr = nullptr;
         }
     }
@@ -87,7 +87,6 @@ public:
     }
 };
 
-// MakeUnique
 template<typename T>
 constexpr UniquePtr<T> MakeUnique() noexcept
 {

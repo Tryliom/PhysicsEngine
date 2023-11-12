@@ -30,7 +30,8 @@ std::size_t Allocator::GetAllocations() const noexcept
 
 std::size_t Allocator::calculateAlignForwardAdjustment(const void* address, std::size_t alignment)
 {
-	assert((alignment & (alignment - 1)) == 0 && "Alignement needs to be a power of two");
+	assert((alignment & (alignment - 1)) == 0 && "Alignment needs to be a power of two");
+
 	const std::size_t adjustment = alignment - (reinterpret_cast<std::uintptr_t>(address) & (alignment - 1));
 
 	if (adjustment == alignment) return 0;
@@ -53,38 +54,13 @@ std::size_t Allocator::calculateAlignForwardAdjustmentWithHeader(const void* add
 	return adjustment;
 }
 
-void* Allocator::alignForward(void* address, std::size_t alignment)
-{
-	return reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(address) + calculateAlignForwardAdjustment(address, alignment));
-}
-
-void* Allocator::alignForwardWithHeader(void* address, std::size_t alignment, std::size_t headerSize)
-{
-	return reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(address) + calculateAlignForwardAdjustmentWithHeader(address, alignment, headerSize));
-}
-
 // LinearAllocator implementation
 
-LinearAllocator::LinearAllocator(void* ptr, std::size_t size) noexcept :
-    Allocator(ptr, size), _offset(0) {}
+LinearAllocator::LinearAllocator(void* ptr, std::size_t size) noexcept : Allocator(ptr, size), _offset(0) {}
 
 LinearAllocator::~LinearAllocator()
 {
     std::free(_rootPtr);
-}
-
-void LinearAllocator::Init(void* ptr, std::size_t size) noexcept
-{
-	if (_rootPtr != nullptr)
-	{
-		std::free(_rootPtr);
-	}
-
-	_rootPtr = ptr;
-	_currentPtr = ptr;
-	_size = size;
-	_offset = 0;
-	_allocations = 0;
 }
 
 void* LinearAllocator::Allocate(std::size_t size, std::size_t alignment) noexcept
@@ -93,18 +69,13 @@ void* LinearAllocator::Allocate(std::size_t size, std::size_t alignment) noexcep
 	const auto adjustment = calculateAlignForwardAdjustment(_currentPtr, alignment);
 
 	assert(_offset + adjustment + size <= _size && "Linear Allocator has not enough space for this allocation");
-
 	auto* alignedAddress = reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(_currentPtr) + adjustment);
+
 	_currentPtr = reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(alignedAddress) + size);
 	_offset += size + adjustment;
 	_allocations++;
 
 	return alignedAddress;
-}
-
-void LinearAllocator::Deallocate(void* ptr) noexcept
-{
-    // Do nothing
 }
 
 void LinearAllocator::Clear() noexcept
@@ -171,17 +142,6 @@ void HeapAllocator::Deallocate(void* ptr) noexcept
 }
 
 FreeListAllocator::FreeListAllocator(void* ptr, std::size_t size) noexcept
-{
-	_rootPtr = ptr;
-	_size = size;
-	_freeBlocks = static_cast<FreeBlock*>(_rootPtr);
-	_freeBlocks->size = _size;
-	_freeBlocks->next = nullptr;
-	_currentPtr = _rootPtr;
-	_allocations = 0;
-}
-
-void FreeListAllocator::Init(void* ptr, std::size_t size) noexcept
 {
 	_rootPtr = ptr;
 	_size = size;

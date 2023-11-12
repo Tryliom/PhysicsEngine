@@ -13,8 +13,3 @@ void Timer::Update() noexcept
     _currentTime = std::chrono::high_resolution_clock::now();
     _deltaTime = _currentTime - previousTime;
 }
-
-float Timer::DeltaTime() noexcept
-{
-    return _deltaTime.count();
-}

@@ -15,7 +15,7 @@ TEST(Timer, Update)
 	Timer timer;
 
 	auto time = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<float> deltaTime = std::chrono::duration<float>(0);
+    std::chrono::duration<float> deltaTime {};
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(50));
     timer.Update();

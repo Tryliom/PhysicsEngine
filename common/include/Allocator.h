@@ -64,8 +64,6 @@ public:
 protected:
 	static std::size_t calculateAlignForwardAdjustment(const void* address, std::size_t alignment);
 	static std::size_t calculateAlignForwardAdjustmentWithHeader(const void* address, std::size_t alignment, std::size_t headerSize);
-	static void* alignForward(void* address, std::size_t alignment);
-	static void* alignForwardWithHeader(void* address, std::size_t alignment, std::size_t headerSize);
 };
 
 /**
@@ -84,8 +82,6 @@ public:
     LinearAllocator(void* ptr, std::size_t size) noexcept;
     ~LinearAllocator() override;
 
-	void Init(void* ptr, std::size_t size) noexcept;
-
     /**
      * @brief Allocate memory from allocator
      * @param size Size of memory to allocate
@@ -95,7 +91,7 @@ public:
     /**
      * @brief Does nothing for linear allocator
      */
-    void Deallocate(void* ptr) noexcept override;
+    void Deallocate(void* ptr) noexcept override {}
 
     /**
      * @brief Clear allocator
@@ -168,13 +164,11 @@ class FreeListAllocator final : public Allocator
 
 public:
 	/**
-	 * @brief Constructor
+	 * @brief Constructor, need to provide an extra size for the free block per allocation
 	 * @param size Size of memory to allocate
 	 */
 	FreeListAllocator(void* ptr, std::size_t size) noexcept;
 	~FreeListAllocator() override = default;
-
-	void Init(void* ptr, std::size_t size) noexcept;
 
 	/**
 	 * @brief Allocate memory from allocator
@@ -187,9 +181,10 @@ public:
 	 * @param ptr Pointer to memory to deallocate
 	 */
 	void Deallocate(void* ptr) noexcept override;
-
+	/**
+	 * @brief Clear allocator
+	 */
 	void Clear() noexcept;
-
 };
 
 /**

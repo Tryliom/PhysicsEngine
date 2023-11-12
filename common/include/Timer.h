@@ -23,5 +23,8 @@ public:
 	/**
 	 * @brief Get the Delta Time in seconds
 	 */
-	float DeltaTime() noexcept;
+	[[nodiscard]] constexpr float DeltaTime() const noexcept
+	{
+		return _deltaTime.count();
+	}
 };

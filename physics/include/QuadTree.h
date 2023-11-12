@@ -2,7 +2,6 @@
 
 #include "Collider.h"
 #include "ColliderPair.h"
-#include "UniquePtr.h"
 #include "Allocator.h"
 
 #include <vector>

@@ -19,7 +19,7 @@ SampleManager::SampleManager() noexcept : _timer(), _samples({
     MakeUnique<Sample, TriggerSample>(),
 	MakeUnique<Sample, CollisionSample>(),
     MakeUnique<Sample, GravitySample>(),
-    MakeUnique<Sample, PlanetSystemSample>(),
+    MakeUnique<Sample, PlanetSystemSample>()
 })
 {
     Display::Init(SCREEN_WIDTH, SCREEN_HEIGHT, "Samples selection");
@@ -29,7 +29,7 @@ SampleManager::SampleManager() noexcept : _timer(), _samples({
 	_names.reserve(_samples.size());
 	_descriptions.reserve(_samples.size());
 
-	for (auto& _sample : _samples)
+	for (const auto& _sample : _samples)
 	{
 		_names.push_back(_sample->GetName());
 		_descriptions.push_back(_sample->GetDescription());
