@@ -161,12 +161,14 @@ I used an `unordered_set` to store the colliders in the quadtree.<br>
 ![A frame](images/history2.png)
 ![The stats of the updateColliders](images/history2Stats.png)
 
-### Difference with the previous frame
+### Raw difference with the previous frame
 
 Frame time: 30ms -> 18ms<br>
 Physics part: 80% -> 50%<br>
 
 ![Student t-test](images/ttest1-2.png)
+
+I have a 95% confidence interval of difference from 20ms to 28ms, so the difference is significant.<br>
 
 ## With optimized quadtree
 
@@ -182,12 +184,14 @@ Physics part: 80% -> 50%<br>
 
 We can see a lot of allocations, it's the free list allocator that allocate memory for the colliders.<br>
 
-### Difference with the previous frame
+### Raw difference with the previous frame
 
 Frame time: 18ms -> 8ms<br>
 Physics part: 50% -> 70%<br>
 
 ![Student t-test](images/ttest2-3.png)
+
+I have a 95% confidence interval of difference from 3.5 to 3.7, so the difference is significant.<br>
 
 ## Now, with the optimized quadtree and the optimized collision detection
 
@@ -199,7 +203,7 @@ Physics part: 50% -> 70%<br>
 ![A frame](images/history4.png)
 ![The stats of the updateColliders](images/history4Stats.png)
 
-### Difference with the previous frame
+### Raw difference with the previous frame
 
 Frame time: 8ms -> 9ms<br>
 Physics part: 70% -> 73%<br>
@@ -207,3 +211,11 @@ Physics part: 70% -> 73%<br>
 A frame take more time to be processed, but the getColliderPairs function take less time.<br>
 
 ![Student t-test](images/ttest3-4.png)
+
+I have a 95% confidence interval of difference from -1 to -0.8, so the difference is significant. It's slower than before, probably because of the heap allocator.<br>
+
+Conclusion
+==============================================================
+
+Thanks to this project, I learned a lot about physics and how to optimize code.<br>
+It will be useful for my future projects.<br>
